@@ -238,34 +238,184 @@ function metricSummary(text: string): string {
 }
 
 function translateSpecLine(rawLine: string): string {
-  const raw = rawLine.replace(/&nbsp;|&#160;/gi, " ").replace(/&gt;/gi, ">").trim();
+  const raw = rawLine.trim();
   if (!raw) return "";
   const translated = translateText(raw);
-  if (!englishRemainder.test(translated)) return translated.replace(/^>\s*/, "&gt; ");
+  if (!englishRemainder.test(translated)) return translated.replace(/^>\s*/, "> ");
   const metrics = metricSummary(raw);
   const [rawLabel] = raw.replace(/^>\s*/, "").split(":", 1);
   const translatedLabel = translateText(rawLabel).trim();
   const label = englishRemainder.test(translatedLabel) || translatedLabel === rawLabel
     ? (raw.includes(":") ? "Thông số kỹ thuật" : "Đặc tính kỹ thuật")
     : translatedLabel;
-  return `&gt; ${label}${metrics ? `: ${metrics}` : ""}`;
+  return `> ${label}${metrics ? `: ${metrics}` : ""}`;
 }
 
-export function translatedSpecHtml(html: string): string {
-  const withoutScripts = html.replace(/<(script|style)[\s\S]*?<\/\1>/gi, "");
-  const allowed = withoutScripts
-    .replace(/<!--([\s\S]*?)-->/g, "")
-    .replace(/<(?!\/?(?:p|br|table|tbody|thead|tr|td|th|strong|em)\b)[^>]*>/gi, "")
-    .replace(/<(p|br|table|tbody|thead|tr|td|th|strong|em)\b[^>]*>/gi, "<$1>");
-  const paragraph = allowed.match(/<p>([\s\S]*?)<\/p>/i)?.[1] ?? "";
-  const lines = paragraph
-    .split(/<br\s*\/?\s*>/i)
-    .map((line) => translateSpecLine(line.replace(/<[^>]+>/g, "")))
-    .filter(Boolean);
-  const table = allowed.match(/<table>[\s\S]*?<\/table>/i)?.[0] ?? "";
-  const translatedTable = table
-    .split(/(<[^>]+>)/g)
-    .map((part) => (part.startsWith("<") ? part : translateText(part)))
-    .join("");
-  return `${lines.length ? `<p>${lines.join("<br>")}</p>` : ""}${translatedTable}`;
+export interface ProductSpec {
+  lines: string[];
+  table: string[][];
+}
+
+const blockedSpecElements = new Set(["iframe", "script", "style"]);
+const namedEntities: Record<string, string> = {
+  amp: "&",
+  apos: "'",
+  gt: ">",
+  lt: "<",
+  nbsp: " ",
+  quot: '"',
+};
+
+function decodeHtmlEntities(value: string): string {
+  return value.replace(/&(?:#(\d+)|#x([\da-f]+)|([a-z][\da-z]+));/gi, (entity, decimal, hex, named) => {
+    if (named) return namedEntities[named.toLowerCase()] ?? entity;
+    const codePoint = Number.parseInt(decimal ?? hex, decimal ? 10 : 16);
+    if (!Number.isFinite(codePoint) || codePoint <= 0 || codePoint > 0x10ffff || (codePoint >= 0xd800 && codePoint <= 0xdfff)) {
+      return "�";
+    }
+    return String.fromCodePoint(codePoint);
+  });
+}
+
+function normalizedSpecText(value: string): string {
+  return decodeHtmlEntities(value).replace(/\s+/g, " ").trim();
+}
+
+function tagEnd(html: string, start: number): number {
+  let quote = "";
+  for (let index = start + 1; index < html.length; index += 1) {
+    const character = html[index];
+    if (quote) {
+      if (character === quote) quote = "";
+    } else if (character === '"' || character === "'") {
+      quote = character;
+    } else if (character === ">") {
+      return index;
+    }
+  }
+  return -1;
+}
+
+function tagName(rawTag: string): { closing: boolean; name: string; selfClosing: boolean } | undefined {
+  const value = rawTag.trim();
+  if (!value || value[0] === "!" || value[0] === "?") return undefined;
+  const closing = value[0] === "/";
+  let index = closing ? 1 : 0;
+  while (index < value.length && /\s/.test(value[index])) index += 1;
+  const start = index;
+  while (index < value.length && /[a-z0-9:-]/i.test(value[index])) index += 1;
+  if (start === index) return undefined;
+  return {
+    closing,
+    name: value.slice(start, index).toLowerCase(),
+    selfClosing: value.endsWith("/"),
+  };
+}
+
+/**
+ * Converts legacy catalog markup to plain structured data. Element attributes are
+ * never retained, blocked element contents are discarded, and React escapes every
+ * returned string when the structure is rendered as JSX.
+ */
+export function parseProductSpec(html: string): ProductSpec {
+  const lines: string[] = [];
+  const table: string[][] = [];
+  let lineBuffer = "";
+  let currentRow: string[] | undefined;
+  let currentCell: string | undefined;
+  let tableDepth = 0;
+  let blockedElement = "";
+  let blockedDepth = 0;
+
+  const finishLine = () => {
+    const line = normalizedSpecText(lineBuffer);
+    lineBuffer = "";
+    if (line) lines.push(translateSpecLine(line));
+  };
+  const finishCell = () => {
+    if (currentCell === undefined || !currentRow) return;
+    currentRow.push(translateText(normalizedSpecText(currentCell)));
+    currentCell = undefined;
+  };
+  const finishRow = () => {
+    finishCell();
+    if (currentRow?.some(Boolean)) table.push(currentRow);
+    currentRow = undefined;
+  };
+  const appendText = (text: string) => {
+    if (blockedElement) return;
+    if (currentCell !== undefined) currentCell += text;
+    else if (tableDepth === 0) lineBuffer += text;
+  };
+
+  for (let index = 0; index < html.length;) {
+    if (html.startsWith("<!--", index)) {
+      const commentEnd = html.indexOf("-->", index + 4);
+      index = commentEnd === -1 ? html.length : commentEnd + 3;
+      continue;
+    }
+    if (html[index] !== "<") {
+      const nextTag = html.indexOf("<", index);
+      const end = nextTag === -1 ? html.length : nextTag;
+      appendText(decodeHtmlEntities(html.slice(index, end)));
+      index = end;
+      continue;
+    }
+
+    const end = tagEnd(html, index);
+    if (end === -1) {
+      appendText(html.slice(index));
+      break;
+    }
+    const tag = tagName(html.slice(index + 1, end));
+    index = end + 1;
+    if (!tag) continue;
+
+    if (blockedElement) {
+      if (tag.name === blockedElement) {
+        if (tag.closing) blockedDepth -= 1;
+        else if (!tag.selfClosing) blockedDepth += 1;
+        if (blockedDepth === 0) blockedElement = "";
+      }
+      continue;
+    }
+    if (!tag.closing && blockedSpecElements.has(tag.name)) {
+      if (!tag.selfClosing) {
+        blockedElement = tag.name;
+        blockedDepth = 1;
+      }
+      continue;
+    }
+
+    if (!tag.closing) {
+      if (tag.name === "br") {
+        if (currentCell !== undefined) currentCell += " ";
+        else finishLine();
+      }
+      else if (tag.name === "table") {
+        finishLine();
+        tableDepth += 1;
+      } else if (tag.name === "tr" && tableDepth > 0) {
+        finishRow();
+        currentRow = [];
+      } else if ((tag.name === "td" || tag.name === "th") && tableDepth > 0) {
+        finishCell();
+        if (!currentRow) currentRow = [];
+        currentCell = "";
+      }
+    } else if (tag.name === "td" || tag.name === "th") {
+      finishCell();
+    } else if (tag.name === "tr") {
+      finishRow();
+    } else if (tag.name === "table") {
+      finishRow();
+      tableDepth = Math.max(0, tableDepth - 1);
+    } else if ((tag.name === "p" || tag.name === "div") && tableDepth === 0) {
+      finishLine();
+    }
+  }
+
+  finishRow();
+  finishLine();
+  return { lines: lines.filter(Boolean), table };
 }
