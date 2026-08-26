@@ -103,10 +103,7 @@ export const products: Product[] = rawProducts.map((raw) => {
           src: src.startsWith("/") ? src : `/${src}`,
           alt: `${translated.name_vi}${index ? ` - ảnh ${index + 1}` : ""}`,
         }))
-      : raw.images.map((image, index) => ({
-          src: image.src,
-          alt: `${translated.name_vi}${index ? ` - ảnh ${index + 1}` : ""}`,
-        })),
+      : [{ src: "/images/logo.png", alt: translated.name_vi }],
   };
 });
 

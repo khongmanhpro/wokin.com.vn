@@ -1,5 +1,5 @@
 {
-  "_comment": "Từ điển VI chuyên ngành cho clone wokintools.com. Codex dùng file này (KHÔNG tự dịch riêng lẻ). Quy tắc áp dụng: thay thế terms theo thứ tự chuỗi DÀI NHẤT trước; số + đơn vị (20V, 500 N.m, mm, 1/4\") giữ nguyên; slug URL giữ nguyên tiếng Anh.",
+  "_comment": "Từ điển VI chuyên ngành cho catalog. Quy tắc áp dụng: thay thế terms theo thứ tự chuỗi DÀI NHẤT trước; số + đơn vị (20V, 500 N.m, mm, 1/4\") giữ nguyên; slug URL giữ nguyên tiếng Anh.",
   "categories": {
     "tool-sets": "Bộ dụng cụ",
     "mechanics-tools": "Dụng cụ cơ khí",

@@ -37,7 +37,7 @@ export default function ContactPage() {
       </div>
       <aside className="contact-panel">
         <h2>{glossary.ui["Reach Us For Any Question"]}</h2>
-        <div className="contact-list"><strong>ZJG WOKIN INDUSTRIAL CO., LTD.</strong><p>350 Yangjin Road, Zhangjiagang,<br />Jiangsu, China 215612</p><p>T: 0086-512-55398656<br />MP / WhatsApp: 0086 18901552950<br />WeChat: jssjj333<br />QQ: 2885167231<br />E: sales@wokintools.com</p></div>
+        <div className="contact-list"><p>Vui lòng gửi yêu cầu qua biểu mẫu. Đơn vị vận hành tại Việt Nam sẽ phản hồi theo thông tin bạn cung cấp.</p></div>
       </aside>
     </section>
     <section className="section distributor-section"><div className="container-wokin"><div className="section-head"><h2 className="section-title">MẠNG LƯỚI PHÂN PHỐI</h2><p className="subtitle">Các đối tác chính thức trên toàn cầu</p></div><div className="distributor-grid">{distributors.map(([title, company, address, phone]) => <article className="distributor-card" key={title}><h3>{title}</h3><strong>{company}</strong><p>{address}</p><p>Điện thoại: {phone}</p></article>)}</div></div></section>
