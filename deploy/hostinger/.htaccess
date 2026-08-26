@@ -1,5 +1,15 @@
 # Security headers for the static Next.js export served by Apache/LiteSpeed.
 # Requires mod_headers (or the LiteSpeed-compatible Header directive).
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Exact legacy-page redirects. The default Apache behavior preserves the
+  # original query string; anchored sources prevent prefix matches and loops.
+  RewriteRule ^about/?$ /gioi-thieu/ [R=301,L,NE]
+  RewriteRule ^contact/?$ /lien-he/ [R=301,L,NE]
+  RewriteRule ^distributors/?$ /nha-phan-phoi/ [R=301,L,NE]
+</IfModule>
+
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"

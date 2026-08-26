@@ -43,9 +43,10 @@ export async function smokeStaticServer(options) {
   const categories = JSON.parse(readFileSync(path.join(options.dataDir, "categories.json"), "utf8"));
   if (!translations[0]?.slug_vi || !categories[0]?.slug) throw new Error("Không suy ra được representative catalog routes.");
   const routes = [
-    "/", "/san-pham/", "/san-pham-moi/", "/gp20v/", "/about/", "/distributors/", "/contact/",
+    "/", "/san-pham/", "/san-pham-moi/", "/gp20v/", "/gioi-thieu/", "/lien-he/", "/nha-phan-phoi/",
     `/danh-muc/${categories[0].slug}/`, `/san-pham/${translations[0].slug_vi}/`, "/sitemap.xml", "/robots.txt",
   ];
+  const legacyRoutes = ["/about/", "/contact/", "/distributors/"];
   const server = createServer((request, response) => {
     const target = safeTarget(options.outDir, request.url ?? "/");
     if (!target) { response.writeHead(404); response.end("Not found"); return; }
@@ -65,11 +66,16 @@ export async function smokeStaticServer(options) {
       if (response.status !== 200) failures.push(`${route}: HTTP ${response.status}`);
       await response.arrayBuffer();
     }
+    for (const route of legacyRoutes) {
+      const response = await fetch(`${base}${route}`);
+      if (response.status !== 404) failures.push(`${route}: expected HTTP 404 from artifact, received ${response.status}`);
+      await response.arrayBuffer();
+    }
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
   if (failures.length) throw new Error(`Static smoke failures: ${failures.join("; ")}`);
-  return { routes: routes.length };
+  return { routes: routes.length, legacyRoutes: legacyRoutes.length };
 }
 
 async function main() {
@@ -78,7 +84,7 @@ async function main() {
   catch (error) { console.error(error.message); process.exitCode = 1; return; }
   try {
     const result = await smokeStaticServer(options);
-    console.log(`Static server smoke passed: ${result.routes} representative routes returned HTTP 200.`);
+    console.log(`Static server smoke passed: ${result.routes} representative routes returned HTTP 200; ${result.legacyRoutes} legacy routes returned HTTP 404.`);
   } catch (error) {
     console.error(error.message);
     process.exitCode = 1;

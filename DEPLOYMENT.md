@@ -9,6 +9,12 @@
 3. Copy `deploy/hostinger/.htaccess` thành `.htaccess` ở cùng document root. Bật hiển thị dotfile trong file manager để xác nhận file thực sự được upload.
 4. Nếu Hostinger/LiteSpeed không áp dụng `Header`, bật module/tính năng response headers trong hPanel hoặc cấu hình các header tương đương tại CDN. Không dùng Next.js `headers()` làm phương án thay thế cho static export.
 
+## Redirect URL legacy
+
+`.htaccess` chuyển hướng 301 trực tiếp `/about/` sang `/gioi-thieu/`, `/contact/` sang `/lien-he/` và `/distributors/` sang `/nha-phan-phoi/`. Rule được neo toàn bộ path nên không bắt nhầm URL con hoặc tạo loop. Apache giữ query string theo mặc định, ví dụ `/contact/?utm_source=legacy` chuyển một bước đến `/lien-he/?utm_source=legacy`.
+
+Không upload HTML cho ba route legacy và không thêm redirect product/category nếu chưa có mapping được xác minh từ dữ liệu local.
+
 ## Chính sách header
 
 `.htaccess` thiết lập `nosniff`, referrer policy, permissions policy, `X-Frame-Options: SAMEORIGIN` và CSP có `frame-ancestors 'self'`. CSP không có `unsafe-eval`; `object-src 'none'` và `frame-src 'none'` chặn plugin/frame không được dùng bởi catalog.
@@ -25,8 +31,13 @@ Chạy với hostname thật sau khi upload:
 curl -I https://staging.example.vn/
 curl -I https://staging.example.vn/san-pham/
 curl -I https://staging.example.vn/_next/static/<chunk-thuc-te>.js
+curl -I 'https://staging.example.vn/about/?utm_source=legacy'
+curl -I https://staging.example.vn/contact/
+curl -I https://staging.example.vn/distributors/
 ```
 
 Mỗi response cần có `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options` và `Content-Security-Policy`. `Strict-Transport-Security` phải vắng mặt cho tới khi hoàn thành HTTPS gate ở trên.
+
+Ba URL legacy phải trả đúng `301` trong một bước, `Location` lần lượt là `/gioi-thieu/`, `/lien-he/`, `/nha-phan-phoi/`; request đầu tiên phải giữ `utm_source=legacy`. Ba URL đích phải trả `200`. Nếu LiteSpeed không đọc `mod_rewrite`, cấu hình cùng redirect matrix ở hPanel/CDN và kiểm tra lại trước khi phát hành.
 
 Sau đó mở Home, một danh mục, một sản phẩm, sản phẩm mới và Contact trên desktop/mobile; kiểm tra Network và Console không có CSP violation, JS/CSS/ảnh đều tải, search/menu hoạt động, JSON-LD vẫn hiện trong view source và parse được. Nếu CSP làm hỏng asset, rollback riêng file `.htaccess` về bản trước và điều tra directive cụ thể; không tắt toàn bộ header lâu dài.

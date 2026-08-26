@@ -4,7 +4,16 @@ import { DistributorCta } from "@/components/DistributorCta";
 import { StaticHero } from "@/components/StaticHero";
 import { getProductsByCategory } from "@/lib/catalog";
 
-export const metadata: Metadata = { title: "Tuyển đại lý phân phối", description: "Gia nhập mạng lưới đại lý WOKIN TOOLS và khai phá tiềm năng thị trường dụng cụ chuyên nghiệp.", alternates: { canonical: "/distributors" } };
+const title = "Tuyển đại lý phân phối";
+const description = "Gia nhập mạng lưới đại lý WOKIN TOOLS và khai phá tiềm năng thị trường dụng cụ chuyên nghiệp.";
+const canonical = "/nha-phan-phoi/";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: { canonical },
+  openGraph: { title, description, url: canonical },
+};
 
 const blocks = [
   ["Gia nhập mạng lưới toàn cầu", "Trở thành nhà phân phối WOKIN để xây dựng quan hệ hợp tác lâu dài và cùng phát triển. Danh mục chuyên nghiệp, nguồn cung ổn định và nhận diện toàn cầu tạo nền tảng để bạn cạnh tranh bền vững tại thị trường của mình."],
@@ -19,9 +28,9 @@ export default function DistributorsPage() {
     <Breadcrumb items={[{ label: "Tuyển đại lý" }]} />
     <section className="section container-wokin">
       <div className="section-head"><h2 className="section-title">Gia nhập mạng lưới toàn cầu</h2><p className="subtitle">Hợp tác bền vững, phát triển dài hạn</p></div>
-      <div className="partner-feature-grid">{blocks.map(([title, body], index) => <article className="partner-feature" key={title}>
+      <div className="partner-feature-grid">{blocks.map(([blockTitle, body], index) => <article className="partner-feature" key={blockTitle}>
         <div className="partner-image"><img src={products[index]?.images[0]?.src ?? "/images/logo.png"} alt="" /></div>
-        <div><span className="feature-number">0{index + 1}</span><h3>{title}</h3><p>{body}</p></div>
+        <div><span className="feature-number">0{index + 1}</span><h3>{blockTitle}</h3><p>{body}</p></div>
       </article>)}</div>
     </section>
     <DistributorCta />

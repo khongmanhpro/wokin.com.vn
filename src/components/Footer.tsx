@@ -11,9 +11,9 @@ export function Footer() {
       </div>
       <div className="footer-links">
         <Link href="/san-pham">{glossary.ui.Products}</Link>
-        <Link href="/about">{glossary.ui["About WOKIN"]}</Link>
-        <Link href="/contact">{glossary.ui["Contact WOKIN"]}</Link>
-        <Link href="/distributors">{glossary.ui["Seeking Distributors"]}</Link>
+        <Link href="/gioi-thieu/">{glossary.ui["About WOKIN"]}</Link>
+        <Link href="/lien-he/">{glossary.ui["Contact WOKIN"]}</Link>
+        <Link href="/nha-phan-phoi/">{glossary.ui["Seeking Distributors"]}</Link>
       </div>
     </div>
     <div className="footer-bottom container-wokin">© WOKIN TOOLS. {new Date().getFullYear()} · {glossary.ui["Cookie Policy"]} · {glossary.ui["Privacy Statement"]}</div>

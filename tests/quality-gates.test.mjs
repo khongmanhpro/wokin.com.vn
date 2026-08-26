@@ -9,6 +9,7 @@ const projectRoot = path.resolve(import.meta.dirname, "..");
 const catalogScript = path.join(projectRoot, "scripts/validate-catalog.mjs");
 const exportScript = path.join(projectRoot, "scripts/validate-static-export.mjs");
 const smokeScript = path.join(projectRoot, "scripts/smoke-static-server.mjs");
+const hostingerConfig = path.join(projectRoot, "deploy/hostinger/.htaccess");
 
 function writeJson(file, value) {
   mkdirSync(path.dirname(file), { recursive: true });
@@ -181,7 +182,7 @@ function makeExportFixture() {
   ]);
   const outDir = path.join(catalog.root, "out");
   const routes = [
-    "", "san-pham", "san-pham-moi", "gp20v", "about", "distributors", "contact",
+    "", "san-pham", "san-pham-moi", "gp20v", "gioi-thieu", "lien-he", "nha-phan-phoi",
     "danh-muc/hand-tools", "san-pham/san-pham-1", "san-pham/san-pham-2",
   ];
   const links = routes.map((route) => `<a href="/${route}${route ? "/" : ""}">${route || "home"}</a>`).join("");
@@ -193,7 +194,7 @@ function makeExportFixture() {
   writeFileSync(path.join(outDir, "images/logo.png"), "fixture image");
   const urls = routes.map((route) => `<url><loc>https://wokin.com.vn/${route}${route ? "/" : ""}</loc></url>`).join("");
   writeFileSync(path.join(outDir, "sitemap.xml"), `<?xml version="1.0"?><urlset>${urls}</urlset>`);
-  writeFileSync(path.join(outDir, "robots.txt"), "User-Agent: *\nAllow: /\nSitemap: https://wokin.com.vn/sitemap.xml\n");
+  writeFileSync(path.join(outDir, "robots.txt"), "User-Agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://wokin.com.vn/sitemap.xml\n");
   return { ...catalog, outDir };
 }
 
@@ -216,11 +217,35 @@ test("export validator accepts complete routes and reports temporary duplicate t
 test("export validator rejects canonical mismatches", () => {
   const fixture = makeExportFixture();
   try {
-    const file = path.join(fixture.outDir, "contact/index.html");
-    writeFileSync(file, readFileSync(file, "utf8").replace("/contact/", "/wrong/"));
+    const file = path.join(fixture.outDir, "lien-he/index.html");
+    writeFileSync(file, readFileSync(file, "utf8").replace("/lien-he/", "/wrong/"));
     const result = run(exportScript, exportArgs(fixture));
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /canonical.*contact/i);
+    assert.match(result.stderr, /canonical.*lien-he/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("export validator rejects legacy HTML output", () => {
+  const fixture = makeExportFixture();
+  try {
+    writeRoute(fixture.outDir, "about", pageHtml("about"));
+    const result = run(exportScript, exportArgs(fixture));
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /legacy route.*about/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("export validator rejects robots rules that block Next.js assets", () => {
+  const fixture = makeExportFixture();
+  try {
+    writeFileSync(path.join(fixture.outDir, "robots.txt"), "User-Agent: *\nAllow: /\nDisallow: /_next/\nDisallow: /api/\nSitemap: https://wokin.com.vn/sitemap.xml\n");
+    const result = run(exportScript, exportArgs(fixture));
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /không được chặn \/_next\//i);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
   }
@@ -259,5 +284,17 @@ test("static server smoke-check serves clean trailing-slash routes", () => {
     assert.match(result.stdout, /Static server smoke passed/);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("Hostinger config declares exact one-step Vietnamese canonical redirects", () => {
+  const config = readFileSync(hostingerConfig, "utf8");
+  const expected = [
+    ["about", "gioi-thieu"],
+    ["contact", "lien-he"],
+    ["distributors", "nha-phan-phoi"],
+  ];
+  for (const [legacy, canonical] of expected) {
+    assert.match(config, new RegExp(`RewriteRule \\^${legacy}\\/\\?\\$ \\/${canonical}\\/ \\[R=301,L,NE\\]`));
   }
 });

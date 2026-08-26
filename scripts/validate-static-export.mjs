@@ -3,7 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const STATIC_ROUTES = ["/", "/san-pham/", "/san-pham-moi/", "/gp20v/", "/about/", "/distributors/", "/contact/"];
+const STATIC_ROUTES = ["/", "/san-pham/", "/san-pham-moi/", "/gp20v/", "/gioi-thieu/", "/lien-he/", "/nha-phan-phoi/"];
+const LEGACY_STATIC_ROUTES = new Set(["/about/", "/contact/", "/distributors/"]);
 const PRODUCTS_PER_PAGE = 20;
 const TEXT_EXTENSIONS = new Set([".html", ".js", ".json", ".xml", ".txt", ".css", ".map"]);
 // TODO Phase 5: remove this temporary allowance after product titles become unique.
@@ -109,6 +110,11 @@ export function validateStaticExport(options) {
   const productRoutes = new Set(translations.map((translation) => `/san-pham/${translation.slug_vi}/`));
   const productTitles = new Map();
 
+  for (const route of LEGACY_STATIC_ROUTES) {
+    const file = htmlFileForRoute(options.outDir, route);
+    if (existsSync(file)) errors.push(`Legacy route vẫn có HTML output: ${route} (${file}).`);
+  }
+
   for (const route of routes) {
     const file = htmlFileForRoute(options.outDir, route);
     if (!existsSync(file)) {
@@ -150,6 +156,8 @@ export function validateStaticExport(options) {
   else {
     const robots = readFileSync(robotsFile, "utf8");
     if (!/^User-Agent:\s*\*/im.test(robots)) errors.push("robots.txt thiếu User-Agent: *.");
+    if (/^Disallow:\s*\/_next\//im.test(robots)) errors.push("robots.txt không được chặn /_next/.");
+    if (!/^Disallow:\s*\/api\//im.test(robots)) errors.push("robots.txt thiếu Disallow: /api/.");
     const sitemapLine = robots.match(/^Sitemap:\s*(\S+)/im)?.[1];
     if (sitemapLine !== new URL("/sitemap.xml", site).toString()) errors.push(`robots.txt sitemap sai: ${sitemapLine ?? "none"}.`);
   }
@@ -169,6 +177,7 @@ export function validateStaticExport(options) {
       try { url = new URL(reference, new URL(pageRoute, site)); } catch { errors.push(`URL nội bộ không parse được trong ${relativeFile}: ${reference}.`); continue; }
       if (url.origin !== site.origin) continue;
       if (url.pathname.startsWith("/images/") || url.pathname.startsWith("/_next/")) continue;
+      if (LEGACY_STATIC_ROUTES.has(routePath(url.toString()))) errors.push(`Internal URL dùng legacy route trong ${relativeFile}: ${url.pathname}.`);
       if (url.pathname.endsWith(".html")) errors.push(`Internal URL chứa .html trong ${relativeFile}: ${url.pathname}.`);
       if (!targetExists(options.outDir, url.pathname)) errors.push(`Internal target bị thiếu trong ${relativeFile}: ${url.pathname}.`);
     }

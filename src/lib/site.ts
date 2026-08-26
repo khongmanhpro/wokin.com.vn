@@ -6,9 +6,9 @@ export const staticPages = [
   "/san-pham",
   "/san-pham-moi",
   "/gp20v",
-  "/about",
-  "/distributors",
-  "/contact",
+  "/gioi-thieu",
+  "/lien-he",
+  "/nha-phan-phoi",
 ] as const;
 
 export function absoluteUrl(path = ""): string {

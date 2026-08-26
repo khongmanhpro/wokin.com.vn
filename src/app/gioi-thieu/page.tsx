@@ -4,7 +4,16 @@ import { DistributorCta } from "@/components/DistributorCta";
 import { StaticHero } from "@/components/StaticHero";
 import { getProductsByCategory } from "@/lib/catalog";
 
-export const metadata: Metadata = { title: "Giới thiệu", description: "Tìm hiểu WOKIN TOOLS, thương hiệu dụng cụ chuyên nghiệp được tin dùng tại hơn 100 quốc gia.", alternates: { canonical: "/about" } };
+const title = "Giới thiệu";
+const description = "Tìm hiểu WOKIN TOOLS, thương hiệu dụng cụ chuyên nghiệp được tin dùng tại hơn 100 quốc gia.";
+const canonical = "/gioi-thieu/";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: { canonical },
+  openGraph: { title, description, url: canonical },
+};
 
 export default function AboutPage() {
   const hero = getProductsByCategory("power-tools")[0]?.images[0]?.src ?? "/images/logo.png";

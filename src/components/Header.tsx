@@ -55,9 +55,9 @@ export function Header() {
             <div className="nav-item" onMouseEnter={() => setSupportOpen(true)} onMouseLeave={() => setSupportOpen(false)}>
               <button className="action-button" aria-expanded={supportOpen} onClick={() => setSupportOpen((open) => !open)}>{glossary.ui.Support}<Icon name="chevron" /></button>
               {supportOpen && <div className="dropdown">
-                <Link href="/about">{glossary.ui["About WOKIN"]}</Link>
-                <Link href="/contact">{glossary.ui["Contact WOKIN"]}</Link>
-                <Link href="/distributors">{glossary.ui["Seeking Distributors"]}</Link>
+                <Link href="/gioi-thieu/">{glossary.ui["About WOKIN"]}</Link>
+                <Link href="/lien-he/">{glossary.ui["Contact WOKIN"]}</Link>
+                <Link href="/nha-phan-phoi/">{glossary.ui["Seeking Distributors"]}</Link>
               </div>}
             </div>
           </nav>
@@ -87,8 +87,9 @@ export function Header() {
           <li><Link href="/san-pham" onClick={() => setDrawerOpen(false)}>{glossary.ui.Products}</Link></li>
           {categories.map((category) => <li key={category.id}><Link href={`/danh-muc/${category.slug}`} onClick={() => setDrawerOpen(false)}>{glossary.categories[category.slug] ?? category.slug}</Link></li>)}
           <li><Link href="/san-pham-moi" onClick={() => setDrawerOpen(false)}>{glossary.ui["New Products"]}</Link></li>
-          <li><Link href="/about" onClick={() => setDrawerOpen(false)}>{glossary.ui["About WOKIN"]}</Link></li>
-          <li><Link href="/contact" onClick={() => setDrawerOpen(false)}>{glossary.ui["Contact WOKIN"]}</Link></li>
+          <li><Link href="/gioi-thieu/" onClick={() => setDrawerOpen(false)}>{glossary.ui["About WOKIN"]}</Link></li>
+          <li><Link href="/lien-he/" onClick={() => setDrawerOpen(false)}>{glossary.ui["Contact WOKIN"]}</Link></li>
+          <li><Link href="/nha-phan-phoi/" onClick={() => setDrawerOpen(false)}>{glossary.ui["Seeking Distributors"]}</Link></li>
         </ul>
       </aside>}
     </>

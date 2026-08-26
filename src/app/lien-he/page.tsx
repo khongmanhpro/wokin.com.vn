@@ -4,7 +4,16 @@ import { StaticHero } from "@/components/StaticHero";
 import { getProductsByCategory, glossary } from "@/lib/catalog";
 import { countries } from "@/lib/countries";
 
-export const metadata: Metadata = { title: "Liên hệ", description: "Gửi yêu cầu tư vấn sản phẩm và hợp tác phân phối WOKIN TOOLS.", alternates: { canonical: "/contact" } };
+const title = "Liên hệ";
+const description = "Gửi yêu cầu tư vấn sản phẩm và hợp tác phân phối WOKIN TOOLS.";
+const canonical = "/lien-he/";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: { canonical },
+  openGraph: { title, description, url: canonical },
+};
 
 const distributors = [
   ["ĐẠI LÝ CHÍNH THỨC TẠI Ý", "VIRIDEX SRL.", "VIA GENNARO DEL PRETE 2/4, CAP 04012, CISTERNA DI LATINA (LT), ITALY", "0039 069697152"],
@@ -40,6 +49,6 @@ export default function ContactPage() {
         <div className="contact-list"><p>Vui lòng gửi yêu cầu qua biểu mẫu. Đơn vị vận hành tại Việt Nam sẽ phản hồi theo thông tin bạn cung cấp.</p></div>
       </aside>
     </section>
-    <section className="section distributor-section"><div className="container-wokin"><div className="section-head"><h2 className="section-title">MẠNG LƯỚI PHÂN PHỐI</h2><p className="subtitle">Các đối tác chính thức trên toàn cầu</p></div><div className="distributor-grid">{distributors.map(([title, company, address, phone]) => <article className="distributor-card" key={title}><h3>{title}</h3><strong>{company}</strong><p>{address}</p><p>Điện thoại: {phone}</p></article>)}</div></div></section>
+    <section className="section distributor-section"><div className="container-wokin"><div className="section-head"><h2 className="section-title">MẠNG LƯỚI PHÂN PHỐI</h2><p className="subtitle">Các đối tác chính thức trên toàn cầu</p></div><div className="distributor-grid">{distributors.map(([distributorTitle, company, address, phone]) => <article className="distributor-card" key={distributorTitle}><h3>{distributorTitle}</h3><strong>{company}</strong><p>{address}</p><p>Điện thoại: {phone}</p></article>)}</div></div></section>
   </main>;
 }
