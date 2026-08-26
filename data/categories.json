@@ -1,0 +1,212 @@
+[
+ {
+  "id": 61,
+  "name": "20V LITHIUM-ION PLATFORM",
+  "slug": "20v-lithium-ion-platform",
+  "count": 53,
+  "parent": 0
+ },
+ {
+  "id": 52,
+  "name": "AUTOMOTIVE TOOLS",
+  "slug": "automotive-tools",
+  "count": 101,
+  "parent": 0
+ },
+ {
+  "id": 60,
+  "name": "CONSTRUCTION EQUIPMENT",
+  "slug": "construction-equipment",
+  "count": 19,
+  "parent": 0
+ },
+ {
+  "id": 74,
+  "name": "CORDLESS TOOLS",
+  "slug": "cordless-tools",
+  "count": 9,
+  "parent": 0
+ },
+ {
+  "id": 38,
+  "name": "CUTTING TOOLS",
+  "slug": "cutting-tools",
+  "count": 46,
+  "parent": 0
+ },
+ {
+  "id": 44,
+  "name": "ELECTRICAL TOOLS",
+  "slug": "electrical-tools",
+  "count": 34,
+  "parent": 0
+ },
+ {
+  "id": 35,
+  "name": "FASTENING TOOLS",
+  "slug": "fastening-tools",
+  "count": 84,
+  "parent": 0
+ },
+ {
+  "id": 41,
+  "name": "FINISHING TOOLS",
+  "slug": "finishing-tools",
+  "count": 17,
+  "parent": 0
+ },
+ {
+  "id": 46,
+  "name": "GARDEN TOOLS",
+  "slug": "garden-tools",
+  "count": 74,
+  "parent": 0
+ },
+ {
+  "id": 56,
+  "name": "GENERATORS",
+  "slug": "generators",
+  "count": 12,
+  "parent": 0
+ },
+ {
+  "id": 50,
+  "name": "HARDWARE AND OTHERS",
+  "slug": "hardware-and-others",
+  "count": 78,
+  "parent": 0
+ },
+ {
+  "id": 36,
+  "name": "HOLDING TOOLS",
+  "slug": "holding-tools",
+  "count": 68,
+  "parent": 0
+ },
+ {
+  "id": 45,
+  "name": "INSULATED TOOLS",
+  "slug": "insulated-tools",
+  "count": 24,
+  "parent": 0
+ },
+ {
+  "id": 75,
+  "name": "LIFTING AND HANDING EQUIPMENT",
+  "slug": "lifting-and-handing-equipment",
+  "count": 28,
+  "parent": 0
+ },
+ {
+  "id": 47,
+  "name": "LIGHTING TOOLS",
+  "slug": "lighting-tools",
+  "count": 9,
+  "parent": 0
+ },
+ {
+  "id": 42,
+  "name": "MEASURING TOOLS",
+  "slug": "measuring-tools",
+  "count": 34,
+  "parent": 0
+ },
+ {
+  "id": 34,
+  "name": "MECHANICS TOOLS",
+  "slug": "mechanics-tools",
+  "count": 61,
+  "parent": 0
+ },
+ {
+  "id": 48,
+  "name": "MERCHANDISING AND PROMOTIONAL",
+  "slug": "merchandising-and-promotional",
+  "count": 18,
+  "parent": 0
+ },
+ {
+  "id": 63,
+  "name": "NON-SPARKING TOOLS",
+  "slug": "non-sparking-tools",
+  "count": 34,
+  "parent": 0
+ },
+ {
+  "id": 43,
+  "name": "PAINTING AND MASONRY TOOLS",
+  "slug": "painting-and-masonry-tools",
+  "count": 74,
+  "parent": 0
+ },
+ {
+  "id": 40,
+  "name": "PLUMBING TOOLS",
+  "slug": "plumbing-tools",
+  "count": 23,
+  "parent": 0
+ },
+ {
+  "id": 55,
+  "name": "PNEUMATIC TOOLS",
+  "slug": "pneumatic-tools",
+  "count": 61,
+  "parent": 0
+ },
+ {
+  "id": 54,
+  "name": "POWER TOOLS",
+  "slug": "power-tools",
+  "count": 93,
+  "parent": 0
+ },
+ {
+  "id": 58,
+  "name": "POWER TOOLS (110-120v market)",
+  "slug": "power-tools-110-120v-market",
+  "count": 64,
+  "parent": 0
+ },
+ {
+  "id": 39,
+  "name": "POWER TOOLS ACCESSORIES",
+  "slug": "power-tools-accessories",
+  "count": 96,
+  "parent": 0
+ },
+ {
+  "id": 53,
+  "name": "PPE",
+  "slug": "ppe",
+  "count": 50,
+  "parent": 0
+ },
+ {
+  "id": 37,
+  "name": "STRIKING TOOLS",
+  "slug": "striking-tools",
+  "count": 38,
+  "parent": 0
+ },
+ {
+  "id": 49,
+  "name": "TOOL BAG AND STORAGE",
+  "slug": "tool-bag-and-storage",
+  "count": 27,
+  "parent": 0
+ },
+ {
+  "id": 57,
+  "name": "TOOL SETS",
+  "slug": "tool-sets",
+  "count": 22,
+  "parent": 0
+ },
+ {
+  "id": 51,
+  "name": "WELDING TOOLS",
+  "slug": "welding-tools",
+  "count": 19,
+  "parent": 0
+ }
+]
