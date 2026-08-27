@@ -1,0 +1,82 @@
+name: Admin CI
+
+on:
+  pull_request:
+    paths:
+      - 'admin/**'
+      - 'contracts/**'
+      - 'src/data/catalog.generated.json'
+      - 'src/data/image-metadata.generated.json'
+      - 'scripts/build-catalog-data.mjs'
+      - 'scripts/validate-catalog.mjs'
+      - 'package-lock.json'
+      - 'admin/package-lock.json'
+      - '.github/workflows/admin-ci.yml'
+      - 'docs/payload-environments.md'
+  push:
+    paths:
+      - 'admin/**'
+      - 'contracts/**'
+      - 'src/data/catalog.generated.json'
+      - 'src/data/image-metadata.generated.json'
+      - 'scripts/build-catalog-data.mjs'
+      - 'scripts/validate-catalog.mjs'
+      - 'package-lock.json'
+      - 'admin/package-lock.json'
+      - '.github/workflows/admin-ci.yml'
+      - 'docs/payload-environments.md'
+
+permissions:
+  contents: read
+
+jobs:
+  admin:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16.6-alpine
+        env:
+          POSTGRES_DB: wokin_ci
+          POSTGRES_USER: wokin_payload
+          POSTGRES_PASSWORD: ci-local-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wokin_payload -d wokin_ci"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+    defaults:
+      run:
+        working-directory: admin
+    env:
+      DATABASE_URL: postgresql://wokin_payload:ci-local-only-password@127.0.0.1:5432/wokin_ci
+      PAYLOAD_SECRET: ci-build-only-secret-000000000000000000000000
+      PAYLOAD_PUBLIC_SERVER_URL: https://admin-ci.invalid
+      STORAGE_ADAPTER: local
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - name: Install from lockfile
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Test
+        run: npm test
+      - name: Migrate empty PostgreSQL
+        run: npm run db:migrate
+      - name: Verify migration status
+        run: npm run db:status
+      - name: Import POC catalog
+        run: npm run import:poc
+      - name: Re-import POC catalog idempotently
+        run: npm run import:poc
+      - name: Validate complete catalog without mutation
+        run: npm run import:catalog -- --dry-run
+      - name: Build
+        run: npm run build

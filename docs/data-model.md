@@ -114,6 +114,29 @@ Checksum được tính như sau:
 
 `npm run check:data` không chỉ tin checksum manifest: nó tái tạo toàn bộ sáu output mong đợi rồi so sánh nội dung thực tế. Thay đổi canonical input phải đi theo quy trình: chỉnh `data/` → chạy `npm run build:data` → review diff generated → chạy `npm run check:data` và các quality gates.
 
-## Migration tương lai
+## Migration hiện tại — Payload/PostgreSQL R3
 
-Nếu chuyển sang PostgreSQL hoặc CMS, migration phải giữ identity, canonical slug, allowlist SKU, relations, normalized spec/media và checksum/audit provenance nêu trên. Phase 6 không tạo database, không thay đổi static runtime và không thiết lập cơ chế đồng bộ hai chiều.
+R3 đã tạo admin runtime riêng dưới `admin/`, dùng Payload `3.88.0` + PostgreSQL adapter và migration versioned. Public site vẫn giữ Next.js static export, không truy cập database lúc runtime.
+
+Input migration chỉ gồm các artifact đã validate:
+
+- `src/data/catalog.generated.json`
+- `src/data/image-metadata.generated.json`
+- `src/data/search-index.json`
+- `data/products_vi.json`
+- `public/images/products/`
+
+Kết quả import đã xác minh trên PostgreSQL 16.6 tạm thời:
+
+| Record | Count |
+| --- | ---: |
+| Products | 1.357 |
+| Categories | 30 |
+| Unique media records | 1.717 |
+| Product-media references | 1.720 |
+| Duplicate SKU groups | 3 |
+| Dropped products/categories/references | 0 |
+
+Importer dùng `legacySourceId` cho product/category identity, `storageKey` cho media identity, giữ SKU nullable/non-unique, tạo record ở trạng thái `draft`, và đặt `rightsStatus=pending`. Dry-run không ghi database; lần import thứ hai cho kết quả `0 create / 0 update / 1.357 products + 30 categories + 1.717 media unchanged`.
+
+Các collection nền `Pages`, `Redirects`, `CatalogSnapshots`, `Releases` và `AuditEvents` đã được đăng ký ở mức data model tối thiểu. Phân quyền nâng cao, editorial workflow, storage production, snapshot publishing và release pipeline thuộc các phase sau; không được hiểu là đã production-ready.

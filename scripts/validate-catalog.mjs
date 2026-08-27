@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { validateCatalogSnapshot } from "../contracts/catalog-snapshot-validator.mjs";
+
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const defaultDataDir = path.join(projectRoot, "data");
 const defaultPublicDir = path.join(projectRoot, "public");
@@ -32,6 +34,7 @@ function parseArgs(argv) {
     const value = argv[index + 1];
     if (argument === "--data-dir" && value) options.dataDir = path.resolve(value);
     else if (argument === "--public-dir" && value) options.publicDir = path.resolve(value);
+    else if (argument === "--snapshot" && value) options.snapshotFile = path.resolve(value);
     else if (argument === "--allow-duplicate-sku" && value) options.allowedDuplicateSkus.add(value);
     else if (argument === "--allow-missing-sku-id" && value && Number.isInteger(Number(value))) options.allowedMissingSkuIds.add(Number(value));
     else throw new Error(`Đối số không hợp lệ hoặc thiếu giá trị: ${argument}`);
@@ -70,6 +73,35 @@ function sameNumberSet(actual, expected) {
 }
 
 export function validateCatalog(options) {
+  if (options.snapshotFile) {
+    let snapshot;
+    try {
+      snapshot = JSON.parse(readFileSync(options.snapshotFile, "utf8"));
+    } catch (error) {
+      return { errors: [`Không đọc được snapshot ${options.snapshotFile}: ${error.message}`], reports: [] };
+    }
+    const errors = validateCatalogSnapshot(snapshot);
+    for (const media of Array.isArray(snapshot.media) ? snapshot.media : []) {
+      if (typeof media?.path === "string" && !existsSync(path.join(options.publicDir, media.path))) errors.push(`Ảnh local trong snapshot không tồn tại: ${media.path}.`);
+    }
+    const skuCounts = new Map();
+    let missingSku = 0;
+    for (const product of Array.isArray(snapshot.products) ? snapshot.products : []) {
+      if (!product?.sku) missingSku += 1;
+      else skuCounts.set(product.sku, (skuCounts.get(product.sku) ?? 0) + 1);
+    }
+    const duplicateSkuSurplus = [...skuCounts.values()].reduce((sum, count) => sum + Math.max(0, count - 1), 0);
+    return {
+      errors: [...new Set(errors)],
+      reports: [`Publish contract allows ${missingSku} missing SKU record(s) and ${duplicateSkuSurplus} duplicate SKU record(s); identity is product.id/legacySourceId.`],
+      summary: {
+        products: Array.isArray(snapshot.products) ? snapshot.products.length : 0,
+        categories: Array.isArray(snapshot.categories) ? snapshot.categories.length : 0,
+        manifestImages: Array.isArray(snapshot.media) ? snapshot.media.length : 0,
+        duplicateSkuSurplus,
+      },
+    };
+  }
   const errors = [];
   const reports = [];
   const products = readJson(options.dataDir, "products.json", errors);

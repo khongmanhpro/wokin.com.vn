@@ -1,0 +1,47 @@
+{
+  "name": "wokin-payload-admin-poc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm run check:env && cross-env NODE_OPTIONS=--no-deprecation next build",
+    "check:env": "tsx scripts/check-env.ts",
+    "db:migrate": "npm run check:env && cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_CONFIG_PATH=src/payload.config.ts payload migrate",
+    "db:status": "npm run check:env && cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_CONFIG_PATH=src/payload.config.ts payload migrate:status",
+    "dev": "npm run check:env && cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "generate:importmap": "npm run check:env && cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_CONFIG_PATH=src/payload.config.ts payload generate:importmap",
+    "generate:types": "npm run check:env && cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_CONFIG_PATH=src/payload.config.ts payload generate:types",
+    "import:poc": "cross-env NODE_ENV=production npm run check:env && cross-env NODE_ENV=production tsx src/catalog/import-cli.ts",
+    "import:catalog": "cross-env NODE_ENV=production npm run check:env && cross-env NODE_ENV=production tsx src/catalog/full-import-cli.ts",
+    "payload": "npm run check:env && cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_CONFIG_PATH=src/payload.config.ts payload",
+    "snapshot:poc": "cross-env NODE_ENV=production npm run check:env && cross-env NODE_ENV=production tsx src/catalog/export-cli.ts",
+    "start": "npm run check:env && cross-env NODE_OPTIONS=--no-deprecation next start",
+    "test": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "validate:snapshot": "tsx src/catalog/validate-cli.ts",
+    "verify": "npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "@payloadcms/db-postgres": "3.88.0",
+    "@payloadcms/next": "3.88.0",
+    "@payloadcms/ui": "3.88.0",
+    "cross-env": "7.0.3",
+    "dotenv": "16.4.7",
+    "graphql": "16.11.0",
+    "next": "16.3.0",
+    "payload": "3.88.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "sharp": "0.35.4"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.9",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "tsx": "4.22.4",
+    "typescript": "5.7.3"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}
