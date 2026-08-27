@@ -8,10 +8,11 @@
     "catalog.generated.json": "b257b1c1bd223f5a4469a228db2a52f48c12538254e890d92c99e43c63c08213",
     "categories.json": "0a7deeeed327a5c78188d517a0f1c07bcfa965ed441dfc341cad52cb7f889108",
     "products_vi.json": "c323788e0d479274161271ca5428e3abc247875ecdf96c62c5dc0d6d58da31f2",
-    "README.md": "403cd544e74ed10ae40c1d2178e9be080985db4e47b83f2b9a4a354c313ba0d3",
+    "README.md": "1368f881bb0527c56121bb17e60f8fa21e6f535c117b2deb3722ed10acff99c5",
+    "search-index.json": "702a2cdfa1325f1e6a86c5d22feb90dd788297740293a4314772b988a7a597e4",
     "vi-glossary.json": "0453ad822796226cc0e54a5908383599bd737f14206ac22f482de3b2b8ffa931"
   },
-  "outputChecksum": "d838206bc9469f21604866d800e180e18a049f33194639f96ce11bcca7e6179b",
+  "outputChecksum": "2a21315a35e8ef72185eedf8ce97a02e3f66b8d01e66b4823aac2a1671ef1e29",
   "schemaVersion": 1,
   "sourceChecksum": "602d1743e78304fbf78af7d04d1076a4f1a4c3982046106741121cef29fe96d6",
   "sourceFiles": {

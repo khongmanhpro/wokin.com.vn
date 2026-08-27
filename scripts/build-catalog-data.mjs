@@ -501,6 +501,13 @@ function outputPayload(normalized, sourceDir) {
     "catalog.generated.json": stableJson(snapshot),
     "categories.json": stableJson(normalized.categories),
     "products_vi.json": stableJson(normalized.translations),
+    "search-index.json": stableJson(normalized.snapshot.products.map((product) => ({
+      categories: product.categoryRelations.map((category) => category.slug),
+      id: product.legacySourceId,
+      name: product.translation.name,
+      sku: product.productCode ?? "",
+      slug: product.translation.canonicalSlug,
+    }))),
     "vi-glossary.json": stableJson(normalized.glossary),
   };
   const outputChecksum = sha256(Object.keys(files).sort().map((name) => `${name}\0${sha256(files[name])}\n`).join(""));

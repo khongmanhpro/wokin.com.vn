@@ -4,11 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import categoriesJson from "@/data/categories.json";
-import productsViJson from "@/data/products_vi.json";
 import glossaryJson from "@/data/vi-glossary.json";
 
 const categories = categoriesJson as { id: number; slug: string }[];
-const searchProducts = productsViJson as { id: number; sku: string; name_vi: string; slug_vi: string }[];
+type SearchProduct = { id: number; sku: string; name: string; slug: string; categories: string[] };
 const glossary = glossaryJson as unknown as { categories: Record<string, string>; ui: Record<string, string>; marketing: Record<string, string> };
 
 function Icon({ name }: { name: "search" | "menu" | "close" | "chevron" }) {
@@ -26,13 +25,25 @@ export function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [searchProducts, setSearchProducts] = useState<SearchProduct[] | null>(null);
   const normalizedQuery = query.trim().toLocaleLowerCase("vi");
-  const results = normalizedQuery ? searchProducts.filter((product) => `${product.name_vi} ${product.sku}`.toLocaleLowerCase("vi").includes(normalizedQuery)).slice(0, 12) : [];
+  const results = normalizedQuery && searchProducts
+    ? searchProducts.filter((product) => `${product.name} ${product.sku}`.toLocaleLowerCase("vi").includes(normalizedQuery)).slice(0, 12)
+    : [];
 
   useEffect(() => {
     document.body.style.overflow = searchOpen || drawerOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [searchOpen, drawerOpen]);
+
+  useEffect(() => {
+    if (!searchOpen || searchProducts) return;
+    let active = true;
+    import("@/data/search-index.json").then((module) => {
+      if (active) setSearchProducts(module.default as SearchProduct[]);
+    });
+    return () => { active = false; };
+  }, [searchOpen, searchProducts]);
 
   return (
     <>
@@ -72,10 +83,11 @@ export function Header() {
         <div className="search-overlay-inner">
           <div className="overlay-top"><button className="icon-button overlay-close" aria-label="Đóng tìm kiếm" onClick={() => setSearchOpen(false)}><Icon name="close" /></button></div>
           <input autoFocus className="search-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={glossary.ui["Search products..."]} />
-          {query && <div className="search-results">
-            {results.length ? results.map((product) => <Link className="search-result" href={`/san-pham/${product.slug_vi}`} key={product.id} onClick={() => setSearchOpen(false)}>
+          {query && searchProducts === null && <p className="empty-search">Đang tải chỉ mục tìm kiếm...</p>}
+          {query && searchProducts !== null && <div className="search-results">
+            {results.length ? results.map((product) => <Link className="search-result" href={`/san-pham/${product.slug}`} key={product.id} onClick={() => setSearchOpen(false)}>
               <Image className="result-image" src="/images/logo.png" alt="" width={58} height={58} />
-              <span><strong>{product.name_vi}</strong><br /><small>{glossary.ui.SKU}: {product.sku}</small></span>
+              <span><strong>{product.name}</strong><br /><small>{glossary.ui.SKU}: {product.sku}</small></span>
             </Link>) : <p className="empty-search">Không tìm thấy sản phẩm phù hợp.</p>}
           </div>}
         </div>
