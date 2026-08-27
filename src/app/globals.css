@@ -605,6 +605,12 @@ h4 {
   object-fit: contain;
 }
 
+.responsive-product-picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .thumbnails {
   display: grid;
   grid-template-columns: repeat(6, 1fr);

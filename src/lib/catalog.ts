@@ -1,10 +1,14 @@
 import catalogJson from "@/data/catalog.generated.json";
 import glossaryJson from "@/data/vi-glossary.json";
 import { assertCatalogSnapshot, type CatalogSnapshot } from "@/lib/catalog-schema";
+import { responsiveImageMetadata, type ResponsiveImageVariant } from "@/lib/responsive-images";
 
 export interface ProductImage {
   src: string;
   alt: string;
+  height?: number;
+  variants?: ResponsiveImageVariant[];
+  width?: number;
 }
 
 export interface ProductCategory {
@@ -80,10 +84,14 @@ export const products: Product[] = catalogSnapshot.products.map((record) => {
     date: record.publishedAt,
     description: record.legacyDescription,
     id: record.legacySourceId,
-    images: record.media.map((media) => ({
-      alt: media.alt,
-      src: media.path.startsWith("/") ? media.path : `/${media.path}`,
-    })),
+    images: record.media.map((media) => {
+      const src = media.path.startsWith("/") ? media.path : `/${media.path}`;
+      return {
+        alt: media.alt,
+        src,
+        ...responsiveImageMetadata(src),
+      };
+    }),
     name: record.translation.name,
     nameEn: record.translation.sourceName,
     short_description: specToken,

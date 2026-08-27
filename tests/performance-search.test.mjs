@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 
@@ -39,4 +39,20 @@ test("catalog image components declare responsive display sizes", () => {
   assert.match(cards, /sizes="\(max-width: 767px\) 50vw/);
   assert.match(gallery, /sizes="\(max-width: 767px\) 100vw, 800px"/);
   assert.match(gallery, /sizes="120px"/);
+});
+
+test("product cards and gallery render real WebP srcsets without loading global image metadata in the client", () => {
+  const cards = readFileSync(path.join(projectRoot, "src/components/CatalogCards.tsx"), "utf8");
+  const gallery = readFileSync(path.join(projectRoot, "src/components/ProductGallery.tsx"), "utf8");
+  const responsiveImageFile = path.join(projectRoot, "src/components/ResponsiveProductImage.tsx");
+  assert.ok(existsSync(responsiveImageFile), "ResponsiveProductImage component must exist");
+  const responsiveImage = readFileSync(responsiveImageFile, "utf8");
+  assert.match(cards, /ResponsiveProductImage/);
+  assert.match(gallery, /ResponsiveProductImage/);
+  assert.match(responsiveImage, /<source[^>]+type="image\/webp"[^>]+srcSet=/s);
+  assert.match(responsiveImage, /<Image[\s\S]+src=\{image\.src\}/);
+  assert.match(responsiveImage, /fetchPriority=\{priority \? "high" : undefined\}/);
+  assert.doesNotMatch(responsiveImage, /priority=\{priority\}/);
+  assert.doesNotMatch(gallery, /image-metadata\.generated\.json/);
+  assert.doesNotMatch(responsiveImage, /image-metadata\.generated\.json/);
 });

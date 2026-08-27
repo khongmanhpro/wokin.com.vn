@@ -47,3 +47,13 @@ Mỗi response cần có `X-Content-Type-Options`, `Referrer-Policy`, `Permissio
 Ba URL legacy phải trả đúng `301` trong một bước, `Location` lần lượt là `/gioi-thieu/`, `/lien-he/`, `/nha-phan-phoi/`; request đầu tiên phải giữ `utm_source=legacy`. Ba URL đích phải trả `200`. Nếu LiteSpeed không đọc `mod_rewrite`, cấu hình cùng redirect matrix ở hPanel/CDN và kiểm tra lại trước khi phát hành.
 
 Sau đó mở Home, một danh mục, một sản phẩm, sản phẩm mới và Contact trên desktop/mobile; kiểm tra Network và Console không có CSP violation, JS/CSS/ảnh đều tải, search/menu hoạt động, JSON-LD vẫn hiện trong view source và parse được. Nếu CSP làm hỏng asset, rollback riêng file `.htaccess` về bản trước và điều tra directive cụ thể; không tắt toàn bộ header lâu dài.
+
+## Responsive product images cho static Hostinger
+
+`npm run build:images` đọc các media path duy nhất từ `src/data/catalog.generated.json`, kiểm tra từng file nguồn trong `public/images/products/`, rồi dùng Sharp đã có trong dependency tree để tạo WebP quality 82. Các nấc chuẩn là 320, 480, 640, 800 và 1200 px; pipeline chỉ giữ nấc không lớn hơn ảnh nguồn và thêm native width khi cần. Vì vậy ảnh 600 px tạo 320/480/600, ảnh 800 px tạo 320/480/640/800, ảnh 1800 px dừng ở 1200; không có upscale.
+
+Tên output deterministic dạng `public/images/products-responsive/<sku>/<stem>-w<width>.webp`. Thư mục này là build artifact bị Git ignore; `prebuild` tự chạy pipeline nên `npm run build` từ clean checkout luôn tái tạo đủ file trước static export. Metadata kích thước tối giản nằm ở `src/data/image-metadata.generated.json`; catalog dùng nó ở server/build time và chỉ truyền variants của đúng sản phẩm đang render vào gallery client.
+
+Pipeline dựng output trong thư mục tạm rồi mới thay thế thư mục generated hiện hành. Nếu source thiếu, metadata không hợp lệ hoặc Sharp thất bại, lệnh trả exit khác 0 và không publish bộ derivatives dở dang. Output JSON của lệnh báo `sourceFiles`, `sourceBytes`, `generatedFiles` và `derivativeBytes` để theo dõi dung lượng.
+
+Sau build, `npm run validate:export` kiểm tra mọi URL dưới `/images/products-responsive/` xuất hiện trong `srcset` hoặc `src` đều tồn tại trong `out/`. Ảnh gốc vẫn là `img src` fallback cho trình duyệt không chọn WebP hoặc media không có metadata local.

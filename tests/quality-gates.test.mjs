@@ -353,6 +353,25 @@ test("export validator rejects missing internal navigation targets", () => {
   }
 });
 
+test("export validator rejects broken responsive image derivative references", () => {
+  const fixture = makeExportFixture();
+  try {
+    const file = path.join(fixture.outDir, "san-pham/san-pham-1/index.html");
+    writeFileSync(
+      file,
+      readFileSync(file, "utf8").replace(
+        '<img src="/images/logo.png">',
+        '<picture><source type="image/webp" srcset="/images/products-responsive/SKU-1/0-w320.webp 320w, /images/products-responsive/SKU-1/0-w480.webp 480w"><img src="/images/logo.png"></picture>',
+      ),
+    );
+    const result = run(exportScript, exportArgs(fixture));
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /responsive image derivative.*0-w320\.webp/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
 test("static server smoke-check serves clean trailing-slash routes", () => {
   const fixture = makeExportFixture();
   try {

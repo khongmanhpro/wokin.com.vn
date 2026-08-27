@@ -2,13 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Category, Product } from "@/lib/catalog";
 import { glossary } from "@/lib/catalog";
+import { ResponsiveProductImage } from "@/components/ResponsiveProductImage";
 
 export function ProductCard({ product, isNew = false }: { product: Product; isNew?: boolean }) {
+  const image = product.images[0] ?? { src: "/images/logo.png", alt: product.name };
   return <article className="product-card">
     <Link href={`/san-pham/${product.slugVi}`} aria-label={product.name}>
       <div className="product-media">
         {isNew && <span className="badge-new">{glossary.ui.NEW}</span>}
-        <Image src={product.images[0]?.src ?? "/images/logo.png"} alt={product.name} width={500} height={500} sizes="(max-width: 767px) 50vw, (max-width: 1199px) 30vw, 280px" />
+        <ResponsiveProductImage image={image} alt={product.name} fallbackWidth={500} fallbackHeight={500} sizes="(max-width: 767px) 50vw, (max-width: 1199px) 30vw, 280px" />
       </div>
       <span className="product-name">{product.name}</span>
       <span className="sku">{glossary.ui.SKU}: {product.sku}</span>

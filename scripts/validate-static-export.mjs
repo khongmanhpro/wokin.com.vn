@@ -258,12 +258,27 @@ export function validateStaticExport(options) {
     if (/\b(?:www\.)?wokintools\.com\b/i.test(content)) errors.push(`Source-domain leak trong ${relativeFile}.`);
     if (path.extname(file) !== ".html") continue;
     const pageRoute = `/${path.relative(options.outDir, path.dirname(file)).split(path.sep).filter(Boolean).join("/")}${path.dirname(file) === options.outDir ? "" : "/"}`;
+    for (const match of content.matchAll(/\bsrcset=["']([^"']+)["']/gi)) {
+      for (const candidate of decodeHtml(match[1]).split(",")) {
+        const reference = candidate.trim().split(/\s+/, 1)[0];
+        if (!reference) continue;
+        let url;
+        try { url = new URL(reference, new URL(pageRoute, site)); } catch { errors.push(`Responsive image URL không parse được trong ${relativeFile}: ${reference}.`); continue; }
+        if (url.origin === site.origin && url.pathname.startsWith("/images/products-responsive/") && !targetExists(options.outDir, url.pathname)) {
+          errors.push(`Responsive image derivative target bị thiếu trong ${relativeFile}: ${url.pathname}.`);
+        }
+      }
+    }
     for (const match of content.matchAll(/\b(?:href|src)=["']([^"']+)["']/gi)) {
       const reference = decodeHtml(match[1]);
       if (!reference || reference.startsWith("#") || /^(?:mailto|tel|data|javascript):/i.test(reference)) continue;
       let url;
       try { url = new URL(reference, new URL(pageRoute, site)); } catch { errors.push(`URL nội bộ không parse được trong ${relativeFile}: ${reference}.`); continue; }
       if (url.origin !== site.origin) continue;
+      if (url.pathname.startsWith("/images/products-responsive/") && !targetExists(options.outDir, url.pathname)) {
+        errors.push(`Responsive image derivative target bị thiếu trong ${relativeFile}: ${url.pathname}.`);
+        continue;
+      }
       if (url.pathname.startsWith("/images/") || url.pathname.startsWith("/_next/")) continue;
       if (LEGACY_STATIC_ROUTES.has(routePath(url.toString()))) errors.push(`Internal URL dùng legacy route trong ${relativeFile}: ${url.pathname}.`);
       if (url.pathname.endsWith(".html")) errors.push(`Internal URL chứa .html trong ${relativeFile}: ${url.pathname}.`);

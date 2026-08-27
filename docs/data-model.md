@@ -5,7 +5,7 @@ Tài liệu này mô tả implementation Phase 6 hiện tại. Đây không ph�
 ## Quyền sở hữu dữ liệu
 
 - `data/` là source of truth được chỉnh tay và review.
-- `src/data/` là artifact được sinh bởi `npm run build:data`; không chỉnh tay bất kỳ file nào trong thư mục này.
+- `src/data/` là artifact generated; các file catalog được sinh bởi `npm run build:data`, còn `image-metadata.generated.json` được sinh bởi `npm run build:images`. Không chỉnh tay bất kỳ file nào trong thư mục này.
 - `npm run check:data` chạy cùng pipeline ở chế độ kiểm tra, dựng lại nội dung mong đợi trong bộ nhớ rồi so sánh byte-for-byte với `src/data/`. Lệnh thất bại khi file generated bị thiếu, cũ, bị sửa tay, hoặc khi duplicate generated cũ còn tồn tại.
 - Runtime hiện đọc snapshot tĩnh trong `src/data/`; dự án chưa có runtime database hoặc CMS. PostgreSQL chỉ là hướng migration tương lai, không thuộc Phase 6.
 
@@ -35,12 +35,15 @@ Các file archive/hỗ trợ khác có thể cùng tồn tại trong `data/`, nh
 | --- | --- |
 | `catalog.generated.json` | Snapshot normalized dùng bởi catalog runtime. |
 | `categories.json` | Bản generated ổn định của category input, dùng bởi UI. |
-| `products_vi.json` | Bản generated ổn định của translation input, dùng bởi UI/search. |
+| `products_vi.json` | Bản generated ổn định của translation input, phục vụ compatibility output và các tooling cần bản dịch gọn. |
 | `vi-glossary.json` | Glossary generated; trường `_comment` của raw input bị loại. |
 | `README.md` | Cảnh báo không chỉnh tay, schema version và output checksum hiện hành. |
 | `catalog-data.checksums.json` | Inventory checksum nguồn/output, counts và schema version. |
+| `image-metadata.generated.json` | Map server-only tối giản từ URL ảnh nguồn tới `[width, height, sourceSha256]`; pipeline responsive image dùng dữ liệu này để tạo đúng `srcset` mà không đưa manifest toàn catalog vào client. |
 
 Pipeline chủ động xóa và `check:data` chủ động từ chối các duplicate generated cũ: `src/data/products.json`, `src/data/product_dates.json` và `src/data/image_manifest.json`.
+
+`image-metadata.generated.json` thuộc pipeline ảnh độc lập và không nằm trong `catalog-data.checksums.json`. `npm run build` luôn chạy `prebuild` → `build:images`, nên clean checkout sẽ tái tạo metadata cùng các WebP trước khi Next.js static export đọc chúng.
 
 ## Snapshot normalized
 

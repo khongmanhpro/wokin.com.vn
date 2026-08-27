@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "prebuild": "npm run build:images",
+    "build:images": "node scripts/build-responsive-images.mjs",
     "build:data": "node scripts/build-catalog-data.mjs",
     "check:data": "node scripts/build-catalog-data.mjs --check",
     "start": "next start",
