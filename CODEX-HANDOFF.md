@@ -92,48 +92,62 @@ Checkpoint:
 7072549 fix: make contact page production-safe
 ```
 
-### Phase 8 — performance và search scalability (đang thực hiện)
+### Phase 8 — performance và search scalability
 
-Đã hoàn thành phần search payload bằng triển khai thủ công sau khi Codex bị quota limit; chưa nghiệm thu toàn phase.
+Đã hoàn thành bằng triển khai kết hợp Codex và remediation thủ công. Codex bị treo sau khi ghi implementation image pipeline; process đã được dừng an toàn, sau đó diff, tests và artifact được kiểm tra độc lập.
 
 Đã thực hiện:
 
 - Tạo generated `src/data/search-index.json` chỉ gồm `id`, `sku`, `name`, `slug`, `categories`.
 - Header không còn import `products_vi.json` hoặc catalog giàu dữ liệu.
 - Search index được lazy-load khi mở search bằng dynamic import.
-- Thêm regression tests cho schema index, tìm theo tên/SKU, lazy import và image sizing.
-- Thêm `sizes` cho product cards, category cards và product gallery.
+- Search vẫn tìm theo tên tiếng Việt và SKU.
+- Tạo `scripts/build-responsive-images.mjs` dùng Sharp, các nấc 320/480/640/800/1200 và native width khi cần.
+- Không upscale ảnh nguồn nhỏ; output WebP deterministic dưới `public/images/products-responsive/`.
+- Tạo `src/data/image-metadata.generated.json` server-only với dimensions và source SHA-256.
+- Dùng `<picture>`/WebP `srcset` thật trong ProductCard và ProductGallery; ảnh gốc là fallback.
+- `npm run build` tự chạy `prebuild` → `build:images`; pipeline cache không encode lại khi source/derivatives hợp lệ.
+- Validator kiểm tra mọi derivative URL trong artifact có target tồn tại.
+- Thêm regression tests cho search, no-upscale, naming, manifest, missing source và broken derivative.
 
-Verification phần đã làm:
+Verification:
 
 ```text
-npm test                 PASS — 39 tests
+npm test                 PASS — 47 tests
 npm run typecheck        PASS
 npm run validate:data    PASS
 npm run check:data       PASS
+npm run build:images     PASS — 1717 sources / 5611 derivatives
 npm run build            PASS — 1452 static pages
-npm run validate:export  PASS — 1447 routes / 4660 artifacts
+npm run validate:export  PASS — 1447 routes / 10271 artifacts
 npm audit --json         PASS — 0 vulnerabilities
-search chunk             209219 raw / 35135 gzip
 ```
 
-Commit phần đã làm:
+Image measurement:
 
 ```text
-f8573ff perf: lazy-load catalog search index
+source images            1717 files / 75,656,917 bytes
+responsive derivatives   5611 files / 86,738,866 bytes
+search lazy chunk        209219 raw / 35135 gzip
 ```
 
-Blocker/risk còn lại:
+Checkpoint:
 
-- `images.unoptimized: true` trong static export nên `sizes` chưa tự tạo `srcset`.
-- Chưa có pipeline responsive image derivatives WebP/AVIF; không được tuyên bố Phase 8 hoàn tất cho tới khi xử lý hoặc chấp nhận rủi ro này bằng quyết định riêng.
-- Codex CLI bị usage limit trong lần giao Phase 8; không có source diff dở dang từ lần đó.
+```text
+5a69f36 perf: add static responsive image derivatives
+```
 
-## Phase tiếp theo sau khi hoàn tất Phase 8
+Residual risk không chặn Phase 9:
+
+- Hero/StaticHero/DistributorCta vẫn dùng ảnh product gốc cho full-bleed background; có thể tối ưu tiếp nếu Lighthouse chứng minh đây là bottleneck.
+- Chưa chạy Lighthouse/visual side-by-side/accessibility gate; thuộc Phase 9 và Phase 11.
+- Responsive derivatives nằm trong build artifact và bị Git ignore; clean checkout phải chạy `npm run build` trước khi upload `out/`.
+
+## Phase tiếp theo
 
 ### Phase 9 — accessibility và interaction hardening
 
-Chỉ chuyển sang Phase 9 sau khi quyết định/triển khai image derivative pipeline và chạy lại full gate.
+Bắt đầu sau khi Phase 8 đã pass full gate; ưu tiên focus trap, Escape/restore focus, aria-live, reduced motion và keyboard interaction.
 
 ## Historical acceptance — Phase 4
 
