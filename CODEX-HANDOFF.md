@@ -143,11 +143,49 @@ Residual risk không chặn Phase 9:
 - Chưa chạy Lighthouse/visual side-by-side/accessibility gate; thuộc Phase 9 và Phase 11.
 - Responsive derivatives nằm trong build artifact và bị Git ignore; clean checkout phải chạy `npm run build` trước khi upload `out/`.
 
+## Phase 9 — accessibility và interaction hardening
+
+Đã hoàn thành với phạm vi Header search/mobile drawer, HeroSlider và global interaction styles.
+
+Đã thực hiện:
+
+- Search dialog và mobile drawer dùng `role="dialog"`, `aria-modal`, accessible label và `aria-expanded`/`aria-controls`.
+- Focus tự động vào input/close control khi mở; Escape và close button đóng; focus restore về trigger.
+- Tab/Shift+Tab loop trong dialog/drawer; background siblings được đặt `inert` + `aria-hidden` trong lifecycle modal.
+- Search status dùng `role="status"`, `aria-live="polite"`, `aria-atomic` và copy loading/no-result/result count.
+- HeroSlider có carousel/slide semantics, trạng thái slide hiện tại, Arrow/Home/End, pause/resume và disabled autoplay khi `prefers-reduced-motion: reduce`.
+- Slide không hiện được đánh dấu `aria-hidden` + `inert` để link ẩn không lọt vào keyboard order.
+- Global focus-visible style, touch target tối thiểu 44px cho control chính và reduced-motion CSS fallback.
+- Thêm `tests/accessibility-interactions.test.mjs` với static assertions và focus-loop harness tối thiểu.
+
+Verification:
+
+```text
+npm test                 PASS — 52 tests
+npm run typecheck        PASS
+npm run validate:data    PASS
+npm run check:data       PASS
+npm run build            PASS — 1452 static pages
+npm run validate:export  PASS — 1447 routes / 10271 artifacts
+npm audit --json         PASS — 0 vulnerabilities
+```
+
+Checkpoint:
+
+```text
+f37c632 a11y: harden keyboard interactions
+```
+
+Giới hạn đã biết:
+
+- Chưa chạy axe/Lighthouse hoặc browser E2E thực tế; test mới là source assertions và DOM focus-loop harness, không thay thế audit runtime.
+- Cần visual/accessibility manual audit desktop/mobile ở Phase 11.
+
 ## Phase tiếp theo
 
-### Phase 9 — accessibility và interaction hardening
+### Phase 10 — CI, deploy artifact và release checklist
 
-Bắt đầu sau khi Phase 8 đã pass full gate; ưu tiên focus trap, Escape/restore focus, aria-live, reduced motion và keyboard interaction.
+Ưu tiên reproducible build, CI gates, artifact/deployment verification và tài liệu release; không tự deploy/push.
 
 ## Historical acceptance — Phase 4
 
