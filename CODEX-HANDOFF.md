@@ -86,38 +86,54 @@ npm audit --json         PASS — 0 vulnerabilities
 - Thêm `tests/contact-safety.test.mjs`.
 - Cập nhật `DEPLOYMENT.md` với decision gate và điều kiện cần trước khi kích hoạt backend.
 
-Verification:
+Checkpoint:
 
 ```text
-npm test                 PASS — 36 tests
+7072549 fix: make contact page production-safe
+```
+
+### Phase 8 — performance và search scalability (đang thực hiện)
+
+Đã hoàn thành phần search payload bằng triển khai thủ công sau khi Codex bị quota limit; chưa nghiệm thu toàn phase.
+
+Đã thực hiện:
+
+- Tạo generated `src/data/search-index.json` chỉ gồm `id`, `sku`, `name`, `slug`, `categories`.
+- Header không còn import `products_vi.json` hoặc catalog giàu dữ liệu.
+- Search index được lazy-load khi mở search bằng dynamic import.
+- Thêm regression tests cho schema index, tìm theo tên/SKU, lazy import và image sizing.
+- Thêm `sizes` cho product cards, category cards và product gallery.
+
+Verification phần đã làm:
+
+```text
+npm test                 PASS — 39 tests
 npm run typecheck        PASS
 npm run validate:data    PASS
 npm run check:data       PASS
 npm run build            PASS — 1452 static pages
-npm run validate:export  PASS — 1447 routes / 4659 artifacts
+npm run validate:export  PASS — 1447 routes / 4660 artifacts
 npm audit --json         PASS — 0 vulnerabilities
+search chunk             209219 raw / 35135 gzip
 ```
 
-Artifact contact check:
+Commit phần đã làm:
 
 ```text
-/lien-he/                target exists
-contact form controls   absent
-CTA /san-pham/          present
-CTA /nha-phan-phoi/     present
+f8573ff perf: lazy-load catalog search index
 ```
 
-Checkpoint:
+Blocker/risk còn lại:
 
-```text
-fc4b430 fix: make contact page production-safe
-```
+- `images.unoptimized: true` trong static export nên `sizes` chưa tự tạo `srcset`.
+- Chưa có pipeline responsive image derivatives WebP/AVIF; không được tuyên bố Phase 8 hoàn tất cho tới khi xử lý hoặc chấp nhận rủi ro này bằng quyết định riêng.
+- Codex CLI bị usage limit trong lần giao Phase 8; không có source diff dở dang từ lần đó.
 
-## Phase tiếp theo
+## Phase tiếp theo sau khi hoàn tất Phase 8
 
-### Phase 8 — performance và search scalability
+### Phase 9 — accessibility và interaction hardening
 
-Mục tiêu tiếp theo là giảm client payload và ảnh tải thừa nhưng vẫn giữ static export. Không import toàn bộ catalog giàu dữ liệu vào Header client component; search index chỉ chứa field cần thiết và phải có số đo payload trước/sau.
+Chỉ chuyển sang Phase 9 sau khi quyết định/triển khai image derivative pipeline và chạy lại full gate.
 
 ## Historical acceptance — Phase 4
 
