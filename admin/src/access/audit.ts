@@ -4,24 +4,41 @@ import { isActiveAdmin } from './hasCapability'
 
 const sensitiveKeyPattern = /(password|passphrase|secret|token|authorization|cookie|api[-_]?key|hash|salt|session)/i
 
+const MAX_AUDIT_DEPTH = 8
+const MAX_AUDIT_ARRAY_ITEMS = 100
+const MAX_AUDIT_OBJECT_KEYS = 100
+const MAX_AUDIT_STRING_LENGTH = 2048
+
+function truncateAuditString(value: string): string {
+  if (value.length <= MAX_AUDIT_STRING_LENGTH) return value
+  return `${value.slice(0, MAX_AUDIT_STRING_LENGTH)}[TRUNCATED: ${value.length} chars]`
+}
+
 export function sanitizeAuditValue(value: unknown, depth = 0): unknown {
-  if (depth > 8) return '[MAX_DEPTH]'
-  if (Array.isArray(value)) return value.slice(0, 100).map((item) => sanitizeAuditValue(item, depth + 1))
+  if (depth > MAX_AUDIT_DEPTH) return '[MAX_DEPTH]'
+  if (typeof value === 'string') return truncateAuditString(value)
   if (!value || typeof value !== 'object') return value
   if (value instanceof Date) return value.toISOString()
+  if (Array.isArray(value)) {
+    const sanitized = value.slice(0, MAX_AUDIT_ARRAY_ITEMS).map((item) => sanitizeAuditValue(item, depth + 1))
+    if (value.length > MAX_AUDIT_ARRAY_ITEMS) sanitized.push(`[TRUNCATED: ${value.length - MAX_AUDIT_ARRAY_ITEMS} items]`)
+    return sanitized
+  }
 
+  const entries = Object.entries(value)
   const sanitized: Record<string, unknown> = {}
-  for (const [key, nestedValue] of Object.entries(value)) {
+  for (const [key, nestedValue] of entries.slice(0, MAX_AUDIT_OBJECT_KEYS)) {
     sanitized[key] = sensitiveKeyPattern.test(key) ? '[REDACTED]' : sanitizeAuditValue(nestedValue, depth + 1)
   }
+  if (entries.length > MAX_AUDIT_OBJECT_KEYS) sanitized.__truncatedKeys = `[TRUNCATED: ${entries.length - MAX_AUDIT_OBJECT_KEYS} keys]`
   return sanitized
 }
 
 function requestMetadata(req: PayloadRequest) {
   const requestId = req.headers?.get('x-request-id') || undefined
-  const forwardedFor = req.headers?.get('x-forwarded-for')?.split(',')[0]?.trim()
-  const ip = (req as PayloadRequest & { ip?: string }).ip || forwardedFor || undefined
-  return { ip, requestId }
+  const rawIp = (req as PayloadRequest & { ip?: unknown }).ip
+  const ip = typeof rawIp === 'string' && rawIp.trim() ? rawIp.trim() : undefined
+  return { ip, requestId: requestId ? truncateAuditString(requestId) : undefined }
 }
 
 type AuditEventArgs = {

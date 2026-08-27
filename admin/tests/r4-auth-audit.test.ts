@@ -40,32 +40,84 @@ test('AuditEvents are API-immutable and accept create only from authenticated in
   } as any), true)
 })
 
-test('audit payload records actor/entity/event/time/request metadata and redacts secret material recursively', () => {
-  const request = {
-    headers: new Headers({ 'x-forwarded-for': '203.0.113.7', 'x-request-id': 'req-42' }),
-    user: { active: true, id: 'actor-1', role: 'admin' },
-  } as any
+test('audit metadata ignores client-controlled forwarded IP and preserves framework-derived IP', () => {
+  const common = {
+    after: { title: 'After' },
+    entityId: 'entity-1',
+    entityType: 'products',
+    eventType: 'products.update',
+  }
+  const spoofed = buildAuditEvent({
+    ...common,
+    req: {
+      headers: new Headers({ 'x-forwarded-for': '203.0.113.7', 'x-request-id': 'req-42' }),
+      user: { active: true, id: 'actor-1', role: 'admin' },
+    } as any,
+  })
+  const trusted = buildAuditEvent({
+    ...common,
+    req: {
+      headers: new Headers({ 'x-forwarded-for': '198.51.100.9', 'x-request-id': 'req-43' }),
+      ip: '203.0.113.8',
+      user: { active: true, id: 'actor-1', role: 'admin' },
+    } as any,
+  })
+
+  assert.equal(spoofed.actor, 'actor-1')
+  assert.equal(spoofed.entityType, 'products')
+  assert.equal(spoofed.entityId, 'entity-1')
+  assert.equal(spoofed.eventType, 'products.update')
+  assert.ok(!Number.isNaN(Date.parse(spoofed.occurredAt)))
+  assert.equal(spoofed.ip, undefined)
+  assert.equal(spoofed.requestId, 'req-42')
+  assert.equal(trusted.ip, '203.0.113.8')
+  assert.equal(trusted.requestId, 'req-43')
+
+  const actorField = AuditEvents.fields.find((field) => 'name' in field && field.name === 'actor')
+  assert.equal(actorField && 'required' in actorField ? actorField.required : undefined, true)
+})
+
+test('audit request ID is bounded correlation metadata', () => {
   const event = buildAuditEvent({
-    after: { nested: { token: 'do-not-leak-token' }, title: 'After' },
+    entityId: 'entity-1',
+    entityType: 'products',
+    eventType: 'products.update',
+    req: {
+      headers: new Headers({ 'x-request-id': 'request-id-'.repeat(300) }),
+      user: { active: true, id: 'actor-1', role: 'admin' },
+    } as any,
+  })
+
+  assert.equal(event.ip, undefined)
+  assert.match(event.requestId ?? '', /\[TRUNCATED: 3300 chars\]$/)
+})
+
+test('audit payload redacts secrets before bounding strings, arrays, and object keys', () => {
+  const oversizedObject = Object.fromEntries(Array.from({ length: 101 }, (_, index) => [`field-${index}`, index]))
+  const event = buildAuditEvent({
+    after: {
+      nested: { token: 'do-not-leak-token' },
+      rows: Array.from({ length: 101 }, (_, index) => index),
+      title: 'x'.repeat(2049),
+      ...oversizedObject,
+    },
     before: { password: 'do-not-leak-password', title: 'Before' },
     entityId: 'entity-1',
     entityType: 'products',
     eventType: 'products.update',
-    req: request,
+    req: {
+      headers: new Headers(),
+      ip: '203.0.113.8',
+      user: { active: true, id: 'actor-1', role: 'admin' },
+    } as any,
   })
 
-  assert.equal(event.actor, 'actor-1')
-  assert.equal(event.entityType, 'products')
-  assert.equal(event.entityId, 'entity-1')
-  assert.equal(event.eventType, 'products.update')
-  assert.equal(event.requestId, 'req-42')
-  assert.equal(event.ip, '203.0.113.7')
-  assert.ok(!Number.isNaN(Date.parse(event.occurredAt)))
   assert.doesNotMatch(JSON.stringify(event), /do-not-leak-token|do-not-leak-password/)
   assert.deepEqual(sanitizeAuditValue({ password: 'x', safe: 'ok' }), { password: '[REDACTED]', safe: 'ok' })
-
-  const actorField = AuditEvents.fields.find((field) => 'name' in field && field.name === 'actor')
-  assert.equal(actorField && 'required' in actorField ? actorField.required : undefined, true)
+  assert.match(String((event.after as any).title), /\[TRUNCATED: 2049 chars\]$/)
+  assert.equal((event.after as any).nested.token, '[REDACTED]')
+  assert.equal((event.after as any).rows.at(-1), '[TRUNCATED: 1 items]')
+  assert.equal((event.after as any).__truncatedKeys, '[TRUNCATED: 4 keys]')
 })
 
 test('GraphQL remains disabled and every registered admin collection has explicit access control', async () => {
