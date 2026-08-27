@@ -7,7 +7,8 @@ import { Products } from '../src/collections/Products.js'
 import { ProductSkuCell } from '../src/components/ProductSkuCell.js'
 
 function field(collection: CollectionConfig, name: string) {
-  return collection.fields.find((candidate) => 'name' in candidate && candidate.name === name)
+  return collection.fields.flatMap((candidate) => candidate.type === 'tabs' ? candidate.tabs.flatMap((tab) => tab.fields) : [candidate])
+    .find((candidate) => 'name' in candidate && candidate.name === name)
 }
 
 test('R5.1 configures the native Products list for catalog triage', () => {

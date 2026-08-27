@@ -7,8 +7,15 @@ import { Categories } from '../src/collections/Categories.js'
 import { Media } from '../src/collections/Media.js'
 import { Products } from '../src/collections/Products.js'
 
+function allFields(fields: CollectionConfig['fields']): CollectionConfig['fields'] {
+  return fields.flatMap((field) => {
+    if (field.type === 'tabs') return allFields(field.tabs.flatMap((tab) => tab.fields))
+    return [field]
+  })
+}
+
 function fieldNames(collection: CollectionConfig) {
-  return new Set(collection.fields.map((field) => 'name' in field ? field.name : undefined).filter(Boolean))
+  return new Set(allFields(collection.fields).map((field) => 'name' in field ? field.name : undefined).filter(Boolean))
 }
 
 test('R3 registers only the catalog model and migration-contract foundation collections', async () => {
@@ -27,9 +34,9 @@ test('products expose production identity, lifecycle, Vietnamese content, struct
     'publishedAt', 'seo', 'sourceMetadata',
   ]) assert.ok(names.has(name), name)
 
-  const legacySourceId = Products.fields.find((field) => 'name' in field && field.name === 'legacySourceId')
-  const sku = Products.fields.find((field) => 'name' in field && field.name === 'sku')
-  const status = Products.fields.find((field) => 'name' in field && field.name === 'status')
+  const legacySourceId = allFields(Products.fields).find((field) => 'name' in field && field.name === 'legacySourceId')
+  const sku = allFields(Products.fields).find((field) => 'name' in field && field.name === 'sku')
+  const status = allFields(Products.fields).find((field) => 'name' in field && field.name === 'status')
   assert.equal(legacySourceId && 'unique' in legacySourceId ? legacySourceId.unique : undefined, true)
   assert.equal(legacySourceId && 'index' in legacySourceId ? legacySourceId.index : undefined, true)
   assert.notEqual(sku && 'unique' in sku ? sku.unique : undefined, true)
