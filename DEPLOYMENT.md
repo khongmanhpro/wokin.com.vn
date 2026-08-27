@@ -15,6 +15,12 @@
 
 Không upload HTML cho ba route legacy và không thêm redirect product/category nếu chưa có mapping được xác minh từ dữ liệu local.
 
+## Decision gate cho kênh liên hệ
+
+Route canonical `/lien-he/` hiện chỉ hiển thị trạng thái chưa kích hoạt và CTA nội bộ; trang không có form, không thu thập hoặc gửi PII. Không thêm lại form, `mailto:` giả, endpoint, provider, API key hay thông báo gửi thành công trước khi đơn vị vận hành phê duyệt đích nhận lead và quy trình dữ liệu.
+
+Muốn kích hoạt contact flow phải có quyết định riêng về backend/provider, server-side validation, chống spam/rate limit, privacy/consent, quản lý secret và kiểm thử success/failure thực tế. Cho đến khi gate đó hoàn tất, artifact production phải giữ trạng thái CTA-only.
+
 ## Chính sách header
 
 `.htaccess` thiết lập `nosniff`, referrer policy, permissions policy, `X-Frame-Options: SAMEORIGIN` và CSP có `frame-ancestors 'self'`. CSP không có `unsafe-eval`; `object-src 'none'` và `frame-src 'none'` chặn plugin/frame không được dùng bởi catalog.

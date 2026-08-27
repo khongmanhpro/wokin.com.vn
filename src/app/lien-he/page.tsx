@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { StaticHero } from "@/components/StaticHero";
-import { getProductsByCategory, glossary } from "@/lib/catalog";
-import { countries } from "@/lib/countries";
+import { getProductsByCategory } from "@/lib/catalog";
 
 const title = "Liên hệ";
-const description = "Gửi yêu cầu tư vấn sản phẩm và hợp tác phân phối WOKIN TOOLS.";
+const description = "Thông tin về trạng thái kênh liên hệ và các nội dung WOKIN TOOLS hiện có tại Việt Nam.";
 const canonical = "/lien-he/";
 
 export const metadata: Metadata = {
@@ -26,27 +26,21 @@ const distributors = [
 export default function ContactPage() {
   const hero = getProductsByCategory("mechanics-tools")[0]?.images[0]?.src ?? "/images/logo.png";
   return <main>
-    <StaticHero title="LIÊN HỆ WOKIN" image={hero} eyebrow="CHÚNG TÔI LUÔN SẴN SÀNG" />
+    <StaticHero title="LIÊN HỆ WOKIN" image={hero} eyebrow="THÔNG TIN KÊNH HỖ TRỢ" />
     <Breadcrumb items={[{ label: "Liên hệ" }]} />
     <section className="section container-wokin contact-layout">
       <div>
-        <span className="eyebrow">CONTACT FORM WOKIN</span>
-        <h2 className="contact-title">{glossary.ui["Submit a Request"]}</h2>
-        <form className="form-grid">
-          <label className="field">{glossary.ui["First Name"]}<input className="input" name="firstName" autoComplete="given-name" required /></label>
-          <label className="field">{glossary.ui["Last Name"]}<input className="input" name="lastName" autoComplete="family-name" required /></label>
-          <label className="field">{glossary.ui.Email}<input className="input" type="email" name="email" autoComplete="email" required /></label>
-          <label className="field">{glossary.ui["WhatsApp Number"]}<input className="input" type="tel" name="phone" autoComplete="tel" /></label>
-          <label className="field full">{glossary.ui["Country or Region"]}<select className="input" name="country" defaultValue=""><option value="" disabled>{glossary.ui["Select Country or Region"]}</option>{countries.map((country) => <option value={country.code} key={country.code}>{country.name}</option>)}</select></label>
-          <label className="field full">{glossary.ui["Company Name"]}<input className="input" name="company" autoComplete="organization" /></label>
-          <label className="field full">{glossary.ui.Subject}<input className="input" name="subject" required /></label>
-          <label className="field full">{glossary.ui["Your Message"]}<textarea className="input textarea" name="message" required /></label>
-          <div className="field full"><button type="button" className="button-primary">{glossary.ui.SUBMIT}</button><small>Biểu mẫu đang ở chế độ giao diện; chức năng gửi sẽ được kết nối sau.</small></div>
-        </form>
+        <span className="eyebrow">KÊNH LIÊN HỆ WOKIN</span>
+        <h2 className="contact-title">LIÊN HỆ TRỰC TUYẾN CHƯA ĐƯỢC KÍCH HOẠT</h2>
+        <p className="archive-intro">Kênh tiếp nhận yêu cầu đang chờ một hệ thống backend được phê duyệt và cấu hình chính thức. Trong thời gian này, trang không yêu cầu bạn nhập thông tin hoặc dữ liệu cá nhân.</p>
+        <div className="form-grid">
+          <Link className="button-primary" href="/san-pham/">Xem danh mục sản phẩm</Link>
+          <Link className="button-primary" href="/nha-phan-phoi/">Thông tin nhà phân phối</Link>
+        </div>
       </div>
       <aside className="contact-panel">
-        <h2>{glossary.ui["Reach Us For Any Question"]}</h2>
-        <div className="contact-list"><p>Vui lòng gửi yêu cầu qua biểu mẫu. Đơn vị vận hành tại Việt Nam sẽ phản hồi theo thông tin bạn cung cấp.</p></div>
+        <h2>TRẠNG THÁI TIẾP NHẬN</h2>
+        <div className="contact-list"><p>Hiện chưa có form, email hoặc đầu mối trực tuyến chính thức để nhận yêu cầu từ website này. Chúng tôi sẽ cập nhật trang khi kênh liên hệ được xác minh và sẵn sàng vận hành.</p></div>
       </aside>
     </section>
     <section className="section distributor-section"><div className="container-wokin"><div className="section-head"><h2 className="section-title">MẠNG LƯỚI PHÂN PHỐI</h2><p className="subtitle">Các đối tác chính thức trên toàn cầu</p></div><div className="distributor-grid">{distributors.map(([distributorTitle, company, address, phone]) => <article className="distributor-card" key={distributorTitle}><h3>{distributorTitle}</h3><strong>{company}</strong><p>{address}</p><p>Điện thoại: {phone}</p></article>)}</div></div></section>
