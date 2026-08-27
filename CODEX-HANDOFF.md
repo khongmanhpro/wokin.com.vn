@@ -71,25 +71,26 @@ npm audit --json         PASS — 0 vulnerabilities
 
 ## Phase đã nghiệm thu gần nhất
 
-### Phase 4 — URL tiếng Việt, redirect, robots
+### Phase 5 — duplicate product metadata và Product structured data
 
-Đã hoàn thành bằng Codex `gpt-5.6-sol` với reasoning effort `medium`. Codex model `terra` đã được thử trước đó nhưng backend từ chối vì không hỗ trợ với ChatGPT account.
+Đã hoàn thành bằng Codex `gpt-5.6-sol` với reasoning effort `medium`.
 
 Đã thực hiện:
 
-- Chuyển `/about/` thành `/gioi-thieu/`.
-- Chuyển `/contact/` thành `/lien-he/`.
-- Chuyển `/distributors/` thành `/nha-phan-phoi/`.
-- Thêm redirect Apache 301 một bước, giữ query string mặc định.
-- Cập nhật internal links, metadata, canonical, OpenGraph và sitemap.
-- Bỏ `Disallow: /_next/`; giữ `Disallow: /api/`.
-- Không tạo HTML output cho route legacy.
-- Thêm regression tests cho route/canonical/robots/redirect.
+- Tên sản phẩm unique được giữ nguyên.
+- Tên trùng được phân biệt bằng SKU nếu SKU duy nhất trong nhóm.
+- Nhóm trùng cả tên và SKU được phân biệt bằng source product ID.
+- Không đổi `slug_vi`, không dịch lại hàng loạt và không bịa thông số.
+- Product title, H1, meta description và JSON-LD dùng cùng tên SEO deterministic.
+- Product JSON-LD có `name`, `sku` khi có giá trị, `image`, `description`, `brand`, `url`.
+- Không thêm `offers`, `price`, `availability`, `review` hoặc `aggregateRating`.
+- Validator chuyển duplicate title/H1 và Product JSON-LD lỗi thành hard failure.
+- Thêm regression tests cho uniqueness, Product JSON-LD và SKU rỗng.
 
 Verification:
 
 ```text
-npm test                 PASS — 18 tests
+npm test                 PASS — 24 tests
 npm run typecheck        PASS
 npm run validate:data    PASS — 1357 products / 30 categories / 1720 images
 npm run build            PASS — 1452 static pages
@@ -97,28 +98,28 @@ npm run validate:export  PASS — 1447 routes / 4659 artifacts
 npm audit --json         PASS — 0 vulnerabilities
 ```
 
-Artifact checks:
+Export validator summary:
 
 ```text
-/gioi-thieu/       HTTP 200 target exists
-/lien-he/          HTTP 200 target exists
-/nha-phan-phoi/    HTTP 200 target exists
-/about/            no HTML output
-/contact/          no HTML output
-/distributors/     no HTML output
-sitemap            1447 URLs, no legacy routes
-robots             /_next/ allowed, /api/ disallowed
+1357 product routes
+0 duplicate product title groups
+0 duplicate product H1 groups
+1357 Product JSON-LD records validated
 ```
 
-Checkpoint tiếp theo được tạo sau khi review diff độc lập.
+Checkpoint:
+
+```text
+7d096b0 fix: make product metadata unique and factual
+```
 
 ## Phase tiếp theo
 
-### Phase 5 — duplicate product metadata
+### Phase 6 — source of truth và data schema
 
-Mục tiêu tiếp theo là xử lý 121 nhóm duplicate product title/metadata mà không làm mất SKU, thông số kỹ thuật hoặc URL hiện tại. Không bắt đầu Phase 5 nếu chưa kiểm tra Git và đọc lại roadmap.
+Mục tiêu tiếp theo là loại bỏ nguy cơ drift giữa `data/` và `src/data/`, chuẩn hóa schema/import contract và vẫn giữ static build hiện tại. Không bắt đầu Phase 6 nếu chưa kiểm tra Git và đọc lại phần Phase 6 trong roadmap.
 
-## Prompt/acceptance Phase 4
+## Historical acceptance — Phase 4
 
 Mục tiêu:
 

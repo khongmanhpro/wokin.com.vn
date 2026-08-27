@@ -7,8 +7,6 @@ const STATIC_ROUTES = ["/", "/san-pham/", "/san-pham-moi/", "/gp20v/", "/gioi-th
 const LEGACY_STATIC_ROUTES = new Set(["/about/", "/contact/", "/distributors/"]);
 const PRODUCTS_PER_PAGE = 20;
 const TEXT_EXTENSIONS = new Set([".html", ".js", ".json", ".xml", ".txt", ".css", ".map"]);
-// TODO Phase 5: remove this temporary allowance after product titles become unique.
-const TEMPORARILY_ALLOW_DUPLICATE_PRODUCT_TITLES = true;
 
 function parseArgs(argv) {
   const options = {
@@ -86,6 +84,30 @@ function titleFromHtml(html) {
   return decodeHtml(html.match(/<title>([\s\S]*?)<\/title>/i)?.[1]?.trim() ?? "");
 }
 
+function metaDescriptionFromHtml(html) {
+  const tags = html.match(/<meta\b[^>]*>/gi) ?? [];
+  const description = tags.find((tag) => /\bname=["']description["']/i.test(tag));
+  return decodeHtml(description?.match(/\bcontent=["']([^"']*)["']/i)?.[1]?.trim() ?? "");
+}
+
+function h1FromHtml(html) {
+  const matches = [...html.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)];
+  return matches.map((match) => decodeHtml(match[1].replace(/<[^>]*>/g, "").trim()));
+}
+
+function jsonLdFromHtml(html, route, errors) {
+  const values = [];
+  for (const match of html.matchAll(/<script\b[^>]*\btype=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try {
+      const parsed = JSON.parse(match[1]);
+      values.push(...(Array.isArray(parsed) ? parsed : [parsed]));
+    } catch (error) {
+      errors.push(`JSON-LD không parse được cho ${route}: ${error.message}.`);
+    }
+  }
+  return values;
+}
+
 function targetExists(outDir, pathname) {
   let decoded;
   try {
@@ -106,9 +128,16 @@ export function validateStaticExport(options) {
   const reports = [];
   if (!existsSync(options.outDir)) return { errors: [`Export directory không tồn tại: ${options.outDir}.`], reports };
   const site = new URL(options.siteUrl);
-  const { routes, translations } = expectedRoutes(options.dataDir);
+  const { routes, products, translations } = expectedRoutes(options.dataDir);
   const productRoutes = new Set(translations.map((translation) => `/san-pham/${translation.slug_vi}/`));
+  const productById = new Map(products.map((product) => [product.id, product]));
+  const productByRoute = new Map(translations.map((translation) => [
+    `/san-pham/${translation.slug_vi}/`,
+    productById.get(translation.id),
+  ]));
   const productTitles = new Map();
+  const productH1s = new Map();
+  let validProductJsonLd = 0;
 
   for (const route of LEGACY_STATIC_ROUTES) {
     const file = htmlFileForRoute(options.outDir, route);
@@ -130,6 +159,52 @@ export function validateStaticExport(options) {
       const title = titleFromHtml(html);
       if (!title) errors.push(`Product title trống cho ${route}.`);
       productTitles.set(route, title);
+      const descriptions = metaDescriptionFromHtml(html);
+      if (!descriptions) errors.push(`Meta description trống cho ${route}.`);
+      const h1s = h1FromHtml(html);
+      if (h1s.length !== 1 || !h1s[0]) errors.push(`Product H1 không hợp lệ cho ${route}: found ${h1s.length}.`);
+      else {
+        productH1s.set(route, h1s[0]);
+        if (title !== `${h1s[0]} | WOKIN TOOLS`) errors.push(`Product title không khớp H1 cho ${route}: ${title}.`);
+      }
+
+      const jsonLd = jsonLdFromHtml(html, route, errors);
+      const productRecords = jsonLd.filter((record) => record && typeof record === "object" && record["@type"] === "Product");
+      if (productRecords.length !== 1) errors.push(`Product JSON-LD không hợp lệ cho ${route}: found ${productRecords.length} Product record(s).`);
+      else {
+        const record = productRecords[0];
+        const sourceProduct = productByRoute.get(route);
+        const expectedSku = sourceProduct?.sku?.trim() ?? "";
+        const requiredStringFields = ["name", "description", "url"];
+        for (const field of requiredStringFields) {
+          if (typeof record[field] !== "string" || !record[field].trim()) errors.push(`Product JSON-LD thiếu ${field} cho ${route}.`);
+        }
+        if (record.name !== h1s[0]) errors.push(`Product JSON-LD name không khớp H1 cho ${route}.`);
+        if (record.description !== descriptions) errors.push(`Product JSON-LD description không khớp meta description cho ${route}.`);
+        if (record.url !== expectedCanonical) errors.push(`Product JSON-LD url không khớp canonical cho ${route}.`);
+        if (!Array.isArray(record.image) || record.image.length === 0 || record.image.some((image) => typeof image !== "string" || !image.trim())) errors.push(`Product JSON-LD image không hợp lệ cho ${route}.`);
+        if (!record.brand || typeof record.brand !== "object" || typeof record.brand.name !== "string" || !record.brand.name.trim()) errors.push(`Product JSON-LD brand không hợp lệ cho ${route}.`);
+        if (Object.hasOwn(record, "sku") && (typeof record.sku !== "string" || !record.sku.trim())) {
+          errors.push(`Product JSON-LD có sku trống cho ${route}.`);
+        } else if (expectedSku) {
+          if (record.sku !== expectedSku) errors.push(`Product JSON-LD sku sai cho ${route}: expected ${expectedSku}; found ${record.sku ?? "none"}.`);
+        } else if (Object.hasOwn(record, "sku")) {
+          errors.push(`Product JSON-LD không được chứa sku trống cho ${route}.`);
+        }
+        for (const forbidden of ["offers", "price", "availability", "review", "reviews", "aggregateRating"]) {
+          if (Object.hasOwn(record, forbidden)) errors.push(`Product JSON-LD không được chứa ${forbidden} cho ${route}.`);
+        }
+        validProductJsonLd += 1;
+      }
+
+      const breadcrumbs = jsonLd.filter((record) => record && typeof record === "object" && record["@type"] === "BreadcrumbList");
+      if (breadcrumbs.length !== 1) errors.push(`Breadcrumb JSON-LD không hợp lệ cho ${route}: found ${breadcrumbs.length} record(s).`);
+      else {
+        const items = breadcrumbs[0].itemListElement;
+        const lastItem = Array.isArray(items) ? items.at(-1) : undefined;
+        if (!lastItem || lastItem.name !== h1s[0]) errors.push(`Breadcrumb JSON-LD không khớp H1 cho ${route}.`);
+        if (lastItem?.item !== undefined && lastItem.item !== expectedCanonical) errors.push(`Breadcrumb JSON-LD không khớp canonical cho ${route}.`);
+      }
     }
   }
 
@@ -185,14 +260,20 @@ export function validateStaticExport(options) {
 
   const titlesToRoutes = new Map();
   for (const [route, title] of productTitles) titlesToRoutes.set(title, [...(titlesToRoutes.get(title) ?? []), route]);
-  const duplicates = [...titlesToRoutes.entries()].filter(([, groupedRoutes]) => groupedRoutes.length > 1);
-  if (duplicates.length) {
-    const summary = duplicates.map(([title, groupedRoutes]) => `${title} [${groupedRoutes.join(", ")}]`).join("; ");
-    if (TEMPORARILY_ALLOW_DUPLICATE_PRODUCT_TITLES) reports.push(`TODO Phase 5: ${duplicates.length} duplicate product title group(s) temporarily allowed: ${summary}`);
-    else errors.push(`Duplicate product titles: ${summary}`);
+  const duplicateTitles = [...titlesToRoutes.entries()].filter(([, groupedRoutes]) => groupedRoutes.length > 1);
+  if (duplicateTitles.length) {
+    const summary = duplicateTitles.map(([title, groupedRoutes]) => `${title} [${groupedRoutes.join(", ")}]`).join("; ");
+    errors.push(`Duplicate product titles: ${summary}`);
+  }
+  const h1sToRoutes = new Map();
+  for (const [route, h1] of productH1s) h1sToRoutes.set(h1, [...(h1sToRoutes.get(h1) ?? []), route]);
+  const duplicateH1s = [...h1sToRoutes.entries()].filter(([, groupedRoutes]) => groupedRoutes.length > 1);
+  if (duplicateH1s.length) {
+    const summary = duplicateH1s.map(([h1, groupedRoutes]) => `${h1} [${groupedRoutes.join(", ")}]`).join("; ");
+    errors.push(`Duplicate product H1 values: ${summary}`);
   }
 
-  return { errors: [...new Set(errors)], reports, summary: { expectedRoutes: routes.size, checkedFiles: files.length, duplicateTitleGroups: duplicates.length } };
+  return { errors: [...new Set(errors)], reports, summary: { expectedRoutes: routes.size, checkedFiles: files.length, productRoutes: productRoutes.size, duplicateTitleGroups: duplicateTitles.length, duplicateH1Groups: duplicateH1s.length, validProductJsonLd } };
 }
 
 function main() {
@@ -209,7 +290,7 @@ function main() {
     process.exitCode = 1;
     return;
   }
-  console.log(`Static export validation passed: ${result.summary.expectedRoutes} expected routes, ${result.summary.checkedFiles} artifact files checked, ${result.summary.duplicateTitleGroups} duplicate title group(s) reported.`);
+  console.log(`Static export validation passed: ${result.summary.expectedRoutes} expected routes, ${result.summary.checkedFiles} artifact files checked, ${result.summary.productRoutes} product routes, ${result.summary.duplicateTitleGroups} duplicate product title group(s), ${result.summary.duplicateH1Groups} duplicate product H1 group(s), ${result.summary.validProductJsonLd} Product JSON-LD record(s) validated.`);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();

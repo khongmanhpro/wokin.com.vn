@@ -164,9 +164,9 @@ test("an explicitly allowlisted missing SKU uses the product slug as its image k
   }
 });
 
-function pageHtml(route, { title = route || "Trang chủ", body = "" } = {}) {
+function pageHtml(route, { title = route || "Trang chủ", description = "Mô tả trang kiểm thử.", body = "" } = {}) {
   const pathname = route ? `/${route}/` : "/";
-  return `<!doctype html><html lang="vi"><head><title>${title} | WOKIN TOOLS</title><link rel="canonical" href="https://wokin.com.vn${pathname}"></head><body>${body}</body></html>`;
+  return `<!doctype html><html lang="vi"><head><title>${title} | WOKIN TOOLS</title><meta name="description" content="${description}"><link rel="canonical" href="https://wokin.com.vn${pathname}"></head><body>${body}</body></html>`;
 }
 
 function writeRoute(outDir, route, html) {
@@ -187,8 +187,33 @@ function makeExportFixture() {
   ];
   const links = routes.map((route) => `<a href="/${route}${route ? "/" : ""}">${route || "home"}</a>`).join("");
   for (const route of routes) {
-    const title = route.startsWith("san-pham/san-pham-") ? "Sản phẩm trùng" : (route || "Trang chủ");
-    writeRoute(outDir, route, pageHtml(route, { title, body: route === "" ? links : '<img src="/images/logo.png">' }));
+    const productMatch = route.match(/^san-pham\/san-pham-(\d+)$/);
+    const productId = productMatch ? Number(productMatch[1]) : undefined;
+    const title = productId ? `Sản phẩm ${productId}` : (route || "Trang chủ");
+    const canonical = `https://wokin.com.vn/${route}${route ? "/" : ""}`;
+    const productJsonLd = productId ? {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: title,
+      sku: `SKU-${productId}`,
+      image: ["https://wokin.com.vn/images/logo.png"],
+      description: `Mô tả sản phẩm ${productId}.`,
+      brand: { "@type": "Brand", name: "WOKIN" },
+      url: canonical,
+    } : undefined;
+    const breadcrumbJsonLd = productId ? {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Trang chủ", item: "https://wokin.com.vn/" },
+        { "@type": "ListItem", position: 2, name: "Sản phẩm", item: "https://wokin.com.vn/san-pham/" },
+        { "@type": "ListItem", position: 3, name: title, item: canonical },
+      ],
+    } : undefined;
+    const body = productId
+      ? `<nav class="breadcrumb"><a href="/">Trang chủ</a> / <a href="/san-pham/">Sản phẩm</a> / <span>${title}</span></nav><h1>${title}</h1><script type="application/ld+json">${JSON.stringify(productJsonLd)}</script><script type="application/ld+json">${JSON.stringify(breadcrumbJsonLd)}</script><img src="/images/logo.png">`
+      : (route === "" ? links : '<img src="/images/logo.png">');
+    writeRoute(outDir, route, pageHtml(route, { title, description: productId ? `Mô tả sản phẩm ${productId}.` : undefined, body }));
   }
   mkdirSync(path.join(outDir, "images"), { recursive: true });
   writeFileSync(path.join(outDir, "images/logo.png"), "fixture image");
@@ -202,13 +227,65 @@ function exportArgs(fixture) {
   return ["--out-dir", fixture.outDir, "--data-dir", fixture.dataDir];
 }
 
-test("export validator accepts complete routes and reports temporary duplicate titles", () => {
+test("export validator accepts complete routes with unique product SEO data", () => {
   const fixture = makeExportFixture();
   try {
     const result = run(exportScript, exportArgs(fixture));
     assert.equal(result.status, 0, result.stderr || result.stdout);
     assert.match(result.stdout, /Static export validation passed/);
-    assert.match(result.stdout, /TODO Phase 5.*duplicate product title/i);
+    assert.match(result.stdout, /0 duplicate product title group/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("export validator rejects duplicate product titles", () => {
+  const fixture = makeExportFixture();
+  try {
+    const file = path.join(fixture.outDir, "san-pham/san-pham-2/index.html");
+    writeFileSync(file, readFileSync(file, "utf8").replace("<title>Sản phẩm 2", "<title>Sản phẩm 1"));
+    const result = run(exportScript, exportArgs(fixture));
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /duplicate product titles/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("export validator rejects duplicate product H1 values", () => {
+  const fixture = makeExportFixture();
+  try {
+    const file = path.join(fixture.outDir, "san-pham/san-pham-2/index.html");
+    writeFileSync(file, readFileSync(file, "utf8").replace(/<h1>Sản phẩm 2<\/h1>/, "<h1>Sản phẩm 1</h1>"));
+    const result = run(exportScript, exportArgs(fixture));
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /duplicate product H1/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("export validator rejects missing Product structured data", () => {
+  const fixture = makeExportFixture();
+  try {
+    const file = path.join(fixture.outDir, "san-pham/san-pham-1/index.html");
+    writeFileSync(file, readFileSync(file, "utf8").replace(/<script type="application\/ld\+json">[^<]*"@type":"Product"[^<]*<\/script>/, ""));
+    const result = run(exportScript, exportArgs(fixture));
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Product JSON-LD/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("export validator rejects an empty Product JSON-LD sku", () => {
+  const fixture = makeExportFixture();
+  try {
+    const file = path.join(fixture.outDir, "san-pham/san-pham-1/index.html");
+    writeFileSync(file, readFileSync(file, "utf8").replace('"sku":"SKU-1"', '"sku":""'));
+    const result = run(exportScript, exportArgs(fixture));
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Product JSON-LD.*sku trống/i);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
   }

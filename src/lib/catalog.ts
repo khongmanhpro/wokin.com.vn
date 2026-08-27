@@ -109,6 +109,10 @@ export const products: Product[] = rawProducts.map((raw) => {
 
 const productByViSlug = new Map(products.map((product) => [product.slugVi, product]));
 const productByOriginalSlug = new Map(products.map((product) => [product.slug, product]));
+const productsByName = new Map<string, Product[]>();
+for (const product of products) {
+  productsByName.set(product.name, [...(productsByName.get(product.name) ?? []), product]);
+}
 
 export const categories: Category[] = rawCategories.map((category) => {
   const representative = products.find((product) =>
@@ -178,9 +182,24 @@ export function categoryName(slug: string): string {
   return glossary.categories[slug] ?? slug;
 }
 
+export function productSeoName(product: Product): string {
+  const sameName = productsByName.get(product.name) ?? [product];
+  if (sameName.length === 1) return product.name;
+  const sku = product.sku.trim();
+  const sameSku = sku
+    ? sameName.filter((candidate) => candidate.sku.trim() === sku)
+    : [];
+  return sameSku.length === 1
+    ? `${product.name} – SKU ${sku}`
+    : `${product.name} – ID ${product.id}`;
+}
+
 export function productDescription(product: Product): string {
   const category = product.categories[0] ? categoryName(product.categories[0].slug) : "dụng cụ";
-  return `${product.name}, mã ${product.sku}, thuộc danh mục ${category}. Thông số kỹ thuật và hình ảnh sản phẩm WOKIN dành cho thợ chuyên nghiệp.`;
+  const seoName = productSeoName(product);
+  const sku = product.sku.trim();
+  const identifier = seoName === product.name && sku ? `, mã ${sku}` : "";
+  return `${seoName}${identifier}, thuộc danh mục ${category}. Thông số kỹ thuật và hình ảnh sản phẩm WOKIN dành cho thợ chuyên nghiệp.`;
 }
 
 const sortedTermPairs = [...glossary.terms].sort((a, b) => b[0].length - a[0].length);
