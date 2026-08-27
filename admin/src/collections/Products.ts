@@ -12,8 +12,10 @@ export const Products: CollectionConfig = {
   slug: 'products',
   access: { create: canCreateProduct, delete: canDeleteProduct, read: activeAuthenticated, update: canUpdateProduct },
   admin: {
-    defaultColumns: ['nameVi', 'sku', 'status', 'legacySourceId', 'slugVi'],
+    defaultColumns: ['nameVi', 'sku', 'status', 'categories', 'legacySourceId', 'slugVi'],
     group: 'Catalog',
+    listSearchableFields: ['nameVi', 'sku', 'legacySourceId'],
+    pagination: { defaultLimit: 25, limits: [25, 50, 100] },
     useAsTitle: 'nameVi',
   },
   hooks: {
@@ -33,7 +35,10 @@ export const Products: CollectionConfig = {
     },
     {
       name: 'sku', type: 'text', required: false, index: true,
-      admin: { description: 'Có thể trống hoặc trùng; tuyệt đối không dùng làm identity.' },
+      admin: {
+        components: { Cell: '/components/ProductSkuCell#ProductSkuCell' },
+        description: 'Có thể trống hoặc trùng; tuyệt đối không dùng làm identity.',
+      },
     },
     {
       name: 'status', type: 'select', required: true, index: true, defaultValue: 'draft',
