@@ -37,9 +37,22 @@ function routePath(value) {
 }
 
 function expectedRoutes(dataDir) {
-  const products = readJson(path.join(dataDir, "products.json"));
-  const translations = readJson(path.join(dataDir, "products_vi.json"));
-  const categories = readJson(path.join(dataDir, "categories.json"));
+  const snapshotFile = path.join(dataDir, "catalog.generated.json");
+  const snapshot = existsSync(snapshotFile) ? readJson(snapshotFile) : undefined;
+  const products = snapshot
+    ? snapshot.products.map((product) => ({
+      categories: product.categoryRelations,
+      id: product.legacySourceId,
+      sku: product.productCode ?? "",
+    }))
+    : readJson(path.join(dataDir, "products.json"));
+  const translations = snapshot
+    ? snapshot.products.map((product) => ({
+      id: product.legacySourceId,
+      slug_vi: product.translation.canonicalSlug,
+    }))
+    : readJson(path.join(dataDir, "products_vi.json"));
+  const categories = snapshot?.categories ?? readJson(path.join(dataDir, "categories.json"));
   const slugsById = new Map(translations.map((translation) => [translation.id, translation.slug_vi]));
   const routes = new Set(STATIC_ROUTES);
   for (const product of products) {

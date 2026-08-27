@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const defaultDataDir = path.join(projectRoot, "src/data");
+const defaultDataDir = path.join(projectRoot, "data");
 const defaultPublicDir = path.join(projectRoot, "public");
 
 // Phase 1 baseline from the checked-in catalog and project specification. These

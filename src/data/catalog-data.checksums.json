@@ -1,0 +1,26 @@
+{
+  "counts": {
+    "categories": 30,
+    "localImageReferences": 1720,
+    "products": 1357
+  },
+  "generatedFiles": {
+    "catalog.generated.json": "b257b1c1bd223f5a4469a228db2a52f48c12538254e890d92c99e43c63c08213",
+    "categories.json": "0a7deeeed327a5c78188d517a0f1c07bcfa965ed441dfc341cad52cb7f889108",
+    "products_vi.json": "c323788e0d479274161271ca5428e3abc247875ecdf96c62c5dc0d6d58da31f2",
+    "README.md": "403cd544e74ed10ae40c1d2178e9be080985db4e47b83f2b9a4a354c313ba0d3",
+    "vi-glossary.json": "0453ad822796226cc0e54a5908383599bd737f14206ac22f482de3b2b8ffa931"
+  },
+  "outputChecksum": "d838206bc9469f21604866d800e180e18a049f33194639f96ce11bcca7e6179b",
+  "schemaVersion": 1,
+  "sourceChecksum": "602d1743e78304fbf78af7d04d1076a4f1a4c3982046106741121cef29fe96d6",
+  "sourceFiles": {
+    "catalog-baseline.json": "04543d63672098efb10b63256de369f277036f6fa8dc109d95a32470e7e4fea4",
+    "categories.json": "9559002493186a5ba9f26b1e616003fed0b7e853a196a5b4f6d8be4c2b21b47d",
+    "image_manifest.json": "975e043ae64935a8af280681c00a8cc24a1f62d51c42c5b74b759f68e6876f85",
+    "product_dates.json": "8f789c7f21b70edeaaa9103c2fde764de3c4c580b355a969ced7d5415ba5c4a1",
+    "products_vi.json": "70a120fbb771851931d66408eb0dd47d7382a25e4da1a9046584e4858c02bc6a",
+    "products.json": "ead0552bb11510045cad3cd40d70680a01d276d103a8eb4ed2adfa2383f0235c",
+    "vi-glossary.json": "376a03f64a42b5ea55eb4174c1c9e99d8e40fba9b08951ee1ba42c87d0f7443f"
+  }
+}

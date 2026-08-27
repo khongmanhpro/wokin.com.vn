@@ -27,6 +27,9 @@ function loadTypeScriptModule(relativePath) {
     if (specifier.startsWith("@/data/") && specifier.endsWith(".json")) {
       return JSON.parse(readFileSync(path.join(projectRoot, "src", specifier.slice(2)), "utf8"));
     }
+    if (specifier.startsWith("@/lib/")) {
+      return loadTypeScriptModule(path.join("src", `${specifier.slice(2)}.ts`));
+    }
     return nativeRequire(specifier);
   }
 

@@ -9,8 +9,8 @@ import ts from "typescript";
 const projectRoot = path.resolve(import.meta.dirname, "..");
 const nativeRequire = createRequire(import.meta.url);
 
-function loadCatalog() {
-  const filename = path.join(projectRoot, "src/lib/catalog.ts");
+function loadTypeScriptModule(relativePath) {
+  const filename = path.join(projectRoot, relativePath);
   const source = readFileSync(filename, "utf8");
   const output = ts.transpileModule(source, {
     fileName: filename,
@@ -26,11 +26,18 @@ function loadCatalog() {
     if (specifier.startsWith("@/data/") && specifier.endsWith(".json")) {
       return JSON.parse(readFileSync(path.join(projectRoot, "src", specifier.slice(2)), "utf8"));
     }
+    if (specifier.startsWith("@/lib/")) {
+      return loadTypeScriptModule(path.join("src", `${specifier.slice(2)}.ts`));
+    }
     return nativeRequire(specifier);
   }
 
   vm.runInNewContext(output, { console, exports: module.exports, module, require: localRequire }, { filename });
   return module.exports;
+}
+
+function loadCatalog() {
+  return loadTypeScriptModule("src/lib/catalog.ts");
 }
 
 test("product SEO names disambiguate only repeated Vietnamese names", () => {

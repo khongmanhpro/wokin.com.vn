@@ -71,26 +71,31 @@ npm audit --json         PASS — 0 vulnerabilities
 
 ## Phase đã nghiệm thu gần nhất
 
-### Phase 5 — duplicate product metadata và Product structured data
+### Phase 6 — source of truth và data schema
 
-Đã hoàn thành bằng Codex `gpt-5.6-sol` với reasoning effort `medium`.
+Đã hoàn thành bằng Codex `gpt-5.6-sol` với reasoning effort `medium`. Có một remediation test harness trong quá trình thực hiện; sau đó test độc lập đã pass.
 
 Đã thực hiện:
 
-- Tên sản phẩm unique được giữ nguyên.
-- Tên trùng được phân biệt bằng SKU nếu SKU duy nhất trong nhóm.
-- Nhóm trùng cả tên và SKU được phân biệt bằng source product ID.
-- Không đổi `slug_vi`, không dịch lại hàng loạt và không bịa thông số.
-- Product title, H1, meta description và JSON-LD dùng cùng tên SEO deterministic.
-- Product JSON-LD có `name`, `sku` khi có giá trị, `image`, `description`, `brand`, `url`.
-- Không thêm `offers`, `price`, `availability`, `review` hoặc `aggregateRating`.
-- Validator chuyển duplicate title/H1 và Product JSON-LD lỗi thành hard failure.
-- Thêm regression tests cho uniqueness, Product JSON-LD và SKU rỗng.
+- Chọn `data/` làm source of truth có thể chỉnh tay.
+- Tạo `scripts/build-catalog-data.mjs` với `build:data` và `check:data`.
+- Tạo normalized snapshot `src/data/catalog.generated.json`.
+- Tạo schema runtime `src/lib/catalog-schema.ts` với validation chi tiết.
+- Xóa các generated duplicate lớn không còn được runtime import.
+- Giữ `src/data/categories.json`, `src/data/products_vi.json`, `src/data/vi-glossary.json` như generated support outputs và ghi rõ trong README/checksum manifest.
+- Chuẩn hóa internal ID, legacy ID/slug, SKU/product code, translation, categories, media, packaging, technical specs và attributes.
+- Giữ explicit allowlist cho 5 missing SKU và các duplicate SKU hiện hữu; không ép SKU unique giả.
+- Không đổi canonical product slug.
+- Parser báo malformed/unbalanced HTML hoặc non-empty source bị drop, không silently drop.
+- Generated runtime không chứa source-domain/email; raw archive trong `data/` vẫn được giữ làm provenance.
+- Tạo `docs/data-model.md` mô tả schema, inventory, checksum/determinism và migration strategy.
 
 Verification:
 
 ```text
-npm test                 PASS — 24 tests
+npm test                 PASS — 33 tests
+npm run build:data       PASS — checksum d838206bc9469f21604866d800e180e18a049f33194639f96ce11bcca7e6179b
+npm run check:data       PASS
 npm run typecheck        PASS
 npm run validate:data    PASS — 1357 products / 30 categories / 1720 images
 npm run build            PASS — 1452 static pages
@@ -98,26 +103,25 @@ npm run validate:export  PASS — 1447 routes / 4659 artifacts
 npm audit --json         PASS — 0 vulnerabilities
 ```
 
-Export validator summary:
+Determinism:
 
 ```text
-1357 product routes
-0 duplicate product title groups
-0 duplicate product H1 groups
-1357 Product JSON-LD records validated
+build:data run 1 SHA-256: b257b1c1bd223f5a4469a228db2a52f48c12538254e890d92c99e43c63c08213
+build:data run 2 SHA-256: b257b1c1bd223f5a4469a228db2a52f48c12538254e890d92c99e43c63c08213
+equal: true
 ```
 
 Checkpoint:
 
 ```text
-7d096b0 fix: make product metadata unique and factual
+6853b18 refactor: establish validated catalog data pipeline
 ```
 
 ## Phase tiếp theo
 
-### Phase 6 — source of truth và data schema
+### Phase 7 — contact flow production-safe
 
-Mục tiêu tiếp theo là loại bỏ nguy cơ drift giữa `data/` và `src/data/`, chuẩn hóa schema/import contract và vẫn giữ static build hiện tại. Không bắt đầu Phase 6 nếu chưa kiểm tra Git và đọc lại phần Phase 6 trong roadmap.
+Phase 7 là decision gate. Trước khi giao Codex phải chọn đích nhận lead: static form provider, Hostinger PHP endpoint, API/serverless riêng, hoặc tạm thời thay form bằng CTA rõ ràng. Không cho Codex tự chọn provider hay tạo credential.
 
 ## Historical acceptance — Phase 4
 

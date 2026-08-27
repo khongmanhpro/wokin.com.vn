@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "expected": {
+    "products": 1357,
+    "categories": 30,
+    "localImageReferences": 1720,
+    "canonicalSlugSha256": "cb7e942f4778ef43f868201779fbec3b74169ce493b0ccc174d521b655ea1caa"
+  },
+  "allowedMissingProductCodeLegacyIds": [
+    8998,
+    9002,
+    9005,
+    9007,
+    9493
+  ],
+  "allowedDuplicateProductCodes": {
+    "789501": [
+      5784,
+      6263
+    ],
+    "789506": [
+      5785,
+      6264
+    ],
+    "789511": [
+      5786,
+      6265
+    ]
+  }
+}

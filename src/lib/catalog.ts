@@ -1,9 +1,6 @@
-import categoriesJson from "@/data/categories.json";
-import datesJson from "@/data/product_dates.json";
-import manifestJson from "@/data/image_manifest.json";
-import productsJson from "@/data/products.json";
-import translationsJson from "@/data/products_vi.json";
+import catalogJson from "@/data/catalog.generated.json";
 import glossaryJson from "@/data/vi-glossary.json";
+import { assertCatalogSnapshot, type CatalogSnapshot } from "@/lib/catalog-schema";
 
 export interface ProductImage {
   src: string;
@@ -21,42 +18,19 @@ export interface ProductAttribute {
   options?: string[];
 }
 
-interface RawProduct {
+export interface Product {
   id: number;
   name: string;
+  nameEn: string;
   slug: string;
+  slugVi: string;
   sku: string;
+  type: string;
   categories: ProductCategory[];
   images: ProductImage[];
   short_description: string;
   description: string;
   attributes: ProductAttribute[];
-}
-
-interface ProductTranslation {
-  id: number;
-  sku: string;
-  name_en: string;
-  name_vi: string;
-  slug_vi: string;
-}
-
-interface ProductDate {
-  id: number;
-  date: string;
-  slug: string;
-}
-
-interface ManifestEntry {
-  sku: string;
-  images: string[];
-}
-
-export interface Product extends Omit<RawProduct, "name" | "images"> {
-  name: string;
-  nameEn: string;
-  slugVi: string;
-  images: ProductImage[];
   date: string;
 }
 
@@ -78,32 +52,45 @@ interface Glossary {
   spec_labels: Record<string, string>;
 }
 
+export interface ProductSpec {
+  lines: string[];
+  table: string[][];
+}
+
 export const glossary = glossaryJson as unknown as Glossary;
-const rawProducts = productsJson as RawProduct[];
-const rawCategories = categoriesJson as Omit<Category, "nameVi" | "image">[];
-const translations = translationsJson as ProductTranslation[];
-const dates = datesJson as ProductDate[];
-const manifest = manifestJson as Record<string, ManifestEntry>;
+assertCatalogSnapshot(catalogJson);
+const catalogSnapshot: CatalogSnapshot = catalogJson;
 
-const translationById = new Map(translations.map((item) => [item.id, item]));
-const dateById = new Map(dates.map((item) => [item.id, item.date]));
+const SPEC_TOKEN_PREFIX = "catalog-spec:";
+const normalizedSpecByToken = new Map<string, ProductSpec>();
 
-export const products: Product[] = rawProducts.map((raw) => {
-  const translated = translationById.get(raw.id);
-  if (!translated) throw new Error(`Thiếu bản dịch sản phẩm ID ${raw.id}`);
-  const localImages = manifest[raw.slug]?.images ?? [];
+export const products: Product[] = catalogSnapshot.products.map((record) => {
+  const specToken = `${SPEC_TOKEN_PREFIX}${record.internalId}`;
+  normalizedSpecByToken.set(specToken, {
+    lines: record.technicalSpecs.lines,
+    table: record.packaging.table,
+  });
   return {
-    ...raw,
-    name: translated.name_vi,
-    nameEn: raw.name,
-    slugVi: translated.slug_vi,
-    date: dateById.get(raw.id) ?? "1970-01-01T00:00:00",
-    images: localImages.length
-      ? localImages.map((src, index) => ({
-          src: src.startsWith("/") ? src : `/${src}`,
-          alt: `${translated.name_vi}${index ? ` - ảnh ${index + 1}` : ""}`,
-        }))
-      : [{ src: "/images/logo.png", alt: translated.name_vi }],
+    attributes: record.attributes.map((attribute) => ({
+      id: attribute.legacySourceId ?? undefined,
+      name: attribute.name,
+      options: attribute.values,
+    })),
+    categories: record.categoryRelations.map((category) => ({ name: category.name, slug: category.slug })),
+    date: record.publishedAt,
+    description: record.legacyDescription,
+    id: record.legacySourceId,
+    images: record.media.map((media) => ({
+      alt: media.alt,
+      src: media.path.startsWith("/") ? media.path : `/${media.path}`,
+    })),
+    name: record.translation.name,
+    nameEn: record.translation.sourceName,
+    short_description: specToken,
+    sku: record.productCode ?? "",
+    slug: record.legacySlug,
+    slugVi: record.translation.canonicalSlug,
+    type: record.sourceType,
   };
 });
 
@@ -114,14 +101,18 @@ for (const product of products) {
   productsByName.set(product.name, [...(productsByName.get(product.name) ?? []), product]);
 }
 
-export const categories: Category[] = rawCategories.map((category) => {
+export const categories: Category[] = catalogSnapshot.categories.map((category) => {
   const representative = products.find((product) =>
     product.categories.some((item) => item.slug === category.slug),
   );
   return {
-    ...category,
-    nameVi: glossary.categories[category.slug] ?? category.name,
+    count: category.count,
+    id: category.legacySourceId,
     image: representative?.images[0]?.src ?? "/images/logo.png",
+    name: category.sourceName,
+    nameVi: category.translation.name,
+    parent: category.parentInternalId ? Number(category.parentInternalId.slice("category:".length)) : 0,
+    slug: category.slug,
   };
 });
 
@@ -270,11 +261,6 @@ function translateSpecLine(rawLine: string): string {
   return `> ${label}${metrics ? `: ${metrics}` : ""}`;
 }
 
-export interface ProductSpec {
-  lines: string[];
-  table: string[][];
-}
-
 const blockedSpecElements = new Set(["iframe", "script", "style"]);
 const namedEntities: Record<string, string> = {
   amp: "&",
@@ -337,6 +323,13 @@ function tagName(rawTag: string): { closing: boolean; name: string; selfClosing:
  * returned string when the structure is rendered as JSX.
  */
 export function parseProductSpec(html: string): ProductSpec {
+  const normalized = normalizedSpecByToken.get(html);
+  if (normalized) {
+    return {
+      lines: [...normalized.lines],
+      table: normalized.table.map((row) => [...row]),
+    };
+  }
   const lines: string[] = [];
   const table: string[][] = [];
   let lineBuffer = "";
