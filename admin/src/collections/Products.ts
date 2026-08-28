@@ -4,6 +4,7 @@ import { auditHooks } from '../access/audit'
 import { activeAuthenticated, canCreateProduct, canDeleteProduct, canUpdateProduct } from '../access/collectionAccess'
 import { canChangeProductContent, canChangeProductSEO, canChangeProductStatus } from '../access/fieldAccess'
 import { enforceProductMutationPolicy } from '../access/productPolicy'
+import { enforcePublishReadiness } from '../access/publishReadiness'
 
 const productStatuses = ['draft', 'in_review', 'changes_requested', 'approved', 'published', 'archived'] as const
 const audit = auditHooks('products')
@@ -17,11 +18,20 @@ export const Products: CollectionConfig = {
     listSearchableFields: ['nameVi', 'sku', 'legacySourceId'],
     pagination: { defaultLimit: 25, limits: [25, 50, 100] },
     useAsTitle: 'nameVi',
+    components: {
+      views: {
+        preview: {
+          Component: '/components/ProductDraftPreview#ProductDraftPreview',
+          path: '/preview',
+          meta: { robots: { index: false, follow: false } },
+        },
+      },
+    },
   },
   hooks: {
     afterChange: audit.afterChange,
     afterDelete: audit.afterDelete,
-    beforeChange: [enforceProductMutationPolicy, ({ data, originalDoc }) => {
+    beforeChange: [enforceProductMutationPolicy, enforcePublishReadiness, ({ data, originalDoc }) => {
       if (originalDoc?.legacySourceId !== undefined && data.legacySourceId !== undefined && data.legacySourceId !== originalDoc.legacySourceId) {
         throw new Error('legacySourceId is immutable')
       }

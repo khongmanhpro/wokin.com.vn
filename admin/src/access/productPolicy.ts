@@ -37,13 +37,23 @@ export function isSeparationOfDutiesEnabled(req: { context?: Record<string, unkn
 }
 
 export const enforceProductMutationPolicy: CollectionBeforeChangeHook = ({ data, originalDoc, req }) => {
+  const previousStatus = originalDoc?.status as ProductStatus | undefined
+  const nextStatus = (data.status ?? previousStatus ?? 'draft') as ProductStatus
+  const isPublishing = previousStatus === 'approved' && nextStatus === 'published'
+  const requestedPublishedAt = data.publishedAt
+
+  if (isPublishing) {
+    if (requestedPublishedAt !== undefined) throw new Error('publishedAt is server-derived during publishing')
+    data.publishedAt = new Date().toISOString()
+  } else if (requestedPublishedAt !== undefined && requestedPublishedAt !== originalDoc?.publishedAt) {
+    throw new Error('publishedAt can only change during approved-to-published')
+  }
+
   // Payload's R3 importers intentionally use overrideAccess for trusted maintenance work.
   // Network and user-driven Local API requests are stopped by collection access before this hook.
   if (!req.user) return data
   if (!isActiveAdmin(req.user)) throw new Error('Active authentication is required')
 
-  const previousStatus = originalDoc?.status as ProductStatus | undefined
-  const nextStatus = (data.status ?? previousStatus ?? 'draft') as ProductStatus
   enforceProductStatusTransition(req.user, previousStatus, nextStatus)
 
   const mutations = changedFields(data as Record<string, unknown>, originalDoc as Record<string, unknown> | undefined)
