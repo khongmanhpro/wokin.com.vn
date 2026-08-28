@@ -36,8 +36,20 @@ export const enforceReviewRequestPolicy: CollectionBeforeChangeHook = ({ data, o
   }
 
   const nextState = data.state ?? originalDoc?.state ?? 'open'
-  if (originalDoc?.state === 'resolved' && nextState !== 'resolved') {
-    throw new Error('Resolved review requests cannot be reopened')
+  if (originalDoc?.state === 'resolved') {
+    if (nextState !== 'resolved') {
+      throw new Error('Resolved review requests cannot be reopened')
+    }
+    if (!sameRelationship(originalDoc.reviewer, actor.id) && !hasCapability(actor, 'user.manage')) {
+      throw new Error('Only the assigned reviewer may resolve a review request')
+    }
+    for (const field of ['resolvedAt', 'resolvedBy', 'resolution'] as const) {
+      if (data[field] !== undefined && !sameRelationship(data[field], originalDoc[field])) {
+        throw new Error(`Review request ${field} is immutable after resolution`)
+      }
+      data[field] = originalDoc[field]
+    }
+    return data
   }
   if (nextState === 'resolved') {
     if (!sameRelationship(originalDoc?.reviewer, actor.id) && !hasCapability(actor, 'user.manage')) {

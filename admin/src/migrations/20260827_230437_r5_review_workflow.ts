@@ -37,12 +37,13 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "review_requests" DISABLE ROW LEVEL SECURITY;
+   ALTER TABLE IF EXISTS "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_review_requests_fk";
+  ALTER TABLE "review_requests" DISABLE ROW LEVEL SECURITY;
   DROP TABLE "review_requests" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_review_requests_fk";
 
   ALTER TABLE "products" ALTER COLUMN "status" SET DATA TYPE text;
   ALTER TABLE "products" ALTER COLUMN "status" SET DEFAULT 'draft'::text;
+  UPDATE "products" SET "status" = 'draft' WHERE "status" = 'changes_requested';
   DROP TYPE "public"."enum_products_status";
   CREATE TYPE "public"."enum_products_status" AS ENUM('draft', 'in_review', 'approved', 'published', 'archived');
   ALTER TABLE "products" ALTER COLUMN "status" SET DEFAULT 'draft'::"public"."enum_products_status";

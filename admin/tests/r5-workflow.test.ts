@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { existsSync, readFileSync } from 'node:fs'
 import test from 'node:test'
 
 import { Products } from '../src/collections/Products.js'
@@ -136,4 +137,55 @@ test('R5.3 registers auditable review requests with durable identities and resol
   assert.equal(reviewRequests.hooks?.afterChange?.length, 1)
   assert.equal(typeof reviewRequests.access?.create, 'function')
   assert.equal(typeof reviewRequests.access?.update, 'function')
+})
+
+test('R5.3.1 preserves resolved evidence on later resolved updates', () => {
+  const reviewerRequest = workflowRequest('editor')
+  const resolvedAt = '2026-08-28T00:00:00.000Z'
+  const originalDoc = {
+    product: 'product-1', requester: 'owner-1', reviewer: 'actor-1', comment: 'Please review.',
+    state: 'resolved', resolvedAt, resolvedBy: 'actor-1', resolution: 'Đã cập nhật.',
+  }
+
+  const noOp = enforceReviewRequestPolicy({ data: {}, originalDoc, operation: 'update', req: reviewerRequest } as any)
+  assert.equal(noOp.resolvedAt, resolvedAt)
+  assert.equal(noOp.resolvedBy, 'actor-1')
+  assert.equal(noOp.resolution, 'Đã cập nhật.')
+  assert.throws(() => enforceReviewRequestPolicy({
+    data: { resolution: 'Bằng chứng đã bị sửa.' }, originalDoc, operation: 'update', req: reviewerRequest,
+  } as any), /resolution.*immutable/i)
+})
+
+test('R5.3.1 old workflow DOWN removes relationship FK before dropping review requests and normalizes product status', () => {
+  const source = readFileSync(new URL('../src/migrations/20260827_230437_r5_review_workflow.ts', import.meta.url), 'utf8')
+  const down = source.slice(source.indexOf('export async function down'))
+  const constraintDrop = down.indexOf('ALTER TABLE IF EXISTS "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_review_requests_fk"')
+  const tableDrop = down.indexOf('DROP TABLE "review_requests" CASCADE')
+
+  assert.ok(constraintDrop >= 0 && constraintDrop < tableDrop, 'relationship FK must be dropped before the table')
+  assert.match(down, /ALTER COLUMN "status" SET DATA TYPE text/)
+  assert.match(down, /UPDATE "products" SET "status" = 'draft' WHERE "status" = 'changes_requested'/)
+})
+
+test('R5.3.1 registers FK integrity migration with RESTRICT up and SET NULL down', () => {
+  const file = new URL('../src/migrations/20260828_000001_r5_review_fk_integrity.ts', import.meta.url)
+  assert.ok(existsSync(file), 'R5.3.1 FK integrity migration must exist')
+  const source = readFileSync(file, 'utf8')
+  const up = source.slice(source.indexOf('export async function up'), source.indexOf('export async function down'))
+  const down = source.slice(source.indexOf('export async function down'))
+
+  for (const constraint of [
+    'review_requests_product_id_products_id_fk',
+    'review_requests_requester_id_admins_id_fk',
+    'review_requests_reviewer_id_admins_id_fk',
+  ]) {
+    assert.match(up, new RegExp(`DROP CONSTRAINT "${constraint}"`))
+    assert.match(up, new RegExp(`ADD CONSTRAINT "${constraint}"[\\s\\S]*ON DELETE restrict`))
+    assert.match(down, new RegExp(`DROP CONSTRAINT "${constraint}"`))
+    assert.match(down, new RegExp(`ADD CONSTRAINT "${constraint}"[\\s\\S]*ON DELETE set null`))
+  }
+  for (const statement of [up, down]) {
+    assert.doesNotMatch(statement, /(?:^|;)\s*(?:INSERT|UPDATE|DELETE|MERGE)\b/im, 'FK policy migration must not mutate data')
+  }
+  assert.ok(migrations.some((entry) => entry.name === '20260828_000001_r5_review_fk_integrity'))
 })

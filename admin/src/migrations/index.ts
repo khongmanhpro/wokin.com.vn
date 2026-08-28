@@ -4,6 +4,7 @@ import * as migration_20260827_145016_r3_packaging_empty_cells from './20260827_
 import * as migration_20260827_153348_r4_auth_rbac_audit from './20260827_153348_r4_auth_rbac_audit';
 import * as migration_20260827_154141_r4_audit_actor_required from './20260827_154141_r4_audit_actor_required';
 import * as migration_20260827_230437_r5_review_workflow from './20260827_230437_r5_review_workflow';
+import * as migration_20260828_000001_r5_review_fk_integrity from './20260828_000001_r5_review_fk_integrity';
 
 export const migrations = [
   {
@@ -35,5 +36,10 @@ export const migrations = [
     up: migration_20260827_230437_r5_review_workflow.up,
     down: migration_20260827_230437_r5_review_workflow.down,
     name: '20260827_230437_r5_review_workflow'
+  },
+  {
+    up: migration_20260828_000001_r5_review_fk_integrity.up,
+    down: migration_20260828_000001_r5_review_fk_integrity.down,
+    name: '20260828_000001_r5_review_fk_integrity',
   },
 ];
