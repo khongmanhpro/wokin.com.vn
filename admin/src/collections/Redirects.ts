@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { auditHooks } from '../access/audit'
 import { activeAuthenticated, canManageRedirects } from '../access/collectionAccess'
+import { enforceRedirectPolicy } from '../access/redirectPolicy'
 
 const audit = auditHooks('redirects')
 
@@ -16,7 +17,7 @@ export const Redirects: CollectionConfig = {
     useAsTitle: 'fromPath',
   },
   labels: { singular: 'Chuyển hướng', plural: 'Chuyển hướng' },
-  hooks: { afterChange: audit.afterChange, afterDelete: audit.afterDelete },
+  hooks: { afterChange: audit.afterChange, afterDelete: audit.afterDelete, beforeChange: [enforceRedirectPolicy] },
   fields: [
     { name: 'fromPath', type: 'text', required: true, unique: true, index: true },
     { name: 'toPath', type: 'text', required: true, index: true },
