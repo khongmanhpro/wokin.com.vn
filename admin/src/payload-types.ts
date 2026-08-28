@@ -134,6 +134,8 @@ export interface AdminAuthOperations {
   };
 }
 /**
+ * Quản lý tài khoản quản trị, vai trò và trạng thái truy cập.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "admins".
  */
@@ -161,6 +163,8 @@ export interface Admin {
   collection: 'admins';
 }
 /**
+ * Quản lý cấu trúc danh mục và thứ tự hiển thị trong danh mục sản phẩm.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
@@ -183,6 +187,8 @@ export interface Category {
   createdAt: string;
 }
 /**
+ * Quản lý tệp đa phương tiện, đường dẫn lưu trữ và tình trạng quyền sử dụng.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
@@ -297,6 +303,8 @@ export interface Product {
   createdAt: string;
 }
 /**
+ * Theo dõi các yêu cầu rà soát và trạng thái xử lý dữ liệu danh mục.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "review-requests".
  */
@@ -314,6 +322,8 @@ export interface ReviewRequest {
   createdAt: string;
 }
 /**
+ * Quản lý nội dung và trạng thái xuất bản của các trang tĩnh.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
@@ -336,6 +346,8 @@ export interface Page {
   createdAt: string;
 }
 /**
+ * Quản lý các đường dẫn chuyển hướng và trạng thái kích hoạt của chúng.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -395,6 +407,8 @@ export interface Release {
   createdAt: string;
 }
 /**
+ * Theo dõi các sự kiện kiểm toán phục vụ truy vết hoạt động quản trị.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-events".
  */
