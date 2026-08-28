@@ -9,6 +9,7 @@
     "prebuild": "npm run build:images",
     "build:images": "node scripts/build-responsive-images.mjs",
     "build:data": "node scripts/build-catalog-data.mjs",
+    "build:data:snapshot": "node scripts/build-catalog-data.mjs --snapshot",
     "check:data": "node scripts/build-catalog-data.mjs --check",
     "start": "next start",
     "typecheck": "tsc --noEmit",

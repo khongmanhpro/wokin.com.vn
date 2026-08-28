@@ -537,6 +537,7 @@ function outputPayload(normalized, sourceDir) {
 
 function snapshotOutputPayload(snapshot) {
   assertCatalogPublishSnapshot(snapshot);
+  if (snapshot.schemaVersion === 2) return releaseSnapshotOutputPayload(snapshot);
   const categoryCounts = new Map(snapshot.categories.map((category) => [category.id, 0]));
   for (const product of snapshot.products) {
     for (const categoryId of product.categoryIds) categoryCounts.set(categoryId, (categoryCounts.get(categoryId) ?? 0) + 1);
@@ -654,6 +655,70 @@ function snapshotOutputPayload(snapshot) {
   return { files, outputChecksum, sourceChecksum: snapshot.checksum };
 }
 
+function releaseSnapshotOutputPayload(snapshot) {
+  const catalog = snapshot.catalog;
+  const categoryById = new Map(catalog.categories.map((category) => [category.internalId, category]));
+  const parentLegacyId = (category) => {
+    if (!category.parentInternalId) return 0;
+    const parent = categoryById.get(category.parentInternalId);
+    if (!parent) throw new Error(`Release snapshot category ${category.internalId} references missing parent ${category.parentInternalId}`);
+    return parent.legacySourceId;
+  };
+  const files = {
+    "catalog.generated.json": stableJson(catalog),
+    "categories.json": stableJson(catalog.categories.map((category) => ({
+      count: category.count,
+      id: category.legacySourceId,
+      name: category.translation.name,
+      parent: parentLegacyId(category),
+      slug: category.slug,
+    }))),
+    "products_vi.json": stableJson(catalog.products.map((product) => ({
+      id: product.legacySourceId,
+      name_en: product.translation.name,
+      name_vi: product.translation.name,
+      sku: product.productCode ?? "",
+      slug_vi: product.translation.canonicalSlug,
+    }))),
+    "search-index.json": stableJson(catalog.products.map((product) => ({
+      categories: product.categoryRelations.map((category) => category.slug),
+      id: product.legacySourceId,
+      name: product.translation.name,
+      sku: product.productCode ?? "",
+      slug: product.translation.canonicalSlug,
+    }))),
+    "vi-glossary.json": stableJson({
+      categories: Object.fromEntries(catalog.categories.map((category) => [category.slug, category.translation.name])),
+      marketing: {},
+      spec_labels: {},
+      terms: {},
+      ui: snapshot.glossary.ui,
+    }),
+  };
+  const outputChecksum = sha256(Object.keys(files).sort().map((name) => `${name}\0${sha256(files[name])}\n`).join(""));
+  files["README.md"] = [
+    "# Generated catalog data",
+    "",
+    "Do not edit files in this directory by hand. This release output was adapted from a validated Payload release snapshot.",
+    "",
+    `Schema version: ${SCHEMA_VERSION}`,
+    `Snapshot ID: ${snapshot.snapshotId}`,
+    `Output checksum: ${outputChecksum}`,
+    "",
+  ].join("\n");
+  const generatedFiles = Object.fromEntries(Object.entries(files).map(([name, content]) => [name, sha256(content)]));
+  files["catalog-data.checksums.json"] = stableJson({
+    counts: { products: catalog.products.length, categories: catalog.categories.length, localImageReferences: catalog.products.reduce((count, product) => count + product.media.length, 0) },
+    generatedFiles,
+    outputChecksum,
+    schemaVersion: SCHEMA_VERSION,
+    snapshotId: snapshot.snapshotId,
+    sourceChecksum: snapshot.checksum,
+    sourceFiles: { [path.basename("catalog-release.json")]: snapshot.checksum },
+  });
+  return { files, outputChecksum, sourceChecksum: snapshot.checksum };
+}
+
 function writeOrCheckPayload(payload, outputDir, check) {
   const mismatches = [];
   for (const [name, content] of Object.entries(payload.files)) {
@@ -674,7 +739,9 @@ export async function buildCatalogDataFromSnapshot({ snapshotFile, outputDir = D
   const payload = snapshotOutputPayload(snapshot);
   writeOrCheckPayload(payload, path.resolve(outputDir), check);
   return {
-    counts: { products: snapshot.products.length, categories: snapshot.categories.length, localImageReferences: snapshot.media.length },
+    counts: snapshot.schemaVersion === 2
+      ? { products: snapshot.catalog.products.length, categories: snapshot.catalog.categories.length, localImageReferences: snapshot.catalog.products.reduce((count, product) => count + product.media.length, 0) }
+      : { products: snapshot.products.length, categories: snapshot.categories.length, localImageReferences: snapshot.media.length },
     outputChecksum: payload.outputChecksum,
     sourceChecksum: payload.sourceChecksum,
   };

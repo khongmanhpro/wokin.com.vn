@@ -15,10 +15,12 @@
     "import:catalog": "cross-env NODE_ENV=production npm run check:env && cross-env NODE_ENV=production tsx src/catalog/full-import-cli.ts",
     "payload": "npm run check:env && cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_CONFIG_PATH=src/payload.config.ts payload",
     "snapshot:poc": "cross-env NODE_ENV=production npm run check:env && cross-env NODE_ENV=production tsx src/catalog/export-cli.ts",
+    "snapshot:release": "cross-env NODE_ENV=production npm run check:env && cross-env NODE_ENV=production tsx src/catalog/release-export-cli.ts",
     "start": "npm run check:env && cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
     "validate:snapshot": "tsx src/catalog/validate-cli.ts",
+    "validate:release": "tsx src/catalog/validate-cli.ts --snapshot",
     "verify": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {

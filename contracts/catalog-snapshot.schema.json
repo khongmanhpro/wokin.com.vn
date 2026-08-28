@@ -2,10 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://wokin.com.vn/contracts/catalog-snapshot.schema.json",
   "title": "WOKIN static catalog publish snapshot",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["schemaVersion", "snapshotId", "products", "categories", "media", "checksum"],
-  "properties": {
+  "oneOf": [{ "$ref": "#/$defs/v1" }, { "$ref": "#/$defs/v2" }],
+  "$defs": {
+    "v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "snapshotId", "products", "categories", "media", "checksum"],
+      "properties": {
     "schemaVersion": { "const": 1 },
     "snapshotId": { "type": "string", "pattern": "^poc-[a-f0-9]{16}$" },
     "checksum": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
@@ -21,8 +24,103 @@
       "type": "array",
       "items": { "$ref": "#/$defs/product" }
     }
-  },
-  "$defs": {
+      }
+    },
+    "v2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "snapshotId", "catalog", "glossary", "checksum"],
+      "properties": {
+        "schemaVersion": { "const": 2 },
+        "snapshotId": { "type": "string", "pattern": "^release-[a-f0-9]{16}$" },
+        "checksum": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "catalog": { "$ref": "#/$defs/publicCatalog" },
+        "glossary": { "type": "object", "additionalProperties": false, "required": ["ui"], "properties": { "ui": { "type": "object", "additionalProperties": { "type": "string" } } } }
+      }
+    },
+    "publicCatalog": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "sourceChecksum", "canonicalSlugSha256", "categories", "products"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "sourceChecksum": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "canonicalSlugSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "categories": { "type": "array", "items": { "$ref": "#/$defs/publicCategory" } },
+        "products": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/publicProduct" } }
+      }
+    },
+    "publicCategory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["internalId", "legacySourceId", "sourceName", "slug", "count", "parentInternalId", "translation"],
+      "properties": {
+        "internalId": { "type": "string", "minLength": 1 },
+        "legacySourceId": { "type": "integer" },
+        "sourceName": { "type": "string", "minLength": 1 },
+        "slug": { "$ref": "#/$defs/slug" },
+        "count": { "type": "integer", "minimum": 0 },
+        "parentInternalId": { "type": ["string", "null"] },
+        "translation": { "$ref": "#/$defs/publicCategoryTranslation" }
+      }
+    },
+    "publicCategoryTranslation": {
+      "type": "object", "additionalProperties": false, "required": ["locale", "name"],
+      "properties": { "locale": { "const": "vi" }, "name": { "type": "string", "minLength": 1 } }
+    },
+    "publicProduct": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["internalId", "legacySourceId", "legacySlug", "sourceType", "productCode", "publishedAt", "legacyDescription", "translation", "categoryRelations", "media", "technicalSpecs", "packaging", "attributes"],
+      "properties": {
+        "internalId": { "type": "string", "minLength": 1 },
+        "legacySourceId": { "type": "integer" },
+        "legacySlug": { "$ref": "#/$defs/slug" },
+        "sourceType": { "type": "string", "minLength": 1 },
+        "productCode": { "type": ["string", "null"] },
+        "publishedAt": { "type": "string", "minLength": 1 },
+        "legacyDescription": { "type": "string" },
+        "translation": { "$ref": "#/$defs/publicProductTranslation" },
+        "categoryRelations": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/publicCategoryRelation" } },
+        "media": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/publicMediaRelation" } },
+        "technicalSpecs": { "$ref": "#/$defs/publicTechnicalSpecs" },
+        "packaging": { "$ref": "#/$defs/publicPackaging" },
+        "attributes": { "type": "array" }
+      }
+    },
+    "publicProductTranslation": {
+      "type": "object", "additionalProperties": false, "required": ["locale", "name", "sourceName", "canonicalSlug"],
+      "properties": {
+        "locale": { "const": "vi" }, "name": { "type": "string", "minLength": 1 },
+        "sourceName": { "type": "string", "minLength": 1 }, "canonicalSlug": { "$ref": "#/$defs/slug" }
+      }
+    },
+    "publicCategoryRelation": {
+      "type": "object", "additionalProperties": false, "required": ["categoryInternalId", "legacySourceId", "name", "slug"],
+      "properties": {
+        "categoryInternalId": { "type": "string", "minLength": 1 }, "legacySourceId": { "type": "integer" },
+        "name": { "type": "string", "minLength": 1 }, "slug": { "$ref": "#/$defs/slug" }
+      }
+    },
+    "publicMediaRelation": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "path", "alt", "position"],
+      "properties": {
+        "kind": { "const": "image" }, "path": { "$ref": "#/$defs/safeRelativePath" },
+        "alt": { "type": "string", "minLength": 1 }, "position": { "type": "integer" }
+      }
+    },
+    "publicTechnicalSpecs": {
+      "type": "object", "additionalProperties": false, "required": ["lines"],
+      "properties": { "lines": { "type": "array", "items": { "type": "string" } } }
+    },
+    "publicPackaging": {
+      "type": "object", "additionalProperties": false, "required": ["table"],
+      "properties": { "table": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } } }
+    },
+    "safeRelativePath": {
+      "type": "string", "minLength": 1,
+      "pattern": "^(?![\\\\/])(?![A-Za-z][A-Za-z0-9+.-]*:)(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$)).+$"
+    },
     "uuid": {
       "type": "string",
       "format": "uuid"
