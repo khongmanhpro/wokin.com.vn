@@ -17,6 +17,8 @@ export function requireAnyCapability(...capabilities: Capability[]): Access {
 export const canCreateProduct = requireCapability('product.create')
 export const canUpdateProduct = requireAnyCapability('product.update', 'product.review', 'product.publish', 'seo.review')
 export const canDeleteProduct = requireCapability('product.archive')
+export const canCreateReviewRequest = requireCapability('product.review')
+export const canUpdateReviewRequest = requireCapability('product.review')
 
 export const canManageCategories = requireCapability('category.manage')
 export const canUploadMedia = requireCapability('media.upload')

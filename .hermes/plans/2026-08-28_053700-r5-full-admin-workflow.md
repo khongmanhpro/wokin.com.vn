@@ -26,10 +26,11 @@
 
 **Goal:** Make `draft → in_review → changes_requested/approved → published → archived` explicit, with reviewer comments/revision evidence and audited transitions.
 
-- Design the smallest durable model needed for review request/comment/transition evidence.
-- This is a schema phase: migration generation, types, migration contract tests, fresh DB import/re-import proof are mandatory.
-- Publisher may publish only approved/valid content; reviewer and publisher separation remains server-enforced.
-- No public release/snapshot publish implementation (R6/R7).
+- Add `changes_requested` as an explicit Product lifecycle state; do not overload `draft` or infer workflow state from UI-only flags.
+- Add one durable `review-requests` collection: required Product relationship, required reviewer comment, requester/reviewer identity, open/resolved state, and resolution metadata. Existing `AuditEvents` remains the append-only transition/revision evidence store; do not duplicate sensitive snapshots in the review document.
+- Enforce a server-side transition matrix: content-capable users may submit `draft`/`changes_requested` to `in_review`; `product.review` may move `in_review` to `approved` or `changes_requested` and create/resolve review requests; `product.publish` may move only `approved` to `published` and `published` to `archived`. No content mutation of a published product by an editor; existing separation-of-duties remains effective.
+- This is a schema phase: generated Payload migration, generated types, migration contract tests, fresh DB import/re-import proof are mandatory. Do not hand-edit an applied migration.
+- Publish readiness validation (SEO/media completeness) is added in R5.5; R5.3 may not create snapshot/release/public publish implementation (R6/R7).
 
 ## R5.4 — Operational collection UX
 

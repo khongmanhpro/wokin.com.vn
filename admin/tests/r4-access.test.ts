@@ -60,7 +60,7 @@ test('editor can edit content but cannot set product status to published', async
   assert.equal(await canChangeProductStatus({ req: request, siblingData: { status: 'published' } } as any), false)
   assert.throws(
     () => enforceProductMutationPolicy({ data: { status: 'published' }, originalDoc: { status: 'approved' }, req: request } as any),
-    /not allowed to set product status to published/i,
+    /invalid product status transition/i,
   )
 })
 

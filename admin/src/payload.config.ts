@@ -12,6 +12,7 @@ import { Pages } from './collections/Pages'
 import { Products } from './collections/Products'
 import { Redirects } from './collections/Redirects'
 import { Releases } from './collections/Releases'
+import { ReviewRequests } from './collections/ReviewRequests'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const publicServerURL = process.env.PAYLOAD_PUBLIC_SERVER_URL
@@ -32,7 +33,7 @@ export default buildConfig({
       titleSuffix: '— WOKIN Admin',
     },
   },
-  collections: [Admins, Categories, Media, Products, Pages, Redirects, CatalogSnapshots, Releases, AuditEvents],
+  collections: [Admins, Categories, Media, Products, ReviewRequests, Pages, Redirects, CatalogSnapshots, Releases, AuditEvents],
   cors: publicServerURL ? [publicServerURL] : [],
   csrf: publicServerURL ? [publicServerURL] : [],
   db: postgresAdapter({

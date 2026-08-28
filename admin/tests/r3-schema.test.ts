@@ -21,8 +21,8 @@ function fieldNames(collection: CollectionConfig) {
 test('R3 registers only the catalog model and migration-contract foundation collections', async () => {
   const payloadConfig = await config
   assert.deepEqual(
-    payloadConfig.collections?.map((collection) => collection.slug).slice(0, 9),
-    ['admins', 'categories', 'media', 'products', 'pages', 'redirects', 'catalog-snapshots', 'releases', 'audit-events'],
+    payloadConfig.collections?.map((collection) => collection.slug).slice(0, 10),
+    ['admins', 'categories', 'media', 'products', 'review-requests', 'pages', 'redirects', 'catalog-snapshots', 'releases', 'audit-events'],
   )
 })
 
@@ -43,7 +43,7 @@ test('products expose production identity, lifecycle, Vietnamese content, struct
   assert.equal(sku && 'required' in sku ? sku.required : undefined, false)
   assert.deepEqual(
     status && 'options' in status ? status.options?.map((option) => typeof option === 'string' ? option : option.value) : [],
-    ['draft', 'in_review', 'approved', 'published', 'archived'],
+    ['draft', 'in_review', 'changes_requested', 'approved', 'published', 'archived'],
   )
 })
 

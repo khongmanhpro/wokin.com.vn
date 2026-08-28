@@ -32,7 +32,7 @@ export interface ImportSummary {
   dryRun: boolean
 }
 
-export type ProductStatus = 'draft' | 'in_review' | 'approved' | 'published' | 'archived'
+export type ProductStatus = 'draft' | 'in_review' | 'changes_requested' | 'approved' | 'published' | 'archived'
 
 export interface CatalogSeo {
   title: string

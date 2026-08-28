@@ -24,8 +24,7 @@ export const canChangeProductStatus: FieldAccess = (args) => {
   if (!isActiveAdmin(req.user)) return false
 
   const status = requestedStatus(args)
-  if (status === 'published') return hasCapability(req.user, 'product.publish')
-  if (status === 'approved') return hasCapability(req.user, 'product.review')
-  if (status === 'archived') return hasAnyCapability(req.user, ['product.archive', 'product.publish'])
+  if (status === 'published' || status === 'archived') return hasCapability(req.user, 'product.publish')
+  if (status === 'approved' || status === 'changes_requested') return hasCapability(req.user, 'product.review')
   return hasAnyCapability(req.user, ['product.update', 'product.review'])
 }

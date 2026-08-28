@@ -71,6 +71,7 @@ export interface Config {
     categories: Category;
     media: Media;
     products: Product;
+    'review-requests': ReviewRequest;
     pages: Page;
     redirects: Redirect;
     'catalog-snapshots': CatalogSnapshot;
@@ -87,6 +88,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    'review-requests': ReviewRequestsSelect<false> | ReviewRequestsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'catalog-snapshots': CatalogSnapshotsSelect<false> | CatalogSnapshotsSelect<true>;
@@ -222,14 +224,13 @@ export interface Media {
 export interface Product {
   id: string;
   /**
-   * Khóa identity nguồn, bất biến sau khi tạo.
+   * Khóa định danh nguồn, bất biến sau khi tạo.
    */
   legacySourceId: number;
   /**
-   * Có thể trống hoặc trùng; tuyệt đối không dùng làm identity.
+   * Có thể trống hoặc trùng; tuyệt đối không dùng làm định danh.
    */
   sku?: string | null;
-  status: 'draft' | 'in_review' | 'approved' | 'published' | 'archived';
   nameVi: string;
   slugVi: string;
   descriptionVi?: string | null;
@@ -262,13 +263,17 @@ export interface Product {
     | null;
   categories: (string | Category)[];
   media: (string | Media)[];
-  publishedAt?: string | null;
   seo?: {
     title?: string | null;
     description?: string | null;
     canonicalPath?: string | null;
     noIndex?: boolean | null;
   };
+  status: 'draft' | 'in_review' | 'changes_requested' | 'approved' | 'published' | 'archived';
+  publishedAt?: string | null;
+  /**
+   * Dữ liệu nhập nguồn được bảo toàn để đối chiếu.
+   */
   sourceMetadata: {
     sourceType: string;
     legacySlug: string;
@@ -288,6 +293,23 @@ export interface Product {
     importedAt: string;
     legacyPublishedAt?: string | null;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "review-requests".
+ */
+export interface ReviewRequest {
+  id: string;
+  product: string | Product;
+  requester: string | Admin;
+  reviewer: string | Admin;
+  comment: string;
+  state: 'open' | 'resolved';
+  resolvedAt?: string | null;
+  resolvedBy?: (string | null) | Admin;
+  resolution?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -456,6 +478,10 @@ export interface PayloadLockedDocument {
         value: string | Product;
       } | null)
     | ({
+        relationTo: 'review-requests';
+        value: string | ReviewRequest;
+      } | null)
+    | ({
         relationTo: 'pages';
         value: string | Page;
       } | null)
@@ -597,7 +623,6 @@ export interface MediaSelect<T extends boolean = true> {
 export interface ProductsSelect<T extends boolean = true> {
   legacySourceId?: T;
   sku?: T;
-  status?: T;
   nameVi?: T;
   slugVi?: T;
   descriptionVi?: T;
@@ -636,7 +661,6 @@ export interface ProductsSelect<T extends boolean = true> {
       };
   categories?: T;
   media?: T;
-  publishedAt?: T;
   seo?:
     | T
     | {
@@ -645,6 +669,8 @@ export interface ProductsSelect<T extends boolean = true> {
         canonicalPath?: T;
         noIndex?: T;
       };
+  status?: T;
+  publishedAt?: T;
   sourceMetadata?:
     | T
     | {
@@ -658,6 +684,22 @@ export interface ProductsSelect<T extends boolean = true> {
         importedAt?: T;
         legacyPublishedAt?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "review-requests_select".
+ */
+export interface ReviewRequestsSelect<T extends boolean = true> {
+  product?: T;
+  requester?: T;
+  reviewer?: T;
+  comment?: T;
+  state?: T;
+  resolvedAt?: T;
+  resolvedBy?: T;
+  resolution?: T;
   updatedAt?: T;
   createdAt?: T;
 }

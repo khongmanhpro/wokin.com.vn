@@ -5,7 +5,7 @@ import { activeAuthenticated, canCreateProduct, canDeleteProduct, canUpdateProdu
 import { canChangeProductContent, canChangeProductSEO, canChangeProductStatus } from '../access/fieldAccess'
 import { enforceProductMutationPolicy } from '../access/productPolicy'
 
-const productStatuses = ['draft', 'in_review', 'approved', 'published', 'archived'] as const
+const productStatuses = ['draft', 'in_review', 'changes_requested', 'approved', 'published', 'archived'] as const
 const audit = auditHooks('products')
 
 export const Products: CollectionConfig = {
