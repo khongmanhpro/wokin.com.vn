@@ -64,7 +64,15 @@ export const ReviewRequests: CollectionConfig = {
     read: activeAuthenticated,
     update: canUpdateReviewRequest,
   },
-  admin: { group: 'Catalog', useAsTitle: 'comment' },
+  admin: {
+    defaultColumns: ['product', 'requester', 'reviewer', 'state', 'resolvedAt'],
+    description: 'Theo dõi các yêu cầu rà soát và trạng thái xử lý dữ liệu danh mục.',
+    group: 'Danh mục',
+    listSearchableFields: ['product', 'requester', 'reviewer', 'state'],
+    pagination: { defaultLimit: 25, limits: [25, 50, 100] },
+    useAsTitle: 'comment',
+  },
+  labels: { singular: 'Yêu cầu rà soát', plural: 'Yêu cầu rà soát' },
   hooks: { afterChange: audit.afterChange, afterDelete: audit.afterDelete, beforeChange: [enforceReviewRequestPolicy] },
   fields: [
     { name: 'product', type: 'relationship', relationTo: 'products', required: true, index: true },

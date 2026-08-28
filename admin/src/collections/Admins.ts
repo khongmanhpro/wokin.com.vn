@@ -22,12 +22,16 @@ export const Admins: CollectionConfig = {
   },
   access: { create: canManageUsers, delete: adminsDelete, read: adminsRead, update: adminsUpdate },
   admin: {
-    group: 'Administration',
+    defaultColumns: ['email', 'role', 'active'],
+    description: 'Quản lý tài khoản quản trị, vai trò và trạng thái truy cập.',
+    group: 'Quản trị',
+    listSearchableFields: ['email'],
+    pagination: { defaultLimit: 25, limits: [25, 50, 100] },
     useAsTitle: 'email',
   },
   labels: {
-    plural: 'Users',
-    singular: 'User',
+    plural: 'Quản trị viên',
+    singular: 'Quản trị viên',
   },
   hooks: {
     afterChange: audit.afterChange,

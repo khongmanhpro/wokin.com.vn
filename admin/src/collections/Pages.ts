@@ -7,7 +7,15 @@ const audit = auditHooks('pages')
 export const Pages: CollectionConfig = {
   slug: 'pages',
   access: { create: canUpdatePages, delete: canUpdatePages, read: activeAuthenticated, update: canUpdatePages },
-  admin: { group: 'Content', useAsTitle: 'titleVi' },
+  admin: {
+    defaultColumns: ['titleVi', 'slug', 'status'],
+    description: 'Quản lý nội dung và trạng thái xuất bản của các trang tĩnh.',
+    group: 'Nội dung',
+    listSearchableFields: ['slug'],
+    pagination: { defaultLimit: 25, limits: [25, 50, 100] },
+    useAsTitle: 'titleVi',
+  },
+  labels: { singular: 'Trang', plural: 'Trang' },
   hooks: { afterChange: audit.afterChange, afterDelete: audit.afterDelete },
   fields: [
     { name: 'titleVi', type: 'text', required: true },

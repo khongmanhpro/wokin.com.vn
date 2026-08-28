@@ -8,7 +8,15 @@ const audit = auditHooks('media')
 export const Media: CollectionConfig = {
   slug: 'media',
   access: { create: canUploadMedia, delete: canUpdateMedia, read: activeAuthenticated, update: canUpdateMedia },
-  admin: { defaultColumns: ['storageKey', 'width', 'height', 'rightsStatus'], group: 'Content', useAsTitle: 'storageKey' },
+  admin: {
+    defaultColumns: ['storageKey', 'path', 'width', 'height', 'rightsStatus'],
+    description: 'Quản lý tệp đa phương tiện, đường dẫn lưu trữ và tình trạng quyền sử dụng.',
+    group: 'Nội dung',
+    listSearchableFields: ['path', 'storageKey', 'contentSha256'],
+    pagination: { defaultLimit: 25, limits: [25, 50, 100] },
+    useAsTitle: 'storageKey',
+  },
+  labels: { singular: 'Tệp đa phương tiện', plural: 'Tệp đa phương tiện' },
   hooks: { afterChange: audit.afterChange, afterDelete: audit.afterDelete },
   fields: [
     { name: 'path', type: 'text', required: true, unique: true, index: true },

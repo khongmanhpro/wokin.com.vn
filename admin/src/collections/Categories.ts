@@ -8,7 +8,15 @@ const audit = auditHooks('categories')
 export const Categories: CollectionConfig = {
   slug: 'categories',
   access: { create: canManageCategories, delete: canManageCategories, read: activeAuthenticated, update: canManageCategories },
-  admin: { defaultColumns: ['nameVi', 'slug', 'status', 'sortOrder'], group: 'Catalog', useAsTitle: 'nameVi' },
+  admin: {
+    defaultColumns: ['nameVi', 'slug', 'status', 'sortOrder'],
+    description: 'Quản lý cấu trúc danh mục và thứ tự hiển thị trong danh mục sản phẩm.',
+    group: 'Danh mục',
+    listSearchableFields: ['slug'],
+    pagination: { defaultLimit: 25, limits: [25, 50, 100] },
+    useAsTitle: 'nameVi',
+  },
+  labels: { singular: 'Danh mục', plural: 'Danh mục' },
   hooks: {
     afterChange: audit.afterChange,
     afterDelete: audit.afterDelete,
