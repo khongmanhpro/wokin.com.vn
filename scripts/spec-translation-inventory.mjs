@@ -9,6 +9,7 @@ import {
   needsTranslation,
   normalizeLabelKey,
   parseLabeledSpecLine,
+  preservesNumericTokens,
   summarizeEnglishRemainder,
   VIETNAMESE_ASCII_WORDS,
 } from "./spec-translation-utils.mjs";
@@ -122,7 +123,8 @@ function statusForLine(source, lineTranslations, labels) {
   const reviewed = typeof lineTranslations.get(source) === "string" && lineTranslations.get(source).trim().length > 0;
   const labeled = parseLabeledSpecLine(source);
   const labelApplicable = Boolean(labeled && !needsTranslation(labeled.value) && !/\d\s?pcs?\b/i.test(labeled.value));
-  const labelTranslated = Boolean(labelApplicable && labels.get(labeled.labelKey));
+  const labelTarget = labelApplicable ? labels.get(labeled.labelKey) : undefined;
+  const labelTranslated = Boolean(labelTarget && preservesNumericTokens(labeled.label, labelTarget));
   const notNeeded = !needsTranslation(source);
   return {
     labelKey: labelApplicable ? labeled.labelKey : undefined,

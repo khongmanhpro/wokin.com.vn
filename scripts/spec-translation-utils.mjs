@@ -1,9 +1,9 @@
-const UNIT_WORDS = new Set([
+export const UNIT_WORDS = new Set([
   "mm", "cm", "m", "km", "kg", "g", "mg", "l", "ml", "v", "w", "kw", "a", "ah", "mah", "hz", "rpm", "min", "bar", "psi", "mpa", "nm", "lb", "lbs", "oz", "hp", "db",
 ]);
 
-const CODE_WORDS = new Set([
-  "crv", "cr-v", "cr-mo", "s2", "sk5", "hss", "abs", "pvc", "tpr", "pp", "tpe", "ce", "gs", "din", "iso", "ansi", "sae", "en", "vde", "wokin", "loncin", "ph", "pz", "tx", "torx", "dr",
+export const CODE_WORDS = new Set([
+  "crv", "cr-v", "cr-mo", "s2", "sk5", "hss", "abs", "pvc", "tpr", "pp", "tpe", "ce", "gs", "din", "iso", "ansi", "sae", "en", "vde", "wokin", "loncin", "ph", "pz", "tx", "torx", "dr", "sl",
 ]);
 
 const SIZE_WORDS = new Set(["xl", "xxl", "s", "m", "l"]);
@@ -14,11 +14,17 @@ const SIZE_WORDS = new Set(["xl", "xxl", "s", "m", "l"]);
 export const LOANWORDS = Object.freeze(new Set([
   "ac", "acrylic", "carbon", "carton", "crmo", "dc", "led", "li-ion", "pa", "pc",
   "lithium-ion", "npt", "phillips", "poly", "polyester", "pozidriv", "rpm",
-  "satin", "skin", "tct", "torx", "usb",
+  "satin", "scfm", "sds-plus", "sds-max", "skin", "tct", "torx", "usb",
 ]));
+
+const TECHNICAL_CODE_WORDS = new Set([
+  "abs", "ansi", "as/nzs", "ce", "cr-mo", "cr-v", "crv", "din", "en", "gs", "hss", "ip", "iso", "ph", "phillips", "poly", "pozidriv", "pp", "pvc", "pz", "sae", "s2", "scfm", "sds-plus", "sds-max", "sk5", "sl", "torx", "tpr", "tpe", "tx", "vde",
+]);
+const PAREN_TECHNICAL_TOKENS = new Set([...UNIT_WORDS, "inch", ...TECHNICAL_CODE_WORDS]);
 
 const VIETNAMESE_DIACRITIC_RE = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/iu;
 const HYBRID_SUFFIX_RE = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ][a-z]*s(?![\p{L}\d])/iu;
+const HYBRID_FINAL_CONSONANT_RE = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ][a-z]*[bdfjklqrswxz](?![\p{L}\d])/iu;
 // A Greek phi followed directly by a size/code (for example φ3hex) is a
 // common source typo. Do not treat full-width punctuation before a normal
 // numeric unit (：600ML, ≥100Nm) as a hybrid token.
@@ -30,7 +36,7 @@ export function hasVietnameseText(value) {
 
 export function hasHybridToken(value) {
   const source = String(value ?? "");
-  return HYBRID_SUFFIX_RE.test(source) || GLUED_ENGLISH_CODE_RE.test(source);
+  return HYBRID_SUFFIX_RE.test(source) || HYBRID_FINAL_CONSONANT_RE.test(source) || GLUED_ENGLISH_CODE_RE.test(source);
 }
 
 function normalizeWord(value) {
@@ -41,17 +47,44 @@ function isNumericPrefix(value, index) {
   return /\d\s*$/.test(value.slice(0, index));
 }
 
+function parentheticalRangeAt(source, index) {
+  for (const match of source.matchAll(/\(([^)]*)\)/gu)) {
+    const start = match.index ?? 0;
+    const end = start + match[0].length;
+    if (index > start && index < end) return { content: match[1], start, end };
+  }
+  return undefined;
+}
+
+function isTechnicalParentheticalToken(token, source, index) {
+  const range = parentheticalRangeAt(source, index);
+  if (!range) return false;
+  const normalized = normalizeWord(token);
+  if (PAREN_TECHNICAL_TOKENS.has(normalized)) return true;
+  if (/^[a-z]+\d+$/i.test(token)) return true;
+  // AS/NZS1716 is tokenized as `AS`, `NZS1716` because `/` separates words.
+  // Accept the short prefix only when the complete standards code is present.
+  if ((normalized === "as" || normalized === "nzs") && /\bas\/nzs\d+\b/i.test(range.content)) return true;
+  return false;
+}
+
 function isAllowedToken(token, source, index) {
   const normalized = normalizeWord(token);
+  if (isTechnicalParentheticalToken(token, source, index)) return true;
   if (SIZE_WORDS.has(normalized) || CODE_WORDS.has(normalized)) return true;
   if (UNIT_WORDS.has(normalized)) return isNumericPrefix(source, index);
   if (normalized === "in" || normalized === "inch" || normalized === "pc" || normalized === "pcs") return isNumericPrefix(source, index);
+  if (normalized === "as" && /\bas\/nzs\d+\b/i.test(source)) return true;
   // Product/model codes are data, not prose: ABC-2, GP20V, M14, 40Cr.
   // Hyphenated tokens need a stricter shape: 2Tx3M-Green is a description,
   // while ABC-2 remains a code. Full material/code allowlist entries above
   // (for example Cr-V) are always accepted.
   if (normalized.includes("-")) {
     if (/^[a-z\d]+-\d+$/i.test(token)) return true;
+    const parts = normalized.split("-");
+    if (parts.length > 1 && parts.every((part) =>
+      SIZE_WORDS.has(part) || CODE_WORDS.has(part) || /^(?=.*[a-z])(?=.*\d)[a-z\d]+$/i.test(part)
+    )) return true;
     return false;
   }
   if (/^(?=.*[a-z])(?=.*\d)[a-z\d]+$/i.test(token)) return true;
@@ -65,13 +98,15 @@ export const VIETNAMESE_ASCII_WORDS = Object.freeze(new Set([
   // Verified Vietnamese words found in reviewed technical copy. Ambiguous
   // collisions (the, in, than, go, may, con, pin, ...) are only ignored when
   // the surrounding string already contains Vietnamese diacritics.
-  "an", "bao", "bugi", "cao", "cam", "che", "chia", "chi", "chiec", "cho", "con", "danh", "dau", "dao",
+  "an", "anh", "bao", "bugi", "cao", "cam", "che", "chia", "chi", "chiec", "cho", "con", "danh", "dau", "dao",
   "den", "di", "dung", "gian", "go", "hai", "hop", "in", "kho", "khoan", "khi", "khop",
   "khung", "kim", "kinh", "leo", "loai", "lon", "luong", "ly", "may", "men", "mo", "nang",
   "nhanh", "phu", "phe", "phun", "pin", "quang", "quay", "ra", "ram", "ren", "rung",
   "sau", "sac", "sinh", "suat", "tay", "thanh", "than", "the", "theo", "thiet", "thay", "xe",
   "tia", "tiet", "tinh", "treo", "trong", "trung", "tua", "va", "vao", "vi", "xo", "xuat",
   "xi-lanh", "xy-lanh", "sl", "niken", "molypden", "nung",
+  // Additional unaccented Vietnamese words used in reviewed C1.3 labels.
+  "bi", "bo", "chu", "lanh", "loe", "nam", "ngang", "pha", "phay", "quan", "sang", "sao", "tam", "taro", "then", "tra", "trang", "xi", "xoay",
 ]));
 
 export function englishWordTokens(value, ignoredWords = new Set(), minimumLetters = 2) {
@@ -95,6 +130,71 @@ export function englishWordTokens(value, ignoredWords = new Set(), minimumLetter
 
 export function needsTranslation(value) {
   return englishWordTokens(value).length > 0;
+}
+
+const NUMERIC_UNITS = "kpa|rpm|mAh|pcs?|hp|kw|nm|mm|cm|km|kg|mg|ml|hz|psi|bar|ah|nm|lb|kv|ma|°c|°|v|w|a|g|l|m|min|%";
+
+export function numericTokens(value) {
+  const source = String(value ?? "");
+  const values = [...source.matchAll(new RegExp(`\\d+(?:[.,]\\d+)?(?:\\/\\d+(?:[.,]\\d+)?)?(?:(?:\\s?(?:${NUMERIC_UNITS})(?!\\p{L}))|[\"″′'])?`, "giu"))]
+    .map(([token]) => {
+      const normalized = token.replace(/\s+/g, "").toLowerCase();
+      return /\d+(?:pcs?)$/i.test(normalized) ? normalized.replace(/pcs?$/i, "") : normalized;
+    });
+  const codes = [...source.matchAll(/\b(?:m|t|ph|pz|sl|s|n|x)\d+(?:[.,]\d+)?/gi)]
+    .map(([token]) => token.toLowerCase());
+  return [...values, ...codes];
+}
+
+function normalizeTechnicalToken(value) {
+  const normalized = String(value ?? "")
+    .toLowerCase()
+    .replace(/[‐‑‒–—―]/g, "-")
+    .replace(/[“”″′']/g, "")
+    .replace(/\s+/g, "");
+  if (normalized === "crv" || normalized === "cr-mo") return normalized.replace("cr-mo", "cr-mo");
+  if (normalized === "pozi") return "pozidriv";
+  if (normalized === "sdsplus") return "sds-plus";
+  if (normalized === "sdsmax") return "sds-max";
+  return normalized;
+}
+
+function technicalTokens(value) {
+  const source = String(value ?? "");
+  const tokens = new Set();
+  const parentheticalRanges = [...source.matchAll(/\(([^)]*)\)/gu)].map((match) => [match.index ?? 0, (match.index ?? 0) + match[0].length]);
+  for (const match of source.matchAll(/[A-Za-z][A-Za-z0-9]*(?:[-/][A-Za-z0-9]+)*/gu)) {
+    const token = match[0];
+    const normalized = normalizeTechnicalToken(token);
+    const index = match.index ?? 0;
+    const inParentheses = parentheticalRanges.some(([start, end]) => index >= start && index < end);
+    const codeLike = /[A-Za-z]/.test(token) && /\d/.test(token) && !/^(?:pc|pcs)$/i.test(token);
+    if ((inParentheses && PAREN_TECHNICAL_TOKENS.has(normalized)) || TECHNICAL_CODE_WORDS.has(normalized) || codeLike) tokens.add(normalized);
+  }
+  return tokens;
+}
+
+function technicalTokenPresent(required, actual) {
+  if (actual.has(required)) return true;
+  if (required === "crv" || required === "cr-v") return actual.has("crv") || actual.has("cr-v");
+  if (required === "pozi" || required === "pozidriv") return actual.has("pozi") || actual.has("pozidriv");
+  if (required === "sdsplus" || required === "sds-plus") return actual.has("sdsplus") || actual.has("sds-plus");
+  if (required === "sdsmax" || required === "sds-max") return actual.has("sdsmax") || actual.has("sds-max");
+  if (required === "sl") return actual.has("sl") || actual.has("dẹt");
+  return false;
+}
+
+export function preservesTechnicalTokens(source, translated) {
+  const actual = technicalTokens(translated);
+  return [...technicalTokens(source)].every((token) => technicalTokenPresent(token, actual));
+}
+
+export function preservesNumericTokens(source, translated) {
+  const expected = numericTokens(source);
+  const actual = numericTokens(translated);
+  const counts = (tokens) => tokens.reduce((map, token) => map.set(token, (map.get(token) ?? 0) + 1), new Map());
+  const actualCounts = counts(actual);
+  return [...counts(expected)].every(([token, count]) => (actualCounts.get(token) ?? 0) >= count);
 }
 
 export function normalizeLabelKey(value) {

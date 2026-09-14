@@ -11,9 +11,12 @@ import { fileURLToPath } from "node:url";
 import {
   hasHybridToken,
   hasVietnameseText,
+  numericTokens,
   needsTranslation,
   normalizeLabelKey,
   parseLabeledSpecLine,
+  preservesNumericTokens,
+  preservesTechnicalTokens,
 } from "./spec-translation-utils.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -232,6 +235,22 @@ function replaceWholePhrase(text, source, target) {
   return text.replace(new RegExp(`(?<![\\p{L}\\d])${escapeRegExp(source)}(?![\\p{L}\\d])`, "giu"), target);
 }
 
+function normalizeSpecLineSpacing(value) {
+  const source = String(value);
+  if (!hasVietnameseText(source)) return source;
+  const urlIndex = source.search(/\bhttps?:\/\//iu);
+  const prefix = urlIndex >= 0 ? source.slice(0, urlIndex) : source;
+  const suffix = urlIndex >= 0 ? source.slice(urlIndex) : "";
+  const normalized = prefix.replace(/:([^\s])/gu, (match, next, offset, full) => {
+    if (next === "/") return match;
+    const before = full.slice(0, offset);
+    const codePrefix = before.match(/(?:^|[\s>])([A-Za-z0-9][A-Za-z0-9+._:-]*)$/u)?.[1] ?? "";
+    if (codePrefix && /^[A-Za-z0-9]$/u.test(next)) return match;
+    return `: ${next}`;
+  });
+  return `${normalized}${suffix}`;
+}
+
 export function createTranslator(glossary, specTranslations = {}) {
   const terms = [...glossary.terms].sort((left, right) => right[0].length - left[0].length);
   // `pc`/`pcs` is a unit attached to numeric values. The numeric-token gate
@@ -246,48 +265,45 @@ export function createTranslator(glossary, specTranslations = {}) {
     ...Object.entries(specTranslations.labels ?? {}),
   ].map(([source, target]) => [normalizeLabelKey(source), normalizedSpecText(target)]));
   const translateText = (text) => {
-    let output = text
-      .replace(/STOCK NO\./gi, glossary.ui["STOCK NO."])
-      .replace(/QTY\.\/CARTON/gi, glossary.ui["QTY./CARTON"])
-      .replace(/Brushless Motor/gi, "Động cơ không chổi than")
-      .replace(/CE approval/gi, "Chứng nhận CE")
-      .replace(/Soft start/gi, "Khởi động êm")
-      .replace(/variable speed/gi, "điều tốc")
-      .replace(/Blowing Speed/gi, "Tốc độ thổi")
-      .replace(/Blowing Volume/gi, "Lưu lượng thổi")
-      .replace(/3-Speed control for versatility to switch/gi, "Điều khiển 3 cấp tốc độ linh hoạt")
-      .replace(/Folding handle design; 2-in-1 design makes blower &amp; vacuum can be switched at will/gi, "Tay cầm gập; thiết kế 2 trong 1 cho phép chuyển đổi chế độ thổi và hút")
-      .replace(/With (\d+)(pcs?) dust bag/gi, "Kèm $1 túi chứa bụi")
-      .replace(/Tool Only: Battery and Charger not included/gi, "Chỉ thân máy: không kèm pin và bộ sạc");
+    let output = text;
+    for (const [source, target] of [
+      ["STOCK NO.", glossary.ui["STOCK NO."]],
+      ["QTY./CARTON", glossary.ui["QTY./CARTON"]],
+      ["Brushless Motor", "Động cơ không chổi than"],
+      ["CE approval", "Chứng nhận CE"],
+      ["Soft start", "Khởi động êm"],
+      ["variable speed", "điều tốc"],
+      ["Blowing Speed", "Tốc độ thổi"],
+      ["Blowing Volume", "Lưu lượng thổi"],
+      ["3-Speed control for versatility to switch", "Điều khiển 3 cấp tốc độ linh hoạt"],
+      ["Folding handle design; 2-in-1 design makes blower &amp; vacuum can be switched at will", "Tay cầm gập; thiết kế 2 trong 1 cho phép chuyển đổi chế độ thổi và hút"],
+      ["Tool Only: Battery and Charger not included", "Chỉ thân máy: không kèm pin và bộ sạc"],
+    ]) output = replaceWholePhrase(output, source, target);
+    output = output.replace(/(?<![\p{L}\d])With (\d+)(pcs?) dust bag(?![\p{L}\d])/giu, "Kèm $1 túi chứa bụi");
     for (const [source, target] of specLabels) output = replaceWholePhrase(output, source, target);
     for (const [source, target] of terms) output = replaceWholePhrase(output, source, target);
-    output = output
-      .replace(/Brushless Motor/gi, "Động cơ không chổi than")
-      .replace(/CE approval/gi, "Chứng nhận CE")
-      .replace(/Soft start/gi, "Khởi động êm")
-      .replace(/variable speed/gi, "điều tốc")
-      .replace(/Blowing Speed/gi, "Tốc độ thổi")
-      .replace(/Blowing Volume/gi, "Lưu lượng thổi")
-      .replace(/3-Speed control for versatility to switch/gi, "Điều khiển 3 cấp tốc độ linh hoạt")
-      .replace(/Folding handle design; 2-in-1 design makes (?:blower|máy thổi) &amp; vacuum can be switched at will/gi, "Tay cầm gập; thiết kế 2 trong 1 cho phép chuyển đổi chế độ thổi và hút")
-      .replace(/With (\d+)(pcs?) dust bag/gi, "Kèm $1 túi chứa bụi")
-      .replace(/Tool Only/gi, "Chỉ thân máy")
-      .replace(/(?:Battery|Pin) and Charger not included/gi, "không kèm pin và bộ sạc")
-      .replace(/color box/gi, "hộp màu")
-      .replace(/\bSIZE\b/gi, "KÍCH THƯỚC")
-      .replace(/\bTANK\b/gi, "BÌNH CHỨA")
-      .replace(/\bMAX\. RPM\b/gi, "VÒNG\/PHÚT TỐI ĐA");
+    for (const [source, target] of [
+      ["Folding handle design; 2-in-1 design makes blower &amp; vacuum can be switched at will", "Tay cầm gập; thiết kế 2 trong 1 cho phép chuyển đổi chế độ thổi và hút"],
+      ["Folding handle design; 2-in-1 design makes máy thổi &amp; vacuum can be switched at will", "Tay cầm gập; thiết kế 2 trong 1 cho phép chuyển đổi chế độ thổi và hút"],
+      ["Tool Only", "Chỉ thân máy"],
+      ["Battery and Charger not included", "không kèm pin và bộ sạc"],
+      ["Pin and Charger not included", "không kèm pin và bộ sạc"],
+      ["color box", "hộp màu"],
+      ["SIZE", "KÍCH THƯỚC"],
+      ["TANK", "BÌNH CHỨA"],
+      ["MAX. RPM", "VÒNG/PHÚT TỐI ĐA"],
+    ]) output = replaceWholePhrase(output, source, target);
     return output;
   };
   const translateSpecLine = (rawLine) => {
     const raw = rawLine.trim();
     if (!raw) return "";
     const reviewed = lineTranslations.get(normalizedSpecText(raw));
-    if (reviewed) return reviewed.startsWith(">") ? reviewed.replace(/^>\s*/, "> ") : `> ${reviewed}`;
+    if (reviewed) return normalizeSpecLineSpacing(reviewed.startsWith(">") ? reviewed.replace(/^>\s*/, "> ") : `> ${reviewed}`);
     const labeled = parseLabeledSpecLine(raw);
     if (labeled && !needsTranslation(labeled.value) && !/\d\s?pcs?\b/i.test(labeled.value)) {
       const translatedLabel = labelTranslations.get(labeled.labelKey);
-      if (translatedLabel) {
+      if (translatedLabel && preservesNumericTokens(labeled.label, translatedLabel)) {
         const translatedLabelLine = `> ${translatedLabel}: ${labeled.value}`;
         if (!hasHybridToken(translatedLabelLine)) return translatedLabelLine;
       }
@@ -295,7 +311,7 @@ export function createTranslator(glossary, specTranslations = {}) {
     const translated = translateText(raw);
     // Keep the source wording when no reviewed translation exists. Replacing
     // it with a generic label loses product information and is forbidden.
-    const normalizedTranslated = translated.replace(/^>\s*/, "> ");
+    const normalizedTranslated = normalizeSpecLineSpacing(translated.replace(/^>\s*/, "> "));
     const normalizedSource = normalizedSpecText(raw).replace(/^>\s*/, "> ");
     if (hasHybridToken(normalizedTranslated)) return normalizedSource;
     if (hasVietnameseText(normalizedTranslated) && /\d\s?pcs?\b/i.test(normalizedTranslated)) return normalizedSource;
@@ -307,18 +323,6 @@ export function createTranslator(glossary, specTranslations = {}) {
     return cellTranslations.get(raw) ?? translateText(raw);
   };
   return { translateCell, translateSpecLine, translateText };
-}
-
-function numericTokens(value) {
-  const units = "kpa|rpm|mAh|pcs?|hp|kw|nm|mm|cm|km|kg|mg|ml|hz|psi|bar|ah|nm|lb|kv|ma|°c|°|v|w|a|g|l|m|min|%";
-  const values = [...value.matchAll(new RegExp(`\\d+(?:[.,]\\d+)?(?:\\/\\d+(?:[.,]\\d+)?)?(?:\\s?(?:${units}|[\"″′'])(?!\\p{L}))?`, "giu"))]
-    .map(([token]) => {
-      const normalized = token.replace(/\s+/g, "").toLowerCase();
-      return /\d+(?:pcs?)$/i.test(normalized) ? normalized.replace(/pcs?$/i, "") : normalized;
-    });
-  const codes = [...value.matchAll(/\b(?:m|t|ph|pz|sl|s|n|x)\d+(?:[.,]\d+)?/gi)]
-    .map(([token]) => token.toLowerCase());
-  return [...values, ...codes];
 }
 
 function assertNumericTokens(source, translated, context, errors) {
@@ -366,6 +370,8 @@ function validateAndNormalize({ sourceDir, publicDir }) {
     else for (const [source, target] of Object.entries(dictionary)) {
       if (!nonEmptyString(source) || !nonEmptyString(target)) errors.push(`spec-translations-vi.json: ${field} có mục dịch rỗng hoặc không hợp lệ.`);
       else if (hasVietnameseQuantityAbbreviation(target)) errors.push(`spec-translations-vi.json: ${field} target chứa pcs viết tắt số lượng; dùng từ tiếng Việt (chiếc/cái/bộ). Source: ${source}`);
+      else if (!preservesNumericTokens(source, target)) errors.push(`spec-translations-vi.json: ${field} target làm mất token số/đơn vị; giữ nguyên số, phân số, và ký hiệu. Source: ${source} Target: ${target}`);
+      else if (!preservesTechnicalTokens(source, target)) errors.push(`spec-translations-vi.json: ${field} target làm mất mã/đơn vị/thuật ngữ kỹ thuật; giữ nguyên mã nguồn. Source: ${source} Target: ${target}`);
       else if (needsTranslation(target)) errors.push(`spec-translations-vi.json: ${field} target còn English ngoài allowlist; hãy dịch trọn câu. Source: ${source} Target: ${target}`);
       else if (hasHybridToken(target)) errors.push(`spec-translations-vi.json: ${field} target chứa token lai; hãy dịch trọn từ. Source: ${source} Target: ${target}`);
     }

@@ -65,6 +65,7 @@ test("needsTranslation ignores measurements, units, and model codes but keeps re
   assert.equal(needsTranslation("ABC-2"), false);
   assert.equal(needsTranslation("40Cr"), false);
   assert.equal(needsTranslation("Cr-V"), false);
+  assert.equal(needsTranslation("M-L-XL-XXL"), false);
   assert.equal(needsTranslation("2Tx3M-Green"), true);
   assert.equal(needsTranslation("4 inch"), false);
   assert.equal(needsTranslation("Suitable for workshop use."), true);
@@ -74,6 +75,13 @@ test("needsTranslation ignores measurements, units, and model codes but keeps re
   assert.equal(needsTranslation("> Đầu ren NPT 1/4″"), false);
   assert.equal(needsTranslation("> Đèn LED tích hợp"), false);
   assert.equal(needsTranslation("> Kích thước with case"), true);
+  assert.equal(needsTranslation("Kích thước (inch/mm)"), false);
+  assert.equal(needsTranslation("Áp suất khí (psi|bar)"), false);
+  assert.equal(needsTranslation("Tiêu chuẩn CE EN14387 & AS/NZS1716"), false);
+  assert.equal(needsTranslation("AS/NZS1716"), false);
+  assert.equal(needsTranslation("as"), true);
+  assert.equal(needsTranslation("Cấp bảo vệ (IP)"), false);
+  assert.equal(needsTranslation("Kích thước (with case)"), true);
   assert.equal(needsTranslation("The size"), true);
 });
 
@@ -103,6 +111,33 @@ test("inventory applies label translations before listing free lines", async () 
     assert.ok(inventory.missing.some((entry) => entry.kind === "line" && entry.source === "> Suitable for workshop use."));
     assert.equal(inventory.missing.at(-1).kind, "cell");
     assert.equal(inventory.missing.at(-1).source, "RED");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("inventory does not count a label whose numeric tokens are not preserved", async () => {
+  const { collectSpecTranslationInventory } = await import(`${inventoryUrl.href}?test=${Date.now()}-dead-label`);
+  const root = mkdtempSync(path.join(tmpdir(), "wokin-spec-inventory-dead-label-"));
+  try {
+    writeJson(path.join(root, "products.json"), [{
+      id: 1,
+      short_description: "<p>&gt; 13pcs 1/4″ cr-v sockets: 1/4″</p>",
+    }]);
+    writeJson(path.join(root, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: {},
+      labels: { "13pcs 1/4″ cr-v sockets": "13 đầu tuýp 1/4" },
+      cells: {},
+    });
+    const inventory = collectSpecTranslationInventory({
+      sourceDir: root,
+      translationFile: path.join(root, "spec-translations-vi.json"),
+      generatedFile: path.join(root, "missing-generated.json"),
+    });
+    assert.equal(inventory.summary.lines.translated, 0);
+    assert.equal(inventory.summary.lines.missing, 1);
+    assert.ok(inventory.missing.some((entry) => entry.kind === "label" && entry.source === "13pcs 1/4″ cr-v sockets"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

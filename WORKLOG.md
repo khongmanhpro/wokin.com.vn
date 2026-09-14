@@ -57,10 +57,10 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-09-14 bởi Claude (commit C1.2b–d `f0ebdf4`; prompt Codex v7)_
+_Cập nhật: 2026-09-14 bởi Codex (C1.3.1 đã sửa review, gate PASS; chờ review + commit)_
 
-- **Nhánh `main`:** Phase 0–11, checkpoint hạ tầng C1 (`a40cff1`) và C1.2b–d (`f0ebdf4`) đã commit. Working tree sạch (trừ untracked được phép).
-- **Gate (Claude chạy lại trước commit `f0ebdf4`, 2026-09-14):** audit 0, typecheck PASS, **77/77 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS.
+- **Nhánh `main`:** Phase 0–11, checkpoint hạ tầng C1 (`a40cff1`) và C1.2b–d (`f0ebdf4`) đã commit. C1.3.0 + C1.3.1 và lô dịch hiện còn **chưa commit**; untracked `.claude/`, `.hermes/`, `reports/` vẫn được giữ nguyên.
+- **Gate sau C1.3.1 (2026-09-14):** typecheck PASS, **80/80 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS, `git diff --check` PASS; npm audit 0 vulnerabilities.
 - **Kết luận nghiệm thu:** **NO-GO production.** Kỹ thuật đạt; nội dung spec đang được dịch theo lô và các quyết định giao diện vẫn chờ (xem mục 3).
 - **Payload CMS worktree:** 11 commit trên nhánh riêng + ~36 file sửa chưa commit. Admin UX **chưa được nghiệm thu**. Chưa merge vào `main`.
 - **Chưa push, chưa deploy** bất cứ thứ gì.
@@ -71,7 +71,7 @@ _Cập nhật: 2026-09-14 bởi Claude (commit C1.2b–d `f0ebdf4`; prompt Codex
 
 | ID | Việc | Trạng thái | Chờ ai | Ghi chú |
 |---|---|---|---|---|
-| C1 | **C1.2d hoàn tất**; coverage hiện **1232 đã dịch / 1547 không cần dịch / 4621 còn thiếu trên 7400** (dòng 4298, ô bảng 323; 758 nhãn chưa phủ) | **Blocker**; C1.2b–d commit `f0ebdf4`. Kế tiếp C1.3.0 (sửa "êmer" + khoảng trắng sau `:`) rồi 46 ô bảng lai → nhãn `size` | Codex (prompt v7) | Placeholder = 0; English remainder generated 4415 chuỗi/5841 occurrences (dòng 4161/5417, ô 254/424). Quality gate: hybrid có dấu 0, Vietnamese+pcs 0, `N chi tiết` tự động ngoài từ điển 0; audit rộng còn 46 chuỗi/80 occurrences Việt trộn English ngoài allowlist (đều ở ô bảng chưa dịch). Dictionary 217 dòng / 274 nhãn / 28 ô (519 mục). Lô kế tiếp bắt đầu từ nhãn `size`. |
+| C1 | **C1.3.0 + C1.3.1 (lô 532 mục) hoàn tất**; coverage hiện **1946 đã dịch / 1589 không cần dịch / 3865 còn thiếu trên 7400** (3613 dòng, 282 nhãn, 252 ô) | **Blocker**; nền C1.2b–d commit `f0ebdf4`, thay đổi C1.3 chưa commit. C1.3.1 đã sửa `SL`, bảo toàn mã/khoảng trắng/đơn vị, gate nhãn chết và gate kỹ thuật; **đang chờ review + commit**, chưa mở batch `0utside clamp` | Codex (prompt v10) | Generated: English remainder 3733 chuỗi/5013 occurrences (dòng 3545/4689, ô 188/324). Quality gate: hybrid có dấu 0, Vietnamese+pcs 0, `N chi tiết` tự động ngoài từ điển 0, Việt trộn English ngoài allowlist 0. Dictionary hiện 217 dòng / 758 nhãn / 74 ô = 1049 mục. Checksum generated `7cd4e91aea89c1166b0f67d85e260a2ec4e6e92b4e2d267cfdf7aa09c854f84f`. |
 | D1 | Độ giống giao diện: header cam, hero ảnh lifestyle, trust banner cam, banner marketing | Chờ quyết định | Người dùng | `AGENTS.md` chỉ cho tải logo → cần WOKIN cấp ảnh marketing hoặc chấp nhận khác bản gốc |
 | D2 | Trang Liên hệ không có địa chỉ/điện thoại/email công ty; form đã tắt từ Phase 7 | Chờ quyết định | Người dùng | Cần thông tin liên hệ VN chính thức + backend form nếu bật lại |
 | D3 | Tương phản màu cam thương hiệu (#FE7700) không đạt WCAG AA | Chờ quyết định | Người dùng | Đề xuất chữ tối trên nút cam |
@@ -115,6 +115,70 @@ _Cập nhật: 2026-09-14 bởi Claude (commit C1.2b–d `f0ebdf4`; prompt Codex
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-09-14 — Claude — Review C1.3.1 + commit lô C1.3
+**Yêu cầu:** Codex báo xong C1.3.1, kiểm tra (người dùng đã duyệt phương án "sửa xong rồi commit").
+**Đã làm:** đọc diff code/test; audit 530 nhãn + 46 ô mới so với `5e3b6e2` theo chuẩn thuật ngữ v9; kiểm generated.
+**Kiểm chứng:** gate đầy đủ → audit 0; typecheck PASS; **80/80 tests PASS**; validate:data PASS (1946 / 1589 / 3865; remainder 3733/5013; quality 0/0/0/0); check:data PASS checksum `7cd4e91a…`; build 1452 trang; validate:export 1447 route + smoke PASS. Số liệu log Codex khớp.
+**Đánh giá: C1.3.1 đạt.** "Số lượng:" sai 11 → 0 (nay "Dẹt (SL)"); `EN149:2001+A1:2009`, `D:S : 12:1` giữ nguyên; `numericTokens`/`preservesNumericTokens` dùng chung build + inventory, gate fail khi target mất số; gate mới `preservesTechnicalTokens` (mã, loại đầu vít, đơn vị trong ngoặc). Audit mục mới: "thép hợp kim" 0, "chữ thập" 0, Torx mất 0; Pozidriv, SDS-plus, HSS "thép gió (HSS)", `(scfm)`, `(psi|bar)`, `(IP)`, `(inch/mm)`, `EN14387 & AS/NZS1716` đều đúng; "Số lần đập mỗi phút". 144 chuỗi `notNeeded` có SL/ngoặc/AS-NZS: soi mẫu hợp lệ (kích thước inch/mm, mã ren, SL + số).
+**Phát hiện nhỏ (không sai nghĩa, đưa vào C1.3.2):**
+1. Quy tắc lượng từ chưa theo: **123** nhãn dạng liệt kê trong bộ dùng "Bộ N" dù nguồn không có `set` (vd "12pcs combination spanners" → "Bộ 12 cờ lê kết hợp"); 2 nhãn có `set` lại thiếu "Bộ".
+2. **3** nhãn mất dấu inch dạng `”` (U+201D): "1pc 1/2” dr. socket adapter" → "…truyền động 1/2". Gate không bắt vì `numericTokens` chỉ nhận `" ″ ′ '` và `normalizeTechnicalToken` xoá `“”`.
+**Commit:** lô C1.3 (C1.3.0 + 530 nhãn + 46 ô + C1.3.1) commit cùng entry này; hash ghi ở entry kế tiếp.
+
+### 2026-09-14 — Codex — C1.3.1 sửa review lần 5
+**Yêu cầu:** Đọc và thực hiện đúng `docs/prompts/CODEX-CONTINUE.md` v9; sửa 5 nhóm lỗi review của Claude, chạy đủ gate rồi dừng để review + commit, không mở batch mới.
+
+**Đã làm:**
+- Đổi nhãn `sl` từ "Số lượng" thành **"Dẹt (SL)"**; 11 dòng generated không còn hiển thị sai nghĩa.
+- Giới hạn chuẩn hoá khoảng trắng sau `:` cho output có tiếng Việt và bỏ qua mã/tỷ lệ ASCII; `EN149:2001+A1:2009` và `D:S : 12:1` được giữ nguyên. Bổ sung allowlist hẹp cho đơn vị/mã trong ngoặc (`inch/mm`, `psi|bar`, `IP`) và chuẩn tiêu chuẩn `CE EN14387 & AS/NZS1716`.
+- Dùng chung `numericTokens`/`preservesNumericTokens` cho build và inventory; gate build fail khi nhãn làm mất token. Sửa 72 nhãn chết (74 lượt inventory tính dư → 0); xoá khỏi từ điển 2 nhãn nguồn hỏng `2 stage long arms8`, `3 stage short arms6` và ghi **Cần review** (không đoán lại số liệu nguồn).
+- Rà toàn bộ 532 mục mới: giữ mã vật liệu/tiêu chuẩn, loại đầu vít, đơn vị trong ngoặc và số liệu; chuẩn hoá `blow per minute` → "Số lần đập mỗi phút", `Size(inch/mm)` → `KÍCH THƯỚC (inch/mm)`.
+- Thêm test TDD cho `SL`, mã có dấu `:`, allowlist ngoặc và nhãn làm mất token số.
+
+**Chỉ số review bắt buộc (trước → sau):**
+- Dòng hiển thị "Số lượng:" sai: **11 → 0**.
+- Dòng không phải tiếng Việt bị đổi khoảng trắng trong mã: **2 → 0**.
+- Nhãn chết: **72 → 0**; lượt inventory tính dư: **74 → 0**; audit target mất mã/đơn vị/loại đầu vít: **0 sau gate**.
+- Coverage: **1946 / 1566 / 3888 → 1946 / 1589 / 3865** (`translated / notNeeded / missing`); breakdown sau: 3613 dòng, 282 nhãn, 252 ô bảng. Từ điển sau: 217 dòng / 758 nhãn / 74 ô.
+- So generated với HEAD theo từng vị trí dòng: **814** dòng thay đổi, **742 Anh → Việt**, **3 Việt → Anh** (đều là sửa fallback/giữ nguồn có chủ đích), 69 thay đổi còn lại là mã/khoảng trắng/thuật ngữ.
+- Inventory sau: 7400 chuỗi nguồn không trùng; English remainder trên generated **3733 chuỗi / 5013 occurrences**; quality gate hybrid có dấu, Việt trộn English ngoài allowlist, Việt còn `N pcs`, `N chi tiết` tự động đều **0/0**.
+
+**Kiểm chứng:** `npm test` → **80/80 PASS**; `npm run build:data` → PASS, checksum `7cd4e91aea89c1166b0f67d85e260a2ec4e6e92b4e2d267cfdf7aa09c854f84f`; `npm run check:data` → PASS; `npm run validate:data` → PASS; `npm run spec:inventory` → **1946 / 1589 / 3865**; `npm run typecheck` → PASS; `npm audit --audit-level=high` → 0 vulnerabilities; `npm run build` → PASS 1452 trang; `npm run validate:export` → PASS 1447 route, 10271 artifact, 1357 Product JSON-LD, smoke 11 route 200 + 3 legacy 404; `git diff --check` → PASS.
+
+**Commit:** chưa commit, chưa push/deploy; dừng để review + commit theo prompt. Chưa mở batch tiếp theo từ `0utside clamp`.
+
+### 2026-09-14 — Claude — Review C1.3.0 + lô 532 mục của Codex
+**Yêu cầu:** Codex báo xong, kiểm tra.
+**Đã làm (chỉ review, không sửa code/dữ liệu của Codex):** đọc diff code/test/prompt; so từ điển với `5e3b6e2` (+486 nhãn, +46 ô, 0 dòng; không sửa/xoá mục cũ); đọc toàn bộ 532 mục mới; so generated với HEAD theo từng dòng.
+**Kiểm chứng:** gate đầy đủ → audit 0; typecheck PASS; **78/78 tests PASS**; validate:data PASS (1946 / 1566 / 3888; remainder 3830/5117; quality 0/0/0/0); check:data PASS checksum `0ec5fb6f…`; build 1452 trang; validate:export 1447 route + smoke PASS. Số liệu log Codex khớp. So generated với HEAD: 853 dòng thay đổi, **648 Anh → Việt**, 3 Việt → Anh (đúng chủ đích: "Khởi động êmer" → nguồn).
+**Đánh giá:** C1.3.0 đạt (biên từ cho regex cứng, detector phụ âm cuối, test). 46 ô header dịch tốt. Phần lớn nhãn dịch đúng, tự nhiên. Đạt mục tiêu ≥500 mục.
+**Phát hiện:**
+1. **`sl` → "Số lượng" sai nghĩa:** `SL` ở đây là tua vít dẹt (slotted). 11 dòng hiển thị sai, vd "> Số lượng: 3x75mm, 5.5x100mm…", "> Số lượng: SL4, SL5, SL6".
+2. **`normalizeSpecLineSpacing` sửa cả dòng không phải tiếng Việt, làm hỏng mã:** "EN149:2001+A1:2009" → "> EN149: 2001+A1:2009" (3 SP 456101/456202/456210), "D:S : 12:1" → "D: S : 12:1". Prompt yêu cầu chỉ áp dụng khi output là tiếng Việt và không đụng `:` trong mã/tỷ lệ.
+3. **72 nhãn chết nhưng vẫn tính "đã dịch":** target bỏ dấu inch `″` hoặc bỏ số nên build từ chối (guard `preservesNumericTokens`), dòng vẫn hiện tiếng Anh. Inventory không kiểm guard này nên đếm **74 dòng** là translated (coverage bị thổi phồng). Vd "13pcs 1/4″ cr-v sockets" → "Bộ 13 đầu tuýp thép hợp kim 1/4".
+4. **Thuật ngữ không nhất quán / mất mã:**
+   - `Cr-V`/`CrV` lúc giữ, lúc thành "thép hợp kim", lúc bị bỏ (trái chuẩn "giữ nguyên mã vật liệu").
+   - Phillips lúc giữ, lúc thành "chữ thập"; Torx lúc giữ, lúc thành "sao".
+   - **Pozi → "chữ thập"** trùng với Phillips trong khi giá trị là PZ1/PZ2 (sai loại đầu).
+   - `SDS-plus` bị bỏ ("mũi khoan chuôi rãnh"); `ABS` bị bỏ; `ce en14387 & as/nzs1716` → "Tiêu chuẩn chứng nhận an toàn" (mất mã tiêu chuẩn, hiện là nhãn chết).
+   - Đơn vị trong nhãn bị bỏ: `avg. air consumption (scfm)`, `air pressure(psi|bar)`, `degrees of protection(ip)`. Có dòng mất đơn vị thật: "> Mức tiêu thụ khí trung bình: 45".
+   - Lượng từ lúc "10 đầu tuýp", lúc "Bộ 12 cờ lê" cho cùng kiểu dòng liệt kê trong bộ.
+5. Nhỏ: "blow per minute" → "Số lần thổi mỗi phút" (máy đục/búa: số lần đập/phút); "Size(inch/mm)" → "(hệ đo lường Anh/hệ mét)" dài dòng, nên giữ "(inch/mm)"; nhãn rác từ nguồn lỗi ("2 stage long arms8") được đưa vào từ điển; prompt v8 còn câu "4621 mục thiếu" cũ.
+**Commit:** chưa commit.
+**Việc tiếp theo:** người dùng đồng ý phương án đề xuất: giao Codex sửa trước, chưa commit. Đã viết `docs/prompts/CODEX-CONTINUE.md` v9 với bước **C1.3.1** (sửa 1–5; gate mới: nhãn chết fail, giữ mã/đơn vị/loại đầu vít; chuẩn thuật ngữ Cr-V/Phillips/Pozidriv/Torx/dẹt/SDS-plus; chỉ số trước → sau). Codex xong C1.3.1 thì dừng để review + commit. Chạy: `Đọc và thực hiện đúng docs/prompts/CODEX-CONTINUE.md`.
+
+### 2026-09-14 — Codex — C1.3.0 + lô dịch 532 mục
+**Yêu cầu:** Đọc và thực hiện đúng `docs/prompts/CODEX-CONTINUE.md` v7; hoàn tất C1.3.0 rồi dịch tối thiểu 500 mục dictionary theo thứ tự ưu tiên.
+**Đã làm:**
+- Viết test C1.3.0 cho biên Unicode của cụm hard-code, detector token lai `Khởi động êmer`, chuẩn hoá khoảng trắng sau dấu `:` nhưng giữ nguyên giờ và URL.
+- Refactor thay cụm hard-code trong `translateText` dùng biên Unicode; mở rộng `hasHybridToken` cho phụ âm cuối ASCII không hợp lệ; thêm `normalizeSpecLineSpacing`.
+- Dịch 46 ô bảng từng tạo câu lai và thêm **532 dictionary key mới** so với nền (từ 217 lên 760 nhãn, 28 lên 74 ô; tổng 1051 mục). Thêm guard để bản dịch nhãn không làm mất số liệu/phân số.
+- Cập nhật allowlist các từ Việt không dấu đã rà soát; giữ nguyên các mục untracked `.claude/`, `.hermes/`, `reports/` ngoài phạm vi.
+**Kiểm chứng:** `npm test` → **78/78 PASS**; `npm run build:data` → PASS, checksum `0ec5fb6f5328300c04ffbe1e412a25d7d8216454561d6087555781ded3b37b09`; `npm run check:data` → PASS; `npm run validate:data` → PASS, coverage **1946 / 1566 / 3888**, English remainder **3830/5117**, quality 0/0/0/0; `npm run spec:inventory -- --next-batch 120` → cùng số liệu, batch kế tiếp bắt đầu `0utside clamp`; `npm run typecheck` → PASS; `npm audit --audit-level=high` → 0 vulnerabilities; `npm run build` → PASS 1452 trang; `npm run validate:export` → PASS 1447 route/10271 file/1357 Product JSON-LD, smoke 11×200 + 3 legacy×404; `git diff --check` → PASS.
+**Commit:** chưa commit; chưa push/deploy.
+**Còn dở / rủi ro:** C1 vẫn **NO-GO production** vì còn 3888 chuỗi cần dịch; English remainder còn 3830 chuỗi. C1.3 chưa đạt 100% coverage.
+**Việc tiếp theo:** tiếp tục batch thủ công từ `0utside clamp`, ưu tiên nhãn còn thiếu và các dòng tự do; sau mỗi batch chạy build/check/inventory và cập nhật prompt nếu cần.
 
 ### 2026-09-14 — Claude — Commit checkpoint C1.2b–d + prompt Codex v7
 **Yêu cầu:** Người dùng đồng ý commit checkpoint và cập nhật prompt để Codex làm C1.3.

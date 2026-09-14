@@ -210,14 +210,14 @@ test("catalog build prefers reviewed spec translations and rejects numeric loss"
       lines: { "> Voltage: 20V": "> Điện áp danh định: 10V" },
       cells: {},
     });
-    await assert.rejects(buildCatalogData(fixture), /bản dịch làm mất số liệu 20v/i);
+    await assert.rejects(buildCatalogData(fixture), /bản dịch làm mất số liệu 20v|target làm mất token số/i);
 
     writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
       schemaVersion: 1,
       lines: {},
       cells: { "TEST-101": "Mã kiểm thử" },
     });
-    await assert.rejects(buildCatalogData(fixture), /packaging row 2 cell 1: bản dịch làm mất số liệu 101/i);
+    await assert.rejects(buildCatalogData(fixture), /packaging row 2 cell 1: bản dịch làm mất số liệu 101|cells target làm mất token số/i);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
   }
@@ -275,7 +275,7 @@ test("numeric token gate accepts natural Vietnamese quantity words and rejects d
       lines: { "> With 2pcs battery pack": "> Kèm bộ pin" },
       cells: {},
     });
-    await assert.rejects(buildCatalogData(fixture), /bản dịch làm mất số liệu 2/i);
+    await assert.rejects(buildCatalogData(fixture), /bản dịch làm mất số liệu 2|target làm mất token số/i);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
   }
@@ -363,6 +363,53 @@ test("spec fallback does not emit hybrid tokens for real catalog sources", async
     const output = translator.translateSpecLine(source);
     assert.ok(output === source || !needsTranslation(output), `${example} produced unresolved English: ${output}`);
     if (output !== source) assert.equal(hasHybridToken(output), false, `${example} produced hybrid token: ${output}`);
+  }
+});
+
+test("C1.3.0 hard-coded phrases respect Unicode boundaries and spec spacing", async () => {
+  const { createTranslator } = await loadBuilder();
+  const { hasHybridToken } = await import(new URL("../scripts/spec-translation-utils.mjs", import.meta.url));
+  const fixture = makeFixture();
+  try {
+    const glossary = JSON.parse(readFileSync(path.join(fixture.sourceDir, "vi-glossary.json"), "utf8"));
+    const translator = createTranslator(glossary, {});
+    assert.equal(hasHybridToken("Khởi động êmer"), true);
+    assert.equal(translator.translateSpecLine("> Soft starter"), "> Soft starter");
+    assert.equal(translator.translateSpecLine("> Packing:color box"), "> Đóng gói: hộp màu");
+    assert.equal(translator.translateSpecLine("> Timer: 1:10"), "> Timer: 1:10");
+    assert.equal(translator.translateSpecLine("> URL: https://example.test/a:b"), "> URL: https://example.test/a:b");
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("C1.3.1 keeps SL semantics, code colons, and rejects dead label translations", async () => {
+  const { buildCatalogData, createTranslator } = await loadBuilder();
+  const fixture = makeFixture();
+  try {
+    const glossary = JSON.parse(readFileSync(path.join(fixture.sourceDir, "vi-glossary.json"), "utf8"));
+    const translator = createTranslator(glossary, { labels: { sl: "Dẹt (SL)" } });
+    assert.equal(translator.translateSpecLine("> SL: 3, 4, 5, 6mm"), "> Dẹt (SL): 3, 4, 5, 6mm");
+    assert.equal(translator.translateSpecLine("> EN149:2001+A1:2009"), "> EN149:2001+A1:2009");
+    assert.equal(translator.translateSpecLine("> D:S : 12:1"), "> D:S : 12:1");
+    assert.equal(translator.translateSpecLine("> Tiêu chuẩn EN149:2001"), "> Tiêu chuẩn EN149:2001");
+    const productionGlossary = JSON.parse(readFileSync(path.join(projectRoot, "data/vi-glossary.json"), "utf8"));
+    const productionTranslator = createTranslator(productionGlossary, {});
+    assert.equal(productionTranslator.translateSpecLine("> EN149:2001+A1:2009 Certification"), "> EN149:2001+A1:2009 Chứng nhận");
+
+    const productsFile = path.join(fixture.sourceDir, "products.json");
+    const products = JSON.parse(readFileSync(productsFile, "utf8"));
+    products[0].short_description = "<p>&gt; 13pcs 1/4″ cr-v sockets: 1/4″</p>";
+    writeJson(productsFile, products);
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: {},
+      labels: { "13pcs 1/4″ cr-v sockets": "13 đầu tuýp 1/4" },
+      cells: {},
+    });
+    await assert.rejects(buildCatalogData(fixture), /labels.*numeric|numeric.*labels|13pcs 1\/4/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
   }
 });
 
