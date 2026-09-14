@@ -6,7 +6,7 @@ export function Footer() {
   return <footer className="footer">
     <div className="container-wokin footer-grid">
       <div>
-        <Image src="/images/logo.png" alt="WOKIN TOOLS" width={150} height={50} />
+        <Image src="/images/logo.png" alt="WOKIN TOOLS" width={301} height={52} />
         <p>Dụng cụ chuẩn chỉ cho công việc chuyên nghiệp.</p>
       </div>
       <div className="footer-links">

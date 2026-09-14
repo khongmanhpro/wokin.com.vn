@@ -1,8 +1,8 @@
-import Image from "next/image";
+import { ResponsiveBackground } from "@/components/ResponsiveBackground";
 
 export function StaticHero({ title, image, eyebrow }: { title: string; image: string; eyebrow?: string }) {
   return <section className="static-hero">
-    <Image src={image} alt="" fill sizes="100vw" priority />
+    <ResponsiveBackground src={image} priority />
     <div className="static-hero-overlay" />
     <div className="container-wokin static-hero-content">
       {eyebrow && <span className="eyebrow">{eyebrow}</span>}

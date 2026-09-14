@@ -1,11 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import glossaryJson from "@/data/vi-glossary.json";
+import type { ProductImage } from "@/lib/catalog";
+import { ResponsiveProductImage } from "@/components/ResponsiveProductImage";
 
-interface HeroProduct { id: number; slugVi: string; images: { src: string }[] }
+interface HeroProduct { id: number; slugVi: string; images: ProductImage[] }
+const heroFallbackImage: ProductImage = { src: "/images/logo.png", alt: "" };
 const glossary = glossaryJson as unknown as { marketing: Record<string, string>; ui: Record<string, string> };
 
 export function HeroSlider({ products }: { products: HeroProduct[] }) {
@@ -61,11 +63,11 @@ export function HeroSlider({ products }: { products: HeroProduct[] }) {
   return <section className="hero" role="region" aria-roledescription="carousel" aria-label="Sản phẩm WOKIN nổi bật" tabIndex={0} onKeyDown={handleKeyDown}>
     <p className="sr-only" aria-live={paused || reducedMotion ? "polite" : "off"} aria-atomic="true">Slide {active + 1} / {slides.length}: {slides[active].title}</p>
     {slides.map((slide, index) => <div className={`hero-slide${index === active ? " active" : ""}`} role="group" aria-roledescription="slide" aria-label={`${index + 1} / ${slides.length}: ${slide.title}`} aria-hidden={index !== active} inert={index !== active} key={slide.product.id}>
-      <Image src={slide.product.images[0]?.src ?? "/images/logo.png"} alt="" fill sizes="100vw" priority={index === 0} />
+      <ResponsiveProductImage image={slide.product.images[0] ?? heroFallbackImage} alt="" fill sizes="100vw" priority={index === 0} />
       <div className="hero-content container-wokin">
         <div className="hero-copy">
           <span className="eyebrow">{slide.eyebrow}</span>
-          <h1 className="hero-title">{slide.title}</h1>
+          {index === 0 ? <h1 className="hero-title">{slide.title}</h1> : <p className="hero-title">{slide.title}</p>}
           <Link className="button-primary" href={`/san-pham/${slide.product.slugVi}`}>{glossary.ui.EXPLORE}</Link>
         </div>
       </div>

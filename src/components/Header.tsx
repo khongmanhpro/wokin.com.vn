@@ -170,7 +170,7 @@ export function Header() {
         <div className="container-wokin header-main">
           <button className="icon-button mobile-only" aria-label="Mở danh mục" aria-controls="category-drawer" aria-expanded={drawerOpen} onClick={openDrawer}><Icon name="menu" /></button>
           <Link className="logo" href="/" aria-label="WOKIN TOOLS">
-            <Image src="/images/logo.png" alt="WOKIN TOOLS" width={180} height={60} priority />
+            <Image src="/images/logo.png" alt="WOKIN TOOLS" width={301} height={52} priority />
           </Link>
           <nav className="main-nav" aria-label="Điều hướng chính">
             <Link className="nav-link" href="/san-pham">{glossary.ui.Products}</Link>

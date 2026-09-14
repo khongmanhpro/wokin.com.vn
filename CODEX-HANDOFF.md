@@ -208,11 +208,18 @@ determinism                   PASS — 2 lần package cùng SHA-256 archive
 
 Giới hạn: GitHub Actions chưa chạy thật — `origin/main` mới có initial commit, 15 commit local chưa push.
 
+## Phase 11 — final production acceptance
+
+Đã audit. Kết luận **NO-GO**; chi tiết và số liệu tại `docs/phase-11-acceptance.md`.
+
+- Đã sửa: LCP image lazy, hero/banner/card danh mục dùng WebP, 1 `h1` trang chủ, `<th>` bảng đóng gói, tỉ lệ logo, alt/aria-label card, `--text` #767676.
+- Lighthouse sau sửa: desktop Perf 98–100; A11y 96–100; Best Practices 100; SEO 100; mobile Perf 78–87.
+- Blocker: 1168/1357 SP có dòng spec bị thay bằng "Đặc tính kỹ thuật" (2773/10011 dòng), ~738 dòng lẫn tiếng Anh.
+- Chờ quyết định: độ giống giao diện (header cam, ảnh marketing), tương phản màu thương hiệu, thông tin liên hệ công ty.
+
 ## Phase tiếp theo
 
-### Phase 11 — final production acceptance
-
-Browser audit desktop/mobile, so sánh visual với site gốc, accessibility/Lighthouse runtime.
+Chờ người dùng review và quyết định các mục trên.
 
 ## Historical acceptance — Phase 4
 

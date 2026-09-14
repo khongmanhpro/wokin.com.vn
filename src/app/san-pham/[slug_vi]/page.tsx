@@ -9,6 +9,17 @@ import { getAllProducts, getProductBySlug, getRelated, glossary, parseProductSpe
 import { absolutePageUrl, absoluteUrl } from "@/lib/site";
 
 export const dynamicParams = false;
+
+function SpecTable({ rows }: { rows: string[][] }) {
+  // Packaging tables start with a label row ("MÃ KHO", ...); expose it as column headers.
+  const [first, ...rest] = rows;
+  const hasHeader = rows.length > 1 && first[0]?.trim().toUpperCase() === glossary.ui["STOCK NO."].toUpperCase();
+  const body = hasHeader ? rest : rows;
+  return <table>
+    {hasHeader && <thead><tr>{first.map((cell, cellIndex) => <th scope="col" key={`${cellIndex}-${cell}`}>{cell}</th>)}</tr></thead>}
+    <tbody>{body.map((row, rowIndex) => <tr key={`${rowIndex}-${row.join("|")}`}>{row.map((cell, cellIndex) => <td key={`${cellIndex}-${cell}`}>{cell}</td>)}</tr>)}</tbody>
+  </table>;
+}
 export function generateStaticParams() { return getAllProducts().map((product) => ({ slug_vi: product.slugVi })); }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug_vi: string }> }): Promise<Metadata> {
@@ -42,7 +53,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug_v
         <h2 className="spec-heading">Thông số kỹ thuật</h2>
         <div className="spec-html">
           {spec.lines.length > 0 && <p>{spec.lines.map((line, index) => <span key={`${index}-${line}`}>{line}{index < spec.lines.length - 1 && <br />}</span>)}</p>}
-          {spec.table.length > 0 && <table><tbody>{spec.table.map((row, rowIndex) => <tr key={`${rowIndex}-${row.join("|")}`}>{row.map((cell, cellIndex) => <td key={`${cellIndex}-${cell}`}>{cell}</td>)}</tr>)}</tbody></table>}
+          {spec.table.length > 0 && <SpecTable rows={spec.table} />}
         </div>
       </div>
     </section>

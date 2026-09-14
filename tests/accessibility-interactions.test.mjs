@@ -92,3 +92,13 @@ test("global interaction styles provide visible focus, touch targets, and reduce
   assert.match(css, /\.slider-dots button[\s\S]*min-width:\s*44px/);
   assert.match(css, /\.drawer-list a[\s\S]*min-height:\s*44px/);
 });
+
+test("home hero exposes a single h1 and packaging tables expose column headers", () => {
+  const hero = readSource("src/components/HeroSlider.tsx");
+  assert.match(hero, /index === 0 \? <h1 className="hero-title">/, "only the first hero slide may render an h1");
+  assert.equal(hero.match(/<h1\b/g)?.length, 1);
+
+  const productPage = readSource("src/app/san-pham/[slug_vi]/page.tsx");
+  assert.match(productPage, /<th scope="col"/);
+  assert.match(productPage, /glossary\.ui\["STOCK NO\."\]/);
+});

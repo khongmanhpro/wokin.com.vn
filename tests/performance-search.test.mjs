@@ -36,7 +36,8 @@ test("Header lazy-loads search data instead of bundling the full product catalog
 test("catalog image components declare responsive display sizes", () => {
   const cards = readFileSync(path.join(projectRoot, "src/components/CatalogCards.tsx"), "utf8");
   const gallery = readFileSync(path.join(projectRoot, "src/components/ProductGallery.tsx"), "utf8");
-  assert.match(cards, /sizes="\(max-width: 767px\) 50vw/);
+  assert.match(cards, /cardSizes = "\(max-width: 767px\) 50vw/);
+  assert.equal(cards.match(/sizes=\{cardSizes\}/g)?.length, 2, "product and category cards share responsive sizes");
   assert.match(gallery, /sizes="\(max-width: 767px\) 100vw, 800px"/);
   assert.match(gallery, /sizes="120px"/);
 });
@@ -53,6 +54,7 @@ test("product cards and gallery render real WebP srcsets without loading global 
   assert.match(responsiveImage, /<Image[\s\S]+src=\{image\.src\}/);
   assert.match(responsiveImage, /fetchPriority=\{priority \? "high" : undefined\}/);
   assert.doesNotMatch(responsiveImage, /priority=\{priority\}/);
+  assert.match(responsiveImage, /loading=\{priority \? "eager" : "lazy"\}/, "LCP images must not be lazy-loaded");
   assert.doesNotMatch(gallery, /image-metadata\.generated\.json/);
   assert.doesNotMatch(responsiveImage, /image-metadata\.generated\.json/);
 });

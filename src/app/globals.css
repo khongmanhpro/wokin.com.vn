@@ -1,7 +1,7 @@
 :root {
   --primary: #fe7700;
   --title: #2c333b;
-  --text: #777777;
+  --text: #767676;
   --dark: #212121;
   --darker: #111111;
   --line: rgba(0, 0, 0, 0.105);
@@ -271,6 +271,11 @@ h4 {
   padding-block: 38px;
 }
 
+.footer-grid img {
+  width: 150px;
+  height: auto;
+}
+
 .footer-links {
   display: flex;
   flex-wrap: wrap;
@@ -357,6 +362,8 @@ h4 {
 
 .hero-title {
   margin: 12px 0 24px;
+  font-family: var(--font-heading);
+  line-height: 1.12;
   color: #fff;
   font-size: clamp(34px, 6vw, 54px);
   font-weight: 700;
@@ -500,7 +507,7 @@ h4 {
   background: linear-gradient(90deg, rgb(17 17 17 / 92%), rgb(17 17 17 / 65%));
 }
 
-.banner > img {
+.banner > picture > img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -625,6 +632,12 @@ h4 {
   height: 100%;
 }
 
+/* Full-bleed backgrounds: keep the wrapper out of flow like next/image `fill`. */
+.responsive-product-picture-fill {
+  position: absolute;
+  inset: 0;
+}
+
 .thumbnails {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -684,6 +697,10 @@ h4 {
   text-align: center;
 }
 
+.spec-html th {
+  font-weight: 400;
+}
+
 .related-title {
   margin-bottom: 24px;
   font-size: 28px;
@@ -700,7 +717,7 @@ h4 {
 }
 
 .static-hero { position: relative; min-height: 330px; overflow: hidden; background: var(--darker); }
-.static-hero > img { object-fit: cover; opacity: .48; }
+.static-hero > picture > img { object-fit: cover; opacity: .48; }
 .static-hero-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(17 17 17 / 88%), rgb(17 17 17 / 30%)); }
 .static-hero-content { position: relative; z-index: 1; display: flex; min-height: 330px; flex-direction: column; justify-content: center; color: #fff; }
 .static-hero h1 { max-width: 850px; margin-top: 10px; color: #fff; font-size: clamp(34px, 5vw, 54px); text-transform: uppercase; }

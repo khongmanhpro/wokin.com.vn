@@ -1,15 +1,15 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CategoryCard } from "@/components/CatalogCards";
 import { HeroSlider } from "@/components/HeroSlider";
+import { ResponsiveBackground } from "@/components/ResponsiveBackground";
 import { categories, getProductsByCategory, glossary } from "@/lib/catalog";
 
 export const metadata: Metadata = { title: "WOKIN TOOLS - Dụng cụ chuyên nghiệp", description: "Khám phá hơn 1.300 sản phẩm WOKIN bằng tiếng Việt: dụng cụ cầm tay, máy dụng cụ điện, thiết bị công trường và hệ pin GP20V.", alternates: { canonical: "/" } };
 
 function Banner({ image, eyebrow, title, text, href, label, className = "" }: { image: string; eyebrow?: string; title: string; text: string; href: string; label: string; className?: string }) {
   return <section className={`banner ${className}`}>
-    <Image src={image} alt="" fill sizes="100vw" />
+    <ResponsiveBackground src={image} />
     <div className="container-wokin banner-content">
       {eyebrow && <span className="eyebrow">{eyebrow}</span>}
       <h2>{title}</h2>
