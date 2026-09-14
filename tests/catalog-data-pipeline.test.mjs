@@ -67,8 +67,8 @@ function makeFixture() {
     categories: { "hand-tools": "Dụng cụ cầm tay" },
     ui: { "STOCK NO.": "MÃ SẢN PHẨM", "QTY./CARTON": "SL/THÙNG" },
     marketing: {},
-    terms: [["color box", "hộp màu"]],
-    spec_labels: { Voltage: "Điện áp", Packing: "Đóng gói" },
+    terms: [["color box", "hộp màu"], ["satin finish", "hoàn thiện satin"], ["stain finish", "hoàn thiện satin"], ["wrench", "cờ lê"]],
+    spec_labels: { Voltage: "Điện áp", Packing: "Đóng gói", "Magazine capacity": "Sức chứa hộp đạn" },
   });
   writeJson(path.join(sourceDir, "spec-translations-vi.json"), {
     schemaVersion: 1,
@@ -215,11 +215,154 @@ test("catalog build prefers reviewed spec translations and rejects numeric loss"
     writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
       schemaVersion: 1,
       lines: {},
-      cells: { "TEST-101": "TEST" },
+      cells: { "TEST-101": "Mã kiểm thử" },
     });
     await assert.rejects(buildCatalogData(fixture), /packaging row 2 cell 1: bản dịch làm mất số liệu 101/i);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("catalog build applies reviewed labels and treats pc/pcs as Vietnamese quantity words", async () => {
+  const { buildCatalogData } = await loadBuilder();
+  const fixture = makeFixture();
+  try {
+    const productsFile = path.join(fixture.sourceDir, "products.json");
+    const products = JSON.parse(readFileSync(productsFile, "utf8"));
+    products[0].short_description = "<p>&gt; Input power: 20W<br>&gt; Magazine capacity: 125pcs<br>&gt; With 2pcs battery pack<br>&gt; Packing: 100pcs in one bag</p>";
+    writeJson(productsFile, products);
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: {
+        "> With 2pcs battery pack": "> Kèm 2 bộ pin",
+        "> Packing: 100pcs in one bag": "> Đóng gói: 100 chiếc/túi",
+      },
+      labels: { "input power": "Công suất đầu vào" },
+      cells: {},
+    });
+    await buildCatalogData(fixture);
+    const snapshot = JSON.parse(readFileSync(path.join(fixture.outputDir, "catalog.generated.json"), "utf8"));
+    assert.deepEqual(snapshot.products[0].technicalSpecs.lines, [
+      "> Công suất đầu vào: 20W",
+      "> Magazine capacity: 125pcs",
+      "> Kèm 2 bộ pin",
+      "> Đóng gói: 100 chiếc/túi",
+    ]);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("numeric token gate accepts natural Vietnamese quantity words and rejects dropped counts", async () => {
+  const { buildCatalogData } = await loadBuilder();
+  const fixture = makeFixture();
+  try {
+    const productsFile = path.join(fixture.sourceDir, "products.json");
+    const products = JSON.parse(readFileSync(productsFile, "utf8"));
+    products[0].short_description = "<p>&gt; With 2pcs battery pack<br>&gt; Packing: 100pcs in one bag</p>";
+    writeJson(productsFile, products);
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: {
+        "> With 2pcs battery pack": "> Kèm 2 bộ pin",
+        "> Packing: 100pcs in one bag": "> Đóng gói: 100 chiếc/túi",
+      },
+      cells: {},
+    });
+    await buildCatalogData(fixture);
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: { "> With 2pcs battery pack": "> Kèm bộ pin" },
+      cells: {},
+    });
+    await assert.rejects(buildCatalogData(fixture), /bản dịch làm mất số liệu 2/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("catalog build rejects pcs in Vietnamese dictionary targets", async () => {
+  const { buildCatalogData } = await loadBuilder();
+  const fixture = makeFixture();
+  try {
+    for (const kind of ["lines", "cells", "labels"]) {
+      writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+        schemaVersion: 1,
+        lines: kind === "lines" ? { "> Voltage: 20V": "> Điện áp: 20pcs" } : {},
+        cells: kind === "cells" ? { "STOCK NO.": "Mã 1pcs" } : {},
+        labels: kind === "labels" ? { voltage: "Điện áp 1pcs" } : {},
+      });
+      await assert.rejects(buildCatalogData(fixture), /pcs.*target|target.*pcs/i);
+    }
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("catalog build rejects English remainder and hybrid tokens in dictionary targets", async () => {
+  const { buildCatalogData } = await loadBuilder();
+  const fixture = makeFixture();
+  try {
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: { "> Voltage: 20V": "> Kích thước with case: 20V" },
+      cells: {},
+    });
+    await assert.rejects(buildCatalogData(fixture), /target.*English|English.*target|còn English/i);
+
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: { "> Voltage: 20V": "> 2 chi tiết lục giács: 20V" },
+      cells: {},
+    });
+    await assert.rejects(buildCatalogData(fixture), /lai|hybrid|English/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("untranslated spec fallback keeps source instead of creating a hybrid sentence", async () => {
+  const { buildCatalogData, createTranslator } = await loadBuilder();
+  const fixture = makeFixture();
+  try {
+    const productsFile = path.join(fixture.sourceDir, "products.json");
+    const products = JSON.parse(readFileSync(productsFile, "utf8"));
+    products[0].short_description = "<p>&gt; These face frame hinges provide a wide opening.<br>&gt; Packing: color box<br>&gt; satin finish<br>&gt; stain finish</p>";
+    writeJson(productsFile, products);
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), { schemaVersion: 1, lines: {}, cells: {} });
+    await buildCatalogData(fixture);
+    const snapshot = JSON.parse(readFileSync(path.join(fixture.outputDir, "catalog.generated.json"), "utf8"));
+    assert.deepEqual(snapshot.products[0].technicalSpecs.lines, [
+      "> These face frame hinges provide a wide opening.",
+      "> Đóng gói: hộp màu",
+      "> hoàn thiện satin",
+      "> hoàn thiện satin",
+    ]);
+    const glossary = JSON.parse(readFileSync(path.join(fixture.sourceDir, "vi-glossary.json"), "utf8"));
+    const translator = createTranslator(glossary, {});
+    assert.equal(translator.translateText("satin finish"), "hoàn thiện satin");
+    assert.equal(translator.translateText("stain finish"), "hoàn thiện satin");
+    assert.equal(translator.translateSpecLine("> 1pc wrench"), "> 1pc wrench");
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("spec fallback does not emit hybrid tokens for real catalog sources", async () => {
+  const { createTranslator, parseLegacySpec } = await loadBuilder();
+  const { needsTranslation, hasHybridToken } = await import(new URL("../scripts/spec-translation-utils.mjs", import.meta.url));
+  const products = JSON.parse(readFileSync(path.join(projectRoot, "data/products.json"), "utf8"));
+  const glossary = JSON.parse(readFileSync(path.join(projectRoot, "data/vi-glossary.json"), "utf8"));
+  const translator = createTranslator(glossary, { lines: {}, cells: {} });
+  const examples = ["hex keys", "SAE combination spanners", "φ3hex wrench", "screwdrivers"];
+  for (const example of examples) {
+    const product = products.find((candidate) => candidate.short_description.toLowerCase().includes(example.toLowerCase()));
+    assert.ok(product, `missing real source example: ${example}`);
+    const source = parseLegacySpec(product.short_description).lines.find((line) => line.toLowerCase().includes(example.toLowerCase()));
+    assert.ok(source, `missing parsed source example: ${example}`);
+    const output = translator.translateSpecLine(source);
+    assert.ok(output === source || !needsTranslation(output), `${example} produced unresolved English: ${output}`);
+    if (output !== source) assert.equal(hasHybridToken(output), false, `${example} produced hybrid token: ${output}`);
   }
 });
 

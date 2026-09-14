@@ -4,7 +4,11 @@
 > `Đọc và thực hiện đúng docs/prompts/CODEX-CONTINUE.md`
 > Prompt dùng lại được nhiều phiên. Phiên mới tự biết tiếp từ đâu nhờ `WORKLOG.md` và `npm run spec:inventory`.
 >
-> Phiên bản 2 (2026-09-14, sau review của Claude): C1.1/C1.2 đã xong và commit ở `a40cff1`. Thêm C1.2b (tăng tốc + sửa gate) và mục tiêu khối lượng mỗi phiên.
+> Phiên bản 6 (2026-09-14, Codex đã hoàn tất C1.2d): C1.2b–C1.2d đã sửa và gate pass, vẫn **chưa commit**. Việc kế tiếp là C1.3 dịch review thủ công từ nhãn `size`.
+> Phiên bản 5 (2026-09-14, sau review lần 3 của Claude): C1.2c xong nhưng còn 4 lỗi fallback/allowlist. Thêm **C1.2d**, làm **trước** C1.3. C1.2b–C1.2d vẫn **chưa commit**.
+> Phiên bản 4 (2026-09-14, Codex đã xử lý C1.2c): C1.2c đã xong nhưng **chưa commit**; C1.3 chưa đạt mục tiêu khối lượng vì lô tự động bị loại sau audit chất lượng.
+> Phiên bản 3 (2026-09-14, sau review lần 2 của Claude): C1.2b đã xong nhưng **chưa commit**. Thêm **C1.2c** (sửa 5 lỗi review), làm trước khi dịch tiếp.
+> Phiên bản 2: C1.1/C1.2 đã xong và commit ở `a40cff1`; thêm C1.2b và mục tiêu khối lượng mỗi phiên.
 
 ---
 
@@ -14,7 +18,7 @@ Bạn là kỹ sư tiếp nhận dự án **WOKIN**: chuyển website WordPress 
 
 ## Bước 1 — Nạp ngữ cảnh (bắt buộc, theo thứ tự)
 
-1. `WORKLOG.md`: đọc hết mục 0–5 và 3 entry mới nhất ở mục 6. Đây là nguồn trạng thái chính. **Đọc kỹ entry "Review tiến độ C1 của Codex"** (phát hiện 1–6).
+1. `WORKLOG.md`: đọc hết mục 0–5 và 3 entry mới nhất ở mục 6. Đây là nguồn trạng thái chính. **Đọc kỹ mọi entry "Claude — Review …"**: phát hiện trong đó là việc bắt buộc, trừ khi entry sau ghi đã xử lý.
 2. `docs/phase-11-acceptance.md` §3: bối cảnh blocker.
 3. `AGENTS.md` (quy tắc tiếng Việt, SEO, không crawl), `data/vi-glossary.json` (`terms`, `spec_labels`, `ui`).
 4. Code C1 hiện có: `scripts/build-catalog-data.mjs` (`createTranslator`, `numericTokens`, `assertNumericTokens`), `scripts/spec-translation-inventory.mjs`, `scripts/validate-catalog.mjs`, `tests/spec-translation-inventory.test.mjs`, `tests/catalog-data-pipeline.test.mjs`.
@@ -32,7 +36,9 @@ npm run check:data
 npm run spec:inventory
 ```
 
-Kỳ vọng tại lần bàn giao: nhánh `main`, có commit `a40cff1` (hoặc mới hơn), 68 tests, check:data PASS, inventory `282/7400` hoặc cao hơn. Untracked được phép: `.claude/`, `reports/`, vài file `.hermes/*.py`, `.hermes/plans/*`.
+Kỳ vọng tại lần bàn giao (v6): nhánh `main`, commit mới nhất `d79767d` (hoặc mới hơn), **77 tests PASS**, check:data PASS (checksum `0a2de779082143c68e9088f7db658c47f3c4307fdbb4309d914b126ae2c0b287`), inventory `1232 translated / 1547 notNeeded / 4621 missing`, từ điển 217 dòng / 274 nhãn / 28 ô. Việc kế tiếp: **C1.3** bắt đầu từ `size`. Untracked được phép: `.claude/`, `reports/`, vài file `.hermes/*.py`, `.hermes/plans/*`.
+
+Thay đổi C1.2b **chưa commit** là trạng thái hợp lệ, tiếp tục làm trên đó; **không revert**: `WORKLOG.md`, `data/spec-translations-vi.json`, `docs/data-model.md`, `scripts/build-catalog-data.mjs`, `scripts/spec-translation-inventory.mjs`, `scripts/spec-translation-utils.mjs` (mới), `scripts/validate-catalog.mjs`, `src/data/*` (generated), `tests/catalog-data-pipeline.test.mjs`, `tests/spec-translation-inventory.test.mjs`.
 
 - Trong sandbox Codex, 2 test mở cổng localhost (smoke static server) có thể fail `EPERM`. Đây **không phải** regression: ghi "EPERM do sandbox" vào log, **không** sửa hay bỏ test đó. Mọi test khác phải PASS.
 - Nếu khác kỳ vọng ngoài điểm trên: **dừng**, báo người dùng khác biệt cụ thể, không tự "sửa cho khớp".
@@ -52,18 +58,21 @@ Kỳ vọng tại lần bàn giao: nhánh `main`, có commit `a40cff1` (hoặc m
 
 ## Việc cần làm: C1 — Dịch thông số kỹ thuật sản phẩm (blocker production)
 
-### Trạng thái (Claude kiểm chứng 2026-09-14, commit `a40cff1`)
+### Trạng thái (Claude kiểm chứng 2026-09-14, review lần 2)
 
 | Hạng mục | Trạng thái |
 |---|---|
 | C1.1 Inventory `npm run spec:inventory [-- --next-batch N]` dùng `parseLegacySpec` chung | ✅ Xong |
 | C1.2 Từ điển `data/spec-translations-vi.json` (`lines`, `cells`) tra trước fallback; build fail khi có placeholder hoặc mất token số | ✅ Xong |
 | Placeholder "Đặc tính kỹ thuật" trong generated | ✅ 0 |
-| C1.3 Coverage | ⏳ **282/7400 (3,8%)** |
+| C1.2b allowlist `needsTranslation`, `labels`, gate `N pcs`, remainder trên generated | ✅ Xong, **chưa commit** |
+| C1.2c Sửa 5 lỗi review lần 2 | ✅ Xong, chưa commit |
+| C1.2d Sửa 4 lỗi review lần 3 (câu lai có dấu, `N chi tiết` tự động, allowlist tiếng Việt/từ mượn, satin) | ✅ Xong, chưa commit |
+| C1.3 Coverage | ⏳ **1232 translated / 1547 notNeeded / 4621 missing** (4298 dòng, 758 nhãn, 323 ô); bắt đầu lô review thủ công từ nhãn `size` |
 
-Hệ quả trạng thái trung gian: dòng chưa dịch đang hiển thị **nguyên tiếng Anh hoặc lai** (vd SKU 830912: "Rated Điện áp: 220V", "Noise: 88db", "Suitable for workshop use."). Không mất thông tin, nhưng chưa release được.
+Hệ quả trạng thái trung gian: dòng chưa dịch vẫn hiển thị **nguyên tiếng Anh** (vd "Suitable for workshop use."); các câu lai có dấu và `N chi tiết` tự động đã được chặn. Không mất thông tin, nhưng chưa release được vì còn 4621 mục thiếu.
 
-### Phát hiện cần xử lý (từ review)
+### Phát hiện review lần 1 (✅ đã xử lý ở C1.2b, chỉ để tham khảo)
 
 1. Tốc độ ~141 chuỗi/phiên, cần ~50 phiên → **quá chậm**.
 2. 805/1524 ô bảng "thiếu" chỉ là số + đơn vị (`11mm`, `115×22.2mm`), không cần dịch; 94 mục từ điển là bản sao y nguồn.
@@ -73,7 +82,7 @@ Hệ quả trạng thái trung gian: dòng chưa dịch đang hiển thị **ngu
 
 ---
 
-### C1.2b — Tăng tốc và sửa gate (làm TRƯỚC khi dịch tiếp; TDD: test fail trước)
+### C1.2b — Tăng tốc và sửa gate (✅ ĐÃ XONG, đặc tả để tham khảo, KHÔNG làm lại)
 
 **1. Chỉ đếm chuỗi thật sự cần dịch**
 - Định nghĩa `needsTranslation(source)`: `true` khi còn **ít nhất một từ chữ cái ≥2 ký tự** không nằm trong allowlist không cần dịch.
@@ -105,9 +114,92 @@ Hệ quả trạng thái trung gian: dòng chưa dịch đang hiển thị **ngu
 
 ---
 
+### C1.2c — Sửa lỗi review lần 2 (✅ ĐÃ XONG, đặc tả để tham khảo, KHÔNG làm lại)
+
+C1.2b đã xong. Claude review ngày 2026-09-14 (entry "Claude — Review C1.2b + lô nhãn của Codex" trong WORKLOG) phát hiện các lỗi sau:
+
+**1. Còn `pcs` trong bản dịch tiếng Việt**
+- Hiện có **19** mục trong `data/spec-translations-vi.json` có target chứa `\d\s?pcs?\b`, vd "1pc cờ lê", "1pc sách hướng dẫn", "Bao gồm 1pc lưỡi cưa", "1pc đầu nối nhanh kiểu Mỹ". Log phiên trước ghi "còn 6 mã PC vật liệu" là **sai**.
+- Sửa tất cả sang lượng từ tiếng Việt ("1 cờ lê", "1 cuốn sách hướng dẫn", "Bao gồm 1 lưỡi cưa").
+- Thêm test/gate: `build:data` fail khi target trong từ điển (`lines`, `cells`, `labels`) có ký tự tiếng Việt và còn `\d\s?pcs?\b`. Mã vật liệu `PC` (polycarbonate) không đứng sau số nên không bị ảnh hưởng.
+
+**2. Báo cáo English remainder bị lọt từ**
+- `generatedEnglishRemainder` hiện gom mọi từ ASCII trong **bất kỳ** bản dịch tiếng Việt nào vào `ignoredWords` → `to`, `an`, `mini`, `satin`, `led`, `con`, `cho`, `pin`, `bar` không bao giờ bị đếm.
+- Bỏ cơ chế `collectVietnameseWords`. Chỉ bỏ qua từ trong **allowlist tường minh** của `spec-translation-utils.mjs`, cộng thêm danh sách **từ tiếng Việt không dấu** tường minh, có chú thích (vd `cho`, `con`, `tay`, `ban`, `in` khi là "in ấn"...). Danh sách chỉ thêm khi đã kiểm chứng; tuyệt đối không thêm từ tiếng Anh.
+- Test: generated có dòng "Hoàn thiện satin" → `satin` phải được báo; "> Đóng gói: 1 hộp" → không báo.
+
+**3. Token mã che chữ tiếng Anh**
+- Luật `/^(?=.*[a-z])(?=.*\d)[a-z\d-]+$/i` coi cả token có gạch nối là mã, nên ô `2Tx3M-Green` bị tính "không cần dịch".
+- Sửa: tách token theo `-` rồi xét **từng phần**. Phần có cả chữ và số → mã; phần thuần chữ ≥2 ký tự → phải thuộc allowlist.
+- Test: `2Tx3M-Green` → `needsTranslation = true`; `GP20V`, `M14`, `ABC-2`, `40Cr`, `Cr-V` → `false`.
+- Chạy lại inventory và ghi số `notNeeded` trước → sau.
+
+**4. Fallback regex tạo câu lai rác (chỉ áp dụng cho dòng spec)**
+- Có 451 dòng lai kiểu "These face frame bản lềs provide…", "Extra tủ đựng compartments", "makes máy thổi & vacuum".
+- Trong `translateSpecLine`, khi **không** có bản dịch từ `lines`/`labels`: nếu kết quả `translateText(raw)` vẫn `needsTranslation(...) === true`, trả **nguyên văn nguồn** (chỉ chuẩn hoá tiền tố `> `); nếu kết quả đã hoàn toàn tiếng Việt thì giữ kết quả.
+- **Không** đổi fallback của ô bảng: header `MÃ KHO`/`KÍCH THƯỚC` phụ thuộc regex và được Phase 11 dùng để nhận diện `<thead>`.
+- Test: dòng tiếng Anh chưa dịch → output = nguồn; "> Packing: color box" (regex dịch trọn) → "> Đóng gói: hộp màu"; bảng vẫn có hàng đầu `MÃ KHO`.
+- Ghi số dòng lai trong generated trước → sau vào WORKLOG (kỳ vọng giảm mạnh).
+
+**5. Thuật ngữ không nhất quán**
+- "satin finish" → "hoàn thiện satin", nhưng "stain finish" (lỗi chính tả nguồn của "satin") → "hoàn thiện mờ".
+- Chọn **một** cách dịch cho satin finish, áp dụng cho mọi biến thể, và thêm vào `vi-glossary.json` `terms`. Khi nguồn có lỗi chính tả rõ ràng, dịch theo nghĩa đúng và thống nhất với từ chuẩn.
+
+**Kiểm chứng C1.2c:** `npm test`, `npm run build:data`, `npm run check:data`, `npm run validate:data`, `npm run spec:inventory`, `npm run build`, `npm run validate:export`. Ghi vào WORKLOG, **đánh dấu từng mục 1–5 là đã xử lý**, kèm số liệu trước → sau. English remainder có thể **tăng** sau mục 2–3: đó là số đúng, không phải regression.
+
+---
+
+### C1.2d — Sửa lỗi review lần 3 (làm TRƯỚC C1.3; TDD: test fail trước)
+
+Claude review 2026-09-14 (entry "Claude — Review C1.2c + lô thử C1.3 của Codex" trong WORKLOG). Gate kỹ thuật PASS, nhưng generated còn lỗi chất lượng và gate cuối không thể đạt. **Không dịch lô mới trong bước này.**
+
+**1. Fallback lọt câu lai có dấu**
+- `needsTranslation` chỉ xét token toàn ASCII, nên từ bị glossary thay **giữa chừng một từ tiếng Anh** lọt qua. Generated hiện có **59** chuỗi (đuôi `giács`, `hợps`, `khóas`, `víts`, `nhọns`, `tuýps`, `dàis`, `théps`…), vd: "> 2 chi tiết lục giács", "2 chi tiết cờ lês", "> 7 chi tiết SAE cờ lê kết hợps: …", "> 1 chi tiết kìm kẹp khóas 10″ 250mm", "> 6 chi tiết tua víts: …", "> 1 chi tiết φ3hex cờ lê".
+- Sửa gốc: trong `translateText`, thay `terms` và `spec_labels` **chỉ khi khớp trọn từ** (biên Unicode, vd `(?<![\p{L}\d])…(?![\p{L}\d])` với cờ `giu`), không thay một phần của từ tiếng Anh dài hơn (`wrenches`, `hexs`, `screwdrivers`).
+- Chốt chặn: thêm vào module dùng chung một hàm phát hiện token lai, dùng trong fallback dòng **và** báo cáo remainder: token có chữ tiếng Việt có dấu rồi đuôi ASCII (từ tiếng Việt không bao giờ tận cùng bằng `s`: `/[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ][a-z]*s(?![\p{L}\d])/iu`), hoặc ký hiệu dính chữ tiếng Anh (`φ3hex`). Có token lai → fallback trả nguyên văn nguồn.
+- Test: tìm chuỗi nguồn thật của các ví dụ trên trong `data/products.json`, đưa vào fixture; output phải là nguồn hoặc tiếng Việt trọn, không có token lai.
+
+**2. Bỏ thay tự động `N pcs → N chi tiết`**
+- Generated có **175** chuỗi sinh bởi regex `\b(\d+)\s?pcs?\b → "$1 chi tiết"` (không có trong từ điển), vd "> 1 chi tiết cờ lê", "> Sức chứa hộp đạn: 125 chi tiết". Trái chuẩn dịch (lượng từ phải đúng ngữ cảnh: chiếc/cái/bộ…).
+- Xoá thay thế toàn cục này trong `translateText` và trong nhánh `labels` của `translateSpecLine`. Giữ các regex cũ có ngữ cảnh rõ (`With N pcs dust bag → Kèm N túi chứa bụi`).
+- Nhánh `labels` **không** áp dụng khi giá trị chứa `\d\s?pcs?` → dòng đó phải có bản dịch `lines` review. Inventory phải tính khớp: dòng này là `missing`, không phải `translated`.
+- Fallback dòng: kết quả có chữ tiếng Việt **và** còn `\d\s?pcs?` → trả nguyên văn nguồn. Chuỗi chỉ gồm số + `pcs` (vd `3*1.5(20pcs)`) không cần dịch, giữ nguồn.
+- Báo cáo thêm trong `validate:data`: số chuỗi generated có chữ tiếng Việt và còn `\d\s?pcs?` (kỳ vọng 0) và số chuỗi `\d chi tiết` không đến từ từ điển (kỳ vọng 0).
+- Test: `> Magazine capacity: 125pcs` với label có sẵn → output nguồn, inventory `missing`; `> 1pc wrench` không có bản dịch review → output nguồn; sửa test hiện tại đang assert `"1 chi tiết cờ lê"` và `"Sức chứa hộp đạn: 125 chi tiết"`.
+- Ghi coverage trước → sau (translated có thể **giảm**, đó là số đúng).
+
+**3. Allowlist tiếng Việt không dấu và từ mượn: gate cuối hiện không thể PASS**
+- Target **đã review** bị báo là English: `phun`(8), `poly`(5), `xi-lanh`(4), `satin`(3), `phillips`(3), `ram`(3), `ren`(3), `led`(2), `niken`(2), `skin`(2), `sinh`(2), `dao`(2), `acrylic`(2), `khung`(2), `gian`(2), `xy-lanh`(2), `carbon`, `carton`, `molypden`, `crmo`, `lithium-ion`, `quang`, `polyester`, `quay`, `nung`, `phe`, `che`, `cam`, `lon`, `pozidriv`, `npt`, `sau`, `rung`, `bugi`, `khoan`, `rpm`, `leo`, `chia`, `tct`. Hệ quả: (a) dòng glossary dịch đủ có các từ này bị trả về tiếng Anh; (b) khi `missing = 0`, lỗi "English remainder" vẫn bật vì chính target đã review.
+- Tách allowlist thành các nhóm tường minh, có chú thích, trong `spec-translation-utils.mjs`:
+  - `VIETNAMESE_ASCII_WORDS`: từ tiếng Việt thật không dấu (`phun`, `ren`, `rung`, `khung`, `quay`, `nung`, `sinh`, `gian`, `khoan`, `chia`, `sau`, `quang`, `xi-lanh`, `xy-lanh`, `bugi`, `niken`, `molypden`…). Chỉ bỏ qua trong chuỗi **có chữ tiếng Việt có dấu**. Nhờ vậy từ trùng tiếng Anh (`the`, `in`, `than`, `go`, `may`, `con`, `pin`) không che dòng tiếng Anh thuần.
+  - `LOANWORDS`: từ mượn/viết tắt/tên chuẩn giữ nguyên trong tiếng Việt kỹ thuật (`LED`, `USB`, `AC`, `DC`, `NPT`, `Phillips`, `Pozidriv`, `Torx`, `TCT`, `CrMo`, `RPM`, `poly`, `polyester`, `acrylic`, `carbon`, `carton`, `lithium-ion`, `Li-ion`, `satin`…). Áp dụng mọi chuỗi.
+  - Mỗi từ mới phải kiểm chứng; **cấm** thêm từ tiếng Anh thông dụng (`with`, `and`, `size`, `max`, `blade`, `cable`, `wheel`…). `ram`, `skin`, `dao`, `leo`, `lon`, `phe`, `che`, `cam`: mở target chứa chúng, xác định là từ Việt/từ mượn thật hay lỗi dịch; lỗi dịch thì sửa target.
+- **Gate mới (fail ngay, không chờ `missing = 0`):** mọi target trong `lines`, `labels`, `cells` phải `needsTranslation(target) === false` và không có token lai (mục 1). Target vi phạm → `build:data` fail, liệt kê source.
+- Test: `"> Đầu phun: 2mm"`, `"> Đầu ren NPT 1/4″"`, `"> Đèn LED tích hợp"` → không báo; `"> Kích thước with case"` → báo `with`; `"The size"` (không dấu) → báo `the`/`size`.
+
+**4. Thuật ngữ satin (chốt: giữ "hoàn thiện satin")**
+- Glossary `satin finish`/`stain finish` → "hoàn thiện satin" hiện vô hiệu: fallback coi `satin` là English nên generated vẫn "> satin finish", "> Stain finish, chrome plated surface"; test hiện tại còn assert điều này.
+- `satin` vào `LOANWORDS` (mục 3). Sửa test: `> satin finish` và `> stain finish` → `> hoàn thiện satin` (hoặc viết hoa đầu dòng nhất quán với các dòng review hiện có như "> Hoàn thiện satin"). Dòng dài hơn chứa satin/stain finish vẫn theo luật fallback chung.
+
+**5. Dọn nhỏ**
+- Thay assertion `hop` vô nghĩa trong `tests/spec-translation-inventory.test.mjs` bằng các ca ở mục 3.
+- Bỏ regex hyphen thừa `/^[a-z]+-\d+$/i` (tập con của regex trước) trong `isAllowedToken`.
+- Log phiên trước ghi "dictionary có 276 key", thực tế 519 mục (217 dòng / 274 nhãn / 28 ô). Log sau ghi rõ từng loại.
+
+**Chỉ số audit bắt buộc ghi WORKLOG (trước → sau), đo trên `src/data/catalog.generated.json`:**
+- Chuỗi có token lai (mục 1): 59 → 0
+- Chuỗi có chữ Việt + `\d\s?pcs?`: → 0; chuỗi `\d chi tiết` không từ từ điển: 175 → 0
+- Target từ điển bị báo English: ~40 từ → 0
+- Chuỗi có chữ Việt + English ngoài allowlist (dùng regex chữ Việt ở mục 1, **không** dùng dải `[à-ỹ]` vì dải đó chứa cả ký tự Hy Lạp như `φ`)
+- Coverage `translated / notNeeded / missing` và English remainder
+
+**Kiểm chứng C1.2d:** `npm test`, `npm run build:data`, `npm run check:data`, `npm run validate:data`, `npm run spec:inventory`, `npm run build`, `npm run validate:export`, `git diff --check`. Đánh dấu từng mục 1–5 đã xử lý trong WORKLOG.
+
+---
+
 ### C1.3 — Dịch theo lô
 
-**Mục tiêu khối lượng:** mỗi phiên **tối thiểu 500 chuỗi/nhãn**, hoặc làm liên tục tới khi hết ngữ cảnh/thời gian. Lô ~150–250 mục; sau **mỗi lô** chạy `build:data` + `check:data` + `spec:inventory` (điểm dừng an toàn). Chạy `npm test` + `validate:data` sau mỗi 2–3 lô và cuối phiên.
+**Mục tiêu khối lượng:** mỗi phiên **tối thiểu 500 mục mới được ghi vào từ điển** (dòng + nhãn + ô; không tính mục được phân loại lại `notNeeded`), hoặc làm liên tục tới khi hết ngữ cảnh/thời gian. Báo cáo cả "số mục mới" lẫn coverage. Phiên trước chỉ ghi được ~320 mục. Lô ~150–250 mục; sau **mỗi lô** chạy `build:data` + `check:data` + `spec:inventory` (điểm dừng an toàn). Chạy `npm test` + `validate:data` sau mỗi 2–3 lô và cuối phiên.
 
 **Thứ tự ưu tiên:**
 1. `labels` (692 nhãn → phủ ~1317 dòng)
@@ -119,7 +211,7 @@ Hệ quả trạng thái trung gian: dòng chưa dịch đang hiển thị **ngu
 **Chuẩn dịch:**
 - Tiếng Việt kỹ thuật ngành dụng cụ, nhất quán với `vi-glossary.json` và các bản dịch đã có. Thuật ngữ lặp nhiều lần → thêm vào glossary.
 - Giữ nguyên **100%** số, đơn vị, dung sai, ký hiệu (`Ø ″ ± ×`), mã model/SKU, tiêu chuẩn, mã vật liệu (`Cr-V`, `S2`, `ABS`, `TPR`).
-- Lượng từ: dùng `chiếc/cái/bộ/món/chi tiết`, **không** để `pcs` trong câu tiếng Việt.
+- Lượng từ: dùng `chiếc/cái/bộ/món/chi tiết` **đúng ngữ cảnh, ghi trong từ điển**; không để `pcs` trong câu tiếng Việt, không thêm regex thay `pcs` tự động.
 - Giữ tiền tố `> ` và cấu trúc `Nhãn: giá trị` khi nguồn có.
 - Câu tính năng dịch tự nhiên, không word-by-word, không thêm quảng cáo hay thông tin nguồn không có.
 - **Không** để dòng lai kiểu "Rated Điện áp": cả dòng phải là tiếng Việt (trừ allowlist).
@@ -145,7 +237,9 @@ Kiểm tra thêm:
 
 ### Tiêu chí hoàn thành C1
 
-- [ ] C1.2b xong, có test cho: `needsTranslation`, `labels`, `pc/pcs`, báo cáo English remainder trên generated
+- [x] C1.2b xong, có test cho: `needsTranslation`, `labels`, `pc/pcs`, báo cáo English remainder trên generated
+- [x] C1.2c xong: 0 `pcs` trong target tiếng Việt (có gate), ignore list tường minh, token có gạch nối xét từng phần, fallback dòng không tạo câu lai, thuật ngữ satin thống nhất
+- [x] C1.2d xong: 0 token lai có dấu, 0 `N chi tiết` tự động, allowlist tách tiếng Việt/từ mượn, gate target từ điển fail-mode, satin thống nhất
 - [ ] `missing = 0` (dòng, nhãn, ô bảng)
 - [ ] 0 placeholder, 0 dòng lai/tiếng Anh ngoài allowlist, 0 `pcs` trong câu tiếng Việt
 - [ ] Gate coverage + English remainder ở fail-mode

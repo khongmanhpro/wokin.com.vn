@@ -8,6 +8,13 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  hasHybridToken,
+  hasVietnameseText,
+  needsTranslation,
+  normalizeLabelKey,
+  parseLabeledSpecLine,
+} from "./spec-translation-utils.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DEFAULT_SOURCE_DIR = path.join(projectRoot, "data");
@@ -43,7 +50,6 @@ const namedEntities = Object.freeze({
 
 const blockedSpecElements = new Set(["iframe", "script", "style"]);
 const forbiddenRuntimeText = /\b(?:www\.)?wokintools\.com\b|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
-const englishRemainder = /\b(?:and|with|for|from|into|only|not|included|material|steel|iron|aluminum|handle|packing|size|speed|design|motor|control|suitable|surface|blade|cutting|voltage|power|length|diameter|approval|soft|start|blowing|volume|dust|bag|variable|switch|makes|can|will|color|box|chrome|finish|made|high|quality|plastic|rubber|packed|feature|features)\b/i;
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -75,6 +81,10 @@ function readJson(sourceDir, name, errors) {
 
 function nonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function hasVietnameseQuantityAbbreviation(value) {
+  return hasVietnameseText(value) && /\d\s?pcs?\b/i.test(value);
 }
 
 function decodeHtmlEntities(value) {
@@ -218,15 +228,23 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function replaceWholePhrase(text, source, target) {
+  return text.replace(new RegExp(`(?<![\\p{L}\\d])${escapeRegExp(source)}(?![\\p{L}\\d])`, "giu"), target);
+}
+
 export function createTranslator(glossary, specTranslations = {}) {
   const terms = [...glossary.terms].sort((left, right) => right[0].length - left[0].length);
-  // `pc`/`pcs` is a unit attached to numeric values. It must stay intact so
-  // the numeric-token gate can prove that a translation kept source data.
+  // `pc`/`pcs` is a unit attached to numeric values. The numeric-token gate
+  // keeps the count while Vietnamese output may use chiếc/cái/bộ instead.
   const specLabels = Object.entries(glossary.spec_labels)
     .filter(([source]) => !/^pcs?$/i.test(source))
     .sort((left, right) => right[0].length - left[0].length);
   const lineTranslations = new Map(Object.entries(specTranslations.lines ?? {}).map(([source, target]) => [normalizedSpecText(source), normalizedSpecText(target)]));
   const cellTranslations = new Map(Object.entries(specTranslations.cells ?? {}).map(([source, target]) => [normalizedSpecText(source), normalizedSpecText(target)]));
+  const labelTranslations = new Map([
+    ...Object.entries(glossary.spec_labels ?? {}),
+    ...Object.entries(specTranslations.labels ?? {}),
+  ].map(([source, target]) => [normalizeLabelKey(source), normalizedSpecText(target)]));
   const translateText = (text) => {
     let output = text
       .replace(/STOCK NO\./gi, glossary.ui["STOCK NO."])
@@ -239,11 +257,11 @@ export function createTranslator(glossary, specTranslations = {}) {
       .replace(/Blowing Volume/gi, "Lưu lượng thổi")
       .replace(/3-Speed control for versatility to switch/gi, "Điều khiển 3 cấp tốc độ linh hoạt")
       .replace(/Folding handle design; 2-in-1 design makes blower &amp; vacuum can be switched at will/gi, "Tay cầm gập; thiết kế 2 trong 1 cho phép chuyển đổi chế độ thổi và hút")
-      .replace(/With (\d+)(pcs?) dust bag/gi, "Kèm $1$2 túi chứa bụi")
+      .replace(/With (\d+)(pcs?) dust bag/gi, "Kèm $1 túi chứa bụi")
       .replace(/Tool Only: Battery and Charger not included/gi, "Chỉ thân máy: không kèm pin và bộ sạc");
-    for (const [source, target] of specLabels) output = output.replace(new RegExp(escapeRegExp(source), "gi"), target);
-    for (const [source, target] of terms) output = output.replace(new RegExp(escapeRegExp(source), "gi"), target);
-    return output
+    for (const [source, target] of specLabels) output = replaceWholePhrase(output, source, target);
+    for (const [source, target] of terms) output = replaceWholePhrase(output, source, target);
+    output = output
       .replace(/Brushless Motor/gi, "Động cơ không chổi than")
       .replace(/CE approval/gi, "Chứng nhận CE")
       .replace(/Soft start/gi, "Khởi động êm")
@@ -252,25 +270,36 @@ export function createTranslator(glossary, specTranslations = {}) {
       .replace(/Blowing Volume/gi, "Lưu lượng thổi")
       .replace(/3-Speed control for versatility to switch/gi, "Điều khiển 3 cấp tốc độ linh hoạt")
       .replace(/Folding handle design; 2-in-1 design makes (?:blower|máy thổi) &amp; vacuum can be switched at will/gi, "Tay cầm gập; thiết kế 2 trong 1 cho phép chuyển đổi chế độ thổi và hút")
-      .replace(/With (\d+)(pcs?) dust bag/gi, "Kèm $1$2 túi chứa bụi")
+      .replace(/With (\d+)(pcs?) dust bag/gi, "Kèm $1 túi chứa bụi")
       .replace(/Tool Only/gi, "Chỉ thân máy")
       .replace(/(?:Battery|Pin) and Charger not included/gi, "không kèm pin và bộ sạc")
       .replace(/color box/gi, "hộp màu")
       .replace(/\bSIZE\b/gi, "KÍCH THƯỚC")
       .replace(/\bTANK\b/gi, "BÌNH CHỨA")
-      .replace(/\bMAX\. RPM\b/gi, "VÒNG\/PHÚT TỐI ĐA")
-      .replace(/With (\d+)(pcs?)/gi, "Kèm $1$2 chi tiết");
+      .replace(/\bMAX\. RPM\b/gi, "VÒNG\/PHÚT TỐI ĐA");
+    return output;
   };
   const translateSpecLine = (rawLine) => {
     const raw = rawLine.trim();
     if (!raw) return "";
     const reviewed = lineTranslations.get(normalizedSpecText(raw));
     if (reviewed) return reviewed.startsWith(">") ? reviewed.replace(/^>\s*/, "> ") : `> ${reviewed}`;
+    const labeled = parseLabeledSpecLine(raw);
+    if (labeled && !needsTranslation(labeled.value) && !/\d\s?pcs?\b/i.test(labeled.value)) {
+      const translatedLabel = labelTranslations.get(labeled.labelKey);
+      if (translatedLabel) {
+        const translatedLabelLine = `> ${translatedLabel}: ${labeled.value}`;
+        if (!hasHybridToken(translatedLabelLine)) return translatedLabelLine;
+      }
+    }
     const translated = translateText(raw);
-    if (!englishRemainder.test(translated)) return translated.replace(/^>\s*/, "> ");
     // Keep the source wording when no reviewed translation exists. Replacing
     // it with a generic label loses product information and is forbidden.
-    return translated.replace(/^>\s*/, "> ");
+    const normalizedTranslated = translated.replace(/^>\s*/, "> ");
+    const normalizedSource = normalizedSpecText(raw).replace(/^>\s*/, "> ");
+    if (hasHybridToken(normalizedTranslated)) return normalizedSource;
+    if (hasVietnameseText(normalizedTranslated) && /\d\s?pcs?\b/i.test(normalizedTranslated)) return normalizedSource;
+    return needsTranslation(normalizedTranslated) ? normalizedSource : normalizedTranslated;
   };
   const translateCell = (rawCell) => {
     const raw = normalizedSpecText(rawCell);
@@ -283,7 +312,10 @@ export function createTranslator(glossary, specTranslations = {}) {
 function numericTokens(value) {
   const units = "kpa|rpm|mAh|pcs?|hp|kw|nm|mm|cm|km|kg|mg|ml|hz|psi|bar|ah|nm|lb|kv|ma|°c|°|v|w|a|g|l|m|min|%";
   const values = [...value.matchAll(new RegExp(`\\d+(?:[.,]\\d+)?(?:\\/\\d+(?:[.,]\\d+)?)?(?:\\s?(?:${units}|[\"″′'])(?!\\p{L}))?`, "giu"))]
-    .map(([token]) => token.replace(/\s+/g, "").toLowerCase());
+    .map(([token]) => {
+      const normalized = token.replace(/\s+/g, "").toLowerCase();
+      return /\d+(?:pcs?)$/i.test(normalized) ? normalized.replace(/pcs?$/i, "") : normalized;
+    });
   const codes = [...value.matchAll(/\b(?:m|t|ph|pz|sl|s|n|x)\d+(?:[.,]\d+)?/gi)]
     .map(([token]) => token.toLowerCase());
   return [...values, ...codes];
@@ -327,11 +359,15 @@ function validateAndNormalize({ sourceDir, publicDir }) {
   if (!manifest || Array.isArray(manifest) || typeof manifest !== "object") errors.push("image_manifest.json: root phải là object.");
   if (!glossary || typeof glossary !== "object" || Array.isArray(glossary)) errors.push("vi-glossary.json: root phải là object.");
   if (!specTranslations || typeof specTranslations !== "object" || Array.isArray(specTranslations) || specTranslations.schemaVersion !== 1) errors.push("spec-translations-vi.json: schemaVersion phải là 1.");
-  for (const field of ["lines", "cells"]) {
+  for (const field of ["lines", "cells", "labels"]) {
+    if (field === "labels" && specTranslations?.labels === undefined) continue;
     const dictionary = specTranslations?.[field];
     if (!dictionary || typeof dictionary !== "object" || Array.isArray(dictionary)) errors.push(`spec-translations-vi.json: ${field} phải là object.`);
     else for (const [source, target] of Object.entries(dictionary)) {
       if (!nonEmptyString(source) || !nonEmptyString(target)) errors.push(`spec-translations-vi.json: ${field} có mục dịch rỗng hoặc không hợp lệ.`);
+      else if (hasVietnameseQuantityAbbreviation(target)) errors.push(`spec-translations-vi.json: ${field} target chứa pcs viết tắt số lượng; dùng từ tiếng Việt (chiếc/cái/bộ). Source: ${source}`);
+      else if (needsTranslation(target)) errors.push(`spec-translations-vi.json: ${field} target còn English ngoài allowlist; hãy dịch trọn câu. Source: ${source} Target: ${target}`);
+      else if (hasHybridToken(target)) errors.push(`spec-translations-vi.json: ${field} target chứa token lai; hãy dịch trọn từ. Source: ${source} Target: ${target}`);
     }
   }
   if (errors.length) throw new Error(errors.join("\n"));

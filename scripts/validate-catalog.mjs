@@ -229,8 +229,16 @@ export function validateCatalog(options) {
 
   if (isProjectCatalog) {
     const inventory = collectSpecTranslationInventory({ sourceDir: options.dataDir });
-    reports.push(`Spec translation coverage: ${inventory.summary.total.translated}/${inventory.summary.total.unique} chuỗi; còn thiếu ${inventory.summary.total.missing} (dòng ${inventory.summary.lines.missing}, ô bảng ${inventory.summary.cells.missing}).`);
-    reports.push(`Spec English remainder: ${inventory.summary.remainingEnglishLines.unique} chuỗi dòng, ${inventory.summary.remainingEnglishLines.occurrences} occurrences.`);
+    reports.push(`Spec translation coverage: đã dịch ${inventory.summary.total.translated}, không cần dịch ${inventory.summary.total.notNeeded}, còn thiếu ${inventory.summary.total.missing}/${inventory.summary.total.unique} (dòng ${inventory.summary.lines.missing}, nhãn ${inventory.summary.labels.missing}, ô bảng ${inventory.summary.cells.missing}).`);
+    reports.push(`Spec English remainder trên generated: ${inventory.summary.remainingEnglish.unique} chuỗi, ${inventory.summary.remainingEnglish.occurrences} occurrences (dòng ${inventory.summary.remainingEnglish.lines.unique}/${inventory.summary.remainingEnglish.lines.occurrences}, ô ${inventory.summary.remainingEnglish.cells.unique}/${inventory.summary.remainingEnglish.cells.occurrences}); top: ${inventory.summary.remainingEnglish.topWords.map(([word, count]) => `${word}(${count})`).join(", ") || "không có"}.`);
+    const quality = inventory.summary.remainingEnglish;
+    reports.push(`Spec quality trên generated: câu lai có dấu ${quality.hybrid.unique}/${quality.hybrid.occurrences}, câu Việt trộn English ngoài allowlist ${quality.mixedVietnameseEnglish.unique}/${quality.mixedVietnameseEnglish.occurrences}, câu tiếng Việt còn N pcs ${quality.vietnamesePcs.unique}/${quality.vietnamesePcs.occurrences}, N chi tiết tự động ngoài từ điển ${quality.autoChiTiet.unique}/${quality.autoChiTiet.occurrences}.`);
+    if (quality.hybrid.unique || quality.vietnamesePcs.unique || quality.autoChiTiet.unique) {
+      errors.push(`Generated spec còn lỗi chất lượng C1.2d: hybrid ${quality.hybrid.unique}, Vietnamese+pcs ${quality.vietnamesePcs.unique}, auto N chi tiết ${quality.autoChiTiet.unique}.`);
+    }
+    if (inventory.summary.total.missing === 0 && inventory.summary.remainingEnglish.unique > 0) {
+      errors.push(`Generated spec còn English remainder ngoài allowlist sau khi coverage đạt 100%: ${inventory.summary.remainingEnglish.unique} chuỗi.`);
+    }
   }
 
   return {

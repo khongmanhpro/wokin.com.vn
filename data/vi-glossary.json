@@ -253,7 +253,9 @@
     ["WELDING MASK", "mặt nạ hàn"],
     ["WELDING GLOVES", "găng tay hàn"],
     ["APRON", "tạp dề bảo hộ"],
-    ["DUST MASK", "khẩu trang chống bụi"]
+    ["DUST MASK", "khẩu trang chống bụi"],
+    ["satin finish", "hoàn thiện satin"],
+    ["stain finish", "hoàn thiện satin"]
   ],
   "spec_labels": {
     "Voltage": "Điện áp",

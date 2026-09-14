@@ -25,7 +25,7 @@ Pipeline chỉ hash và tiêu thụ tám file sau:
 | `product_dates.json` | Ngày xuất bản theo legacy product ID và legacy slug. |
 | `products.json` | Product archive gốc, gồm tên/slug/SKU, category, mô tả, spec HTML và attributes. |
 | `products_vi.json` | Bản dịch tiếng Việt và canonical product slug theo legacy product ID. |
-| `spec-translations-vi.json` | Bản dịch đã review cho từng dòng spec và ô bảng; khớp theo chuỗi nguồn đã chuẩn hóa. |
+| `spec-translations-vi.json` | Bản dịch đã review cho từng nhãn, dòng spec và ô bảng; khớp theo chuỗi nguồn đã chuẩn hóa. `labels` là từ điển nhãn dùng cho dạng `Nhãn: số liệu`. |
 | `vi-glossary.json` | Tên category, nhãn UI và từ điển dùng khi normalize spec. |
 
 Các file archive/hỗ trợ khác có thể cùng tồn tại trong `data/`, nhưng không phải input của `build:data` nếu không có trong danh sách trên. Các file ảnh dưới `public/` là dependency kiểm tra: mỗi đường dẫn manifest phải an toàn, là đường dẫn tương đối và tồn tại. Nội dung binary của ảnh hiện không nằm trong checksum pipeline.

@@ -5,16 +5,16 @@
     "products": 1357
   },
   "generatedFiles": {
-    "catalog.generated.json": "9cd9b3e0e81d8031d70071dd69c96b12067859fa7a5c806918f98428c439917a",
+    "catalog.generated.json": "5b81d5baa8ac91ab996a9d18fee002a7669ef2cd9bf40c35bcb01560d15b4093",
     "categories.json": "0a7deeeed327a5c78188d517a0f1c07bcfa965ed441dfc341cad52cb7f889108",
     "products_vi.json": "c323788e0d479274161271ca5428e3abc247875ecdf96c62c5dc0d6d58da31f2",
-    "README.md": "6916adce6a87408d947387a6b89661063ded15e3d392b31ddf86e745204905bb",
+    "README.md": "67e7c0f1666e267bc7dac1dcdf5c0ffb160c2dc7e61797e0e727ced1545d6aa7",
     "search-index.json": "702a2cdfa1325f1e6a86c5d22feb90dd788297740293a4314772b988a7a597e4",
-    "vi-glossary.json": "0453ad822796226cc0e54a5908383599bd737f14206ac22f482de3b2b8ffa931"
+    "vi-glossary.json": "45e43ef7065667609d609af73b5b2b74e7d96104d4165e630b6d3f33420f0dca"
   },
-  "outputChecksum": "dc05d8452d01c4d57b7ce88b0c7783ce18b35c50fa684ce7287bd40d4e6c258c",
+  "outputChecksum": "0a2de779082143c68e9088f7db658c47f3c4307fdbb4309d914b126ae2c0b287",
   "schemaVersion": 1,
-  "sourceChecksum": "7cb0c135560461db87a9e60dd26420dfaeb125e8bff358fa2556490edf521bb7",
+  "sourceChecksum": "20970d5a4baf0a0241343752389a17992aedd47c97f25433b8a9daee2d0e95d6",
   "sourceFiles": {
     "catalog-baseline.json": "04543d63672098efb10b63256de369f277036f6fa8dc109d95a32470e7e4fea4",
     "categories.json": "9559002493186a5ba9f26b1e616003fed0b7e853a196a5b4f6d8be4c2b21b47d",
@@ -22,7 +22,7 @@
     "product_dates.json": "8f789c7f21b70edeaaa9103c2fde764de3c4c580b355a969ced7d5415ba5c4a1",
     "products_vi.json": "70a120fbb771851931d66408eb0dd47d7382a25e4da1a9046584e4858c02bc6a",
     "products.json": "ead0552bb11510045cad3cd40d70680a01d276d103a8eb4ed2adfa2383f0235c",
-    "spec-translations-vi.json": "5e41bb72ff4f72d4d632bde0ea9376aabfe8e57dd96cb9e790358931928fcfd6",
-    "vi-glossary.json": "376a03f64a42b5ea55eb4174c1c9e99d8e40fba9b08951ee1ba42c87d0f7443f"
+    "spec-translations-vi.json": "7caffcbef3f27d7e65ec49deb5fb8460adc948f38874481b3fcd3532504f2965",
+    "vi-glossary.json": "7eedddad5646d17e5ccbd26314069edc7da80df639c8d3f760e0cb37ee743068"
   }
 }

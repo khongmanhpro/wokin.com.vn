@@ -4,4 +4,4 @@ Do not edit files in this directory by hand. Canonical editable inputs live in `
 Run `npm run build:data` to regenerate and `npm run check:data` to detect drift.
 
 Schema version: 1
-Output checksum: dc05d8452d01c4d57b7ce88b0c7783ce18b35c50fa684ce7287bd40d4e6c258c
+Output checksum: 0a2de779082143c68e9088f7db658c47f3c4307fdbb4309d914b126ae2c0b287
