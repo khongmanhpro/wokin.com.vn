@@ -1,5 +1,9 @@
 # AGENTS.md — WOKIN Clone (Next.js) — TASK CHO CODEX
 
+> ⚠️ **BẮT BUỘC:** Trước khi làm bất cứ việc gì, đọc [`WORKLOG.md`](WORKLOG.md): trạng thái hiện tại, việc đang mở, nhật ký.
+> Sau mỗi phiên làm việc (kể cả chỉ audit), thêm entry vào `WORKLOG.md` và cập nhật mục trạng thái/việc mở theo quy tắc ở đầu file đó.
+> Phần G0–G5 bên dưới là brief ban đầu; dự án đã đi xa hơn (Phase 0–11), xem `WORKLOG.md`.
+
 > **Bạn là agent thực thi. Mục tiêu: clone 1:1 website https://www.wokintools.com/ bằng Next.js.**
 > Đọc đủ 3 file này trước khi code, theo đúng thứ tự:
 > 1. `PROMPT-CLONE-NEXTJS.md` — kiến trúc, routes, data schema
