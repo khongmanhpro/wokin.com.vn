@@ -57,9 +57,9 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-09-14 bởi Codex (C1.3.1 đã sửa review, gate PASS; chờ review + commit)_
+_Cập nhật: 2026-09-14 bởi Claude (commit lô C1.3 `df991d3`; prompt Codex v11)_
 
-- **Nhánh `main`:** Phase 0–11, checkpoint hạ tầng C1 (`a40cff1`) và C1.2b–d (`f0ebdf4`) đã commit. C1.3.0 + C1.3.1 và lô dịch hiện còn **chưa commit**; untracked `.claude/`, `.hermes/`, `reports/` vẫn được giữ nguyên.
+- **Nhánh `main`:** Phase 0–11, checkpoint hạ tầng C1 (`a40cff1`) và C1.2b–d (`f0ebdf4`) đã commit. C1.3.0 + C1.3.1 + lô 530 nhãn/46 ô đã commit ở `df991d3`; untracked `.claude/`, `.hermes/`, `reports/` vẫn được giữ nguyên.
 - **Gate sau C1.3.1 (2026-09-14):** typecheck PASS, **80/80 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS, `git diff --check` PASS; npm audit 0 vulnerabilities.
 - **Kết luận nghiệm thu:** **NO-GO production.** Kỹ thuật đạt; nội dung spec đang được dịch theo lô và các quyết định giao diện vẫn chờ (xem mục 3).
 - **Payload CMS worktree:** 11 commit trên nhánh riêng + ~36 file sửa chưa commit. Admin UX **chưa được nghiệm thu**. Chưa merge vào `main`.
@@ -71,7 +71,7 @@ _Cập nhật: 2026-09-14 bởi Codex (C1.3.1 đã sửa review, gate PASS; ch�
 
 | ID | Việc | Trạng thái | Chờ ai | Ghi chú |
 |---|---|---|---|---|
-| C1 | **C1.3.0 + C1.3.1 (lô 532 mục) hoàn tất**; coverage hiện **1946 đã dịch / 1589 không cần dịch / 3865 còn thiếu trên 7400** (3613 dòng, 282 nhãn, 252 ô) | **Blocker**; nền C1.2b–d commit `f0ebdf4`, thay đổi C1.3 chưa commit. C1.3.1 đã sửa `SL`, bảo toàn mã/khoảng trắng/đơn vị, gate nhãn chết và gate kỹ thuật; **đang chờ review + commit**, chưa mở batch `0utside clamp` | Codex (prompt v10) | Generated: English remainder 3733 chuỗi/5013 occurrences (dòng 3545/4689, ô 188/324). Quality gate: hybrid có dấu 0, Vietnamese+pcs 0, `N chi tiết` tự động ngoài từ điển 0, Việt trộn English ngoài allowlist 0. Dictionary hiện 217 dòng / 758 nhãn / 74 ô = 1049 mục. Checksum generated `7cd4e91aea89c1166b0f67d85e260a2ec4e6e92b4e2d267cfdf7aa09c854f84f`. |
+| C1 | **C1.3.0 + C1.3.1 (lô 532 mục) hoàn tất**; coverage hiện **1946 đã dịch / 1589 không cần dịch / 3865 còn thiếu trên 7400** (3613 dòng, 282 nhãn, 252 ô) | **Blocker**; C1.2b–d commit `f0ebdf4`, lô C1.3 commit `df991d3` (review Claude: đạt). Kế tiếp C1.3.2 (dấu inch `”`, quy tắc "Bộ N") rồi lô từ `0utside clamp`. C1.3.1 đã sửa `SL`, bảo toàn mã/khoảng trắng/đơn vị, gate nhãn chết và gate kỹ thuật; **đang chờ review + commit**, chưa mở batch `0utside clamp` | Codex (prompt v11, C1.3.2) | Generated: English remainder 3733 chuỗi/5013 occurrences (dòng 3545/4689, ô 188/324). Quality gate: hybrid có dấu 0, Vietnamese+pcs 0, `N chi tiết` tự động ngoài từ điển 0, Việt trộn English ngoài allowlist 0. Dictionary hiện 217 dòng / 758 nhãn / 74 ô = 1049 mục. Checksum generated `7cd4e91aea89c1166b0f67d85e260a2ec4e6e92b4e2d267cfdf7aa09c854f84f`. |
 | D1 | Độ giống giao diện: header cam, hero ảnh lifestyle, trust banner cam, banner marketing | Chờ quyết định | Người dùng | `AGENTS.md` chỉ cho tải logo → cần WOKIN cấp ảnh marketing hoặc chấp nhận khác bản gốc |
 | D2 | Trang Liên hệ không có địa chỉ/điện thoại/email công ty; form đã tắt từ Phase 7 | Chờ quyết định | Người dùng | Cần thông tin liên hệ VN chính thức + backend form nếu bật lại |
 | D3 | Tương phản màu cam thương hiệu (#FE7700) không đạt WCAG AA | Chờ quyết định | Người dùng | Đề xuất chữ tối trên nút cam |
@@ -116,6 +116,13 @@ _Cập nhật: 2026-09-14 bởi Codex (C1.3.1 đã sửa review, gate PASS; ch�
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-09-14 — Claude — Prompt Codex v11 sau commit lô C1.3
+**Yêu cầu:** Tiếp theo review C1.3.1 (người dùng đã duyệt sửa xong rồi commit).
+**Đã làm:** commit `df991d3` feat(data): translate spec labels batch 1 with technical-token gates (C1.3), gồm code, dữ liệu, test, prompt v10 và entry review. `docs/prompts/CODEX-CONTINUE.md` v11: baseline `df991d3`; thêm **C1.3.2** (dấu inch `”` trong gate + 3 target; quy tắc "Bộ N": 123 + 2 target); sau đó lô dịch tiếp từ `0utside clamp`.
+**Kiểm chứng:** gate đầy đủ đã chạy ngay trước commit trên cùng trạng thái (xem entry review C1.3.1), không file nào đổi sau lần chạy gate; `git diff --check` PASS.
+**Commit:** `df991d3`; prompt v11 + entry này ở commit kế tiếp. Chưa push/deploy.
+**Việc tiếp theo:** chạy Codex: `Đọc và thực hiện đúng docs/prompts/CODEX-CONTINUE.md`.
+
 ### 2026-09-14 — Claude — Review C1.3.1 + commit lô C1.3
 **Yêu cầu:** Codex báo xong C1.3.1, kiểm tra (người dùng đã duyệt phương án "sửa xong rồi commit").
 **Đã làm:** đọc diff code/test; audit 530 nhãn + 46 ô mới so với `5e3b6e2` theo chuẩn thuật ngữ v9; kiểm generated.
@@ -125,6 +132,7 @@ _Cập nhật: 2026-09-14 bởi Codex (C1.3.1 đã sửa review, gate PASS; ch�
 1. Quy tắc lượng từ chưa theo: **123** nhãn dạng liệt kê trong bộ dùng "Bộ N" dù nguồn không có `set` (vd "12pcs combination spanners" → "Bộ 12 cờ lê kết hợp"); 2 nhãn có `set` lại thiếu "Bộ".
 2. **3** nhãn mất dấu inch dạng `”` (U+201D): "1pc 1/2” dr. socket adapter" → "…truyền động 1/2". Gate không bắt vì `numericTokens` chỉ nhận `" ″ ′ '` và `normalizeTechnicalToken` xoá `“”`.
 **Commit:** lô C1.3 (C1.3.0 + 530 nhãn + 46 ô + C1.3.1) commit cùng entry này; hash ghi ở entry kế tiếp.
+
 
 ### 2026-09-14 — Codex — C1.3.1 sửa review lần 5
 **Yêu cầu:** Đọc và thực hiện đúng `docs/prompts/CODEX-CONTINUE.md` v9; sửa 5 nhóm lỗi review của Claude, chạy đủ gate rồi dừng để review + commit, không mở batch mới.

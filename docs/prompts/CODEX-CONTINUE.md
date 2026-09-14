@@ -4,6 +4,7 @@
 > `Đọc và thực hiện đúng docs/prompts/CODEX-CONTINUE.md`
 > Prompt dùng lại được nhiều phiên. Phiên mới tự biết tiếp từ đâu nhờ `WORKLOG.md` và `npm run spec:inventory`.
 >
+> Phiên bản 11 (2026-09-14, sau review lần 6 của Claude): lô C1.3 + C1.3.1 **đã commit ở `df991d3`**. Đầu phiên làm **C1.3.2** (2 lỗi nhỏ), sau đó dịch lô tiếp từ `0utside clamp`.
 > Phiên bản 10 (2026-09-14, Codex hoàn tất C1.3.1): đã sửa 5 mục review, chạy đủ gate, **chưa commit** để chờ review + commit; không mở batch mới. Coverage hiện `1946 translated / 1589 notNeeded / 3865 missing`, checksum generated `7cd4e91aea89c1166b0f67d85e260a2ec4e6e92b4e2d267cfdf7aa09c854f84f`.
 > Phiên bản 9 (2026-09-14, sau review lần 5 của Claude): lô C1.3 (C1.3.0 + 532 mục) **chưa commit** vì còn lỗi nội dung. Làm **C1.3.1** (sửa 5 mục review) rồi dừng để review + commit; chưa dịch lô mới.
 > Phiên bản 8 (2026-09-14, sau phiên Codex C1.3): C1.3.0 **đã xong**, 46 ô bảng lai đã dịch, và đã thêm 532 key dictionary; tiếp tục batch nhãn từ `0utside clamp`.
@@ -40,9 +41,9 @@ npm run check:data
 npm run spec:inventory
 ```
 
-Kỳ vọng tại lần bàn giao (v10): nhánh `main`, nền commit `f0ebdf4`, các thay đổi C1.3 **chưa commit**, **80 tests PASS**, check:data PASS (checksum `7cd4e91aea89c1166b0f67d85e260a2ec4e6e92b4e2d267cfdf7aa09c854f84f`), inventory `1946 translated / 1589 notNeeded / 3865 missing`, từ điển 217 dòng / 758 nhãn / 74 ô. Việc kế tiếp: review + commit C1.3.1; chỉ sau đó mới mở lô dịch tiếp theo từ `0utside clamp`. Untracked được phép: `.claude/`, `reports/`, vài file `.hermes/*.py`, `.hermes/plans/*`.
+Kỳ vọng tại lần bàn giao (v11): nhánh `main`, commit mới nhất `df991d3` hoặc commit docs ngay sau nó, **working tree sạch** với các file đang theo dõi, **80 tests PASS**, check:data PASS (checksum `7cd4e91aea89c1166b0f67d85e260a2ec4e6e92b4e2d267cfdf7aa09c854f84f`), inventory `1946 translated / 1589 notNeeded / 3865 missing`, từ điển 217 dòng / 758 nhãn / 74 ô. Việc kế tiếp: **C1.3.2**, rồi lô dịch tiếp theo từ `0utside clamp`. Untracked được phép: `.claude/`, `reports/`, vài file `.hermes/*.py`, `.hermes/plans/*`.
 
-C1.2b–C1.2d đã commit ở `f0ebdf4`. Mọi thay đổi chưa commit mới sinh ra trong phiên của bạn là của bạn; không revert thay đổi của người khác.
+C1.2b–C1.2d đã commit ở `f0ebdf4`; C1.3.0–C1.3.1 + lô 530 nhãn/46 ô ở `df991d3`. Mọi thay đổi chưa commit mới sinh ra trong phiên của bạn là của bạn; không revert thay đổi của người khác.
 
 - Trong sandbox Codex, 2 test mở cổng localhost (smoke static server) có thể fail `EPERM`. Đây **không phải** regression: ghi "EPERM do sandbox" vào log, **không** sửa hay bỏ test đó. Mọi test khác phải PASS.
 - Nếu khác kỳ vọng ngoài điểm trên: **dừng**, báo người dùng khác biệt cụ thể, không tự "sửa cho khớp".
@@ -72,7 +73,7 @@ C1.2b–C1.2d đã commit ở `f0ebdf4`. Mọi thay đổi chưa commit mới si
 | C1.2b allowlist `needsTranslation`, `labels`, gate `N pcs`, remainder trên generated | ✅ Xong, commit `f0ebdf4` |
 | C1.2c Sửa 5 lỗi review lần 2 | ✅ Xong, commit `f0ebdf4` |
 | C1.2d Sửa 4 lỗi review lần 3 (câu lai có dấu, `N chi tiết` tự động, allowlist tiếng Việt/từ mượn, satin) | ✅ Xong, commit `f0ebdf4` (review lần 4: đạt; còn 2 lỗi nhỏ → C1.3.0) |
-| C1.3 Coverage | ⏳ **1946 translated / 1589 notNeeded / 3865 missing** (3613 dòng, 282 nhãn, 252 ô); C1.3.0 + C1.3.1 đã xong, dictionary hiện 217 dòng / 758 nhãn / 74 ô; chờ review + commit trước khi mở batch mới |
+| C1.3 Coverage | ⏳ **1946 translated / 1589 notNeeded / 3865 missing** (3613 dòng, 282 nhãn, 252 ô); C1.3.0 + C1.3.1 đã xong, commit `df991d3` (review lần 6: đạt); dictionary 217 dòng / 758 nhãn / 74 ô; **C1.3.2** rồi lô tiếp từ `0utside clamp` |
 
 Hệ quả trạng thái trung gian: dòng chưa dịch vẫn hiển thị **nguyên tiếng Anh** (vd "Suitable for workshop use."); các câu lai có dấu và `N chi tiết` tự động đã được chặn. Không mất thông tin, nhưng chưa release được vì còn 3865 mục thiếu.
 
@@ -205,6 +206,10 @@ Claude review 2026-09-14 (entry "Claude — Review C1.2c + lô thử C1.3 của 
 
 **Mục tiêu khối lượng:** mỗi phiên **tối thiểu 500 mục mới được ghi vào từ điển** (dòng + nhãn + ô; không tính mục được phân loại lại `notNeeded`), hoặc làm liên tục tới khi hết ngữ cảnh/thời gian. Báo cáo cả "số mục mới" lẫn coverage. Phiên trước chỉ ghi được ~320 mục. Lô ~150–250 mục; sau **mỗi lô** chạy `build:data` + `check:data` + `spec:inventory` (điểm dừng an toàn). Chạy `npm test` + `validate:data` sau mỗi 2–3 lô và cuối phiên.
 
+**Bước C1.3.2 — Sửa nhỏ từ review lần 6 (làm đầu phiên, TDD, không tính vào 500 mục):**
+1. **Dấu inch `”` (U+201D) bị mất mà gate không bắt:** 3 nhãn "1pc 1/2” dr. socket adapter", "1pc 1/4” …", "1pc 3/8” …" → "…truyền động 1/2". Nguyên nhân: `numericTokens` chỉ nhận `" ″ ′ '` sau số, `normalizeTechnicalToken` xoá `“”`. Coi `”` tương đương `″` (chuẩn hoá `”`→`″` khi so khớp, không xoá). Sửa 3 target (giữ dấu inch). Test: label target thiếu dấu inch cho nguồn `1/2”` → build fail.
+2. **Quy tắc lượng từ dòng liệt kê chưa theo:** 123 nhãn dạng `Npcs X` (không có `set`) đang dịch "Bộ N X" (vd "12pcs combination spanners" → "Bộ 12 cờ lê kết hợp"); 2 nhãn có `set` ("6pcs punch set", "9pcs hex key set") lại thiếu "Bộ". Sửa: không có `set` → "N X"; có `set` → "Bộ N X". Thêm kiểm tra (report hoặc gate) đếm target vi phạm, kỳ vọng 0. Ghi số trước → sau vào WORKLOG.
+
 **Bước C1.3.1 — Sửa lỗi review lần 5 (✅ ĐÃ XONG ở phiên v10; không làm lại, không mở lô mới trước khi review + commit):**
 
 Claude review 2026-09-14 (entry "Claude — Review C1.3.0 + lô 532 mục của Codex" trong WORKLOG). Gate kỹ thuật PASS nhưng lô 532 mục có lỗi nội dung. Không revert lô; sửa tại chỗ.
@@ -252,7 +257,7 @@ Chốt chuẩn (áp dụng cho cả mục cũ và mới, ghi vào `vi-glossary.j
 
 **Thứ tự ưu tiên:**
 1. **Đã hoàn tất:** 46 ô bảng lai đã ghi vào `cells`; quality `Việt trộn English` hiện 0/0.
-2. `labels` còn thiếu (278 nhãn), tiếp tục từ `0utside clamp`
+2. `labels` còn thiếu (282 nhãn), tiếp tục từ `0utside clamp`
 3. Dòng tự do theo tần suất giảm dần
 4. Ô bảng còn chữ còn lại
 
@@ -292,6 +297,7 @@ Kiểm tra thêm:
 - [x] C1.2d xong: 0 token lai có dấu, 0 `N chi tiết` tự động, allowlist tách tiếng Việt/từ mượn, gate target từ điển fail-mode, satin thống nhất
 - [x] C1.3.0 xong: 0 chuỗi "êmer"/đuôi phụ âm lai, regex cứng có biên từ, chuẩn hoá khoảng trắng sau `:`; 46 ô bảng lai → 0
 - [x] C1.3.1 xong: `sl` đúng nghĩa, chuẩn hoá `:` không đụng mã, 0 nhãn chết (gate), gate giữ mã/đơn vị/loại đầu vít, 532 mục mới rà lại theo chuẩn thuật ngữ; chờ review + commit
+- [ ] C1.3.2 xong: `”` được gate coi là dấu inch, 3 target sửa; 0 vi phạm quy tắc "Bộ N" (123 → 0, 2 → 0)
 - [ ] `missing = 0` (dòng, nhãn, ô bảng)
 - [ ] 0 placeholder, 0 dòng lai/tiếng Anh ngoài allowlist, 0 `pcs` trong câu tiếng Việt
 - [ ] Gate coverage + English remainder ở fail-mode
