@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { collectSpecTranslationInventory } from "./spec-translation-inventory.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const defaultDataDir = path.join(projectRoot, "data");
@@ -19,6 +20,8 @@ const PROJECT_BASELINE = Object.freeze({
     ["789511", new Set([5786, 6265])],
   ]),
 });
+
+const SPEC_PLACEHOLDER = /^>\s*(?:Đặc tính kỹ thuật|Thông số kỹ thuật)(?::|$)/i;
 
 function parseArgs(argv) {
   const options = {
@@ -77,6 +80,7 @@ export function validateCatalog(options) {
   const categories = readJson(options.dataDir, "categories.json", errors);
   const dates = readJson(options.dataDir, "product_dates.json", errors);
   const manifest = readJson(options.dataDir, "image_manifest.json", errors);
+  const generatedSnapshotFile = path.join(projectRoot, "src/data/catalog.generated.json");
   if (![products, translations, categories, dates].every(Array.isArray) || !manifest || Array.isArray(manifest)) {
     errors.push("Catalog JSON phải có đúng kiểu array/object theo schema hiện tại.");
     return { errors, reports };
@@ -209,6 +213,25 @@ export function validateCatalog(options) {
     }
   }
   if (isProjectCatalog && manifestImages !== PROJECT_BASELINE.manifestImages) errors.push(`Manifest image count ${manifestImages}; expected ${PROJECT_BASELINE.manifestImages}.`);
+
+  if (isProjectCatalog && existsSync(generatedSnapshotFile)) {
+    try {
+      const snapshot = JSON.parse(readFileSync(generatedSnapshotFile, "utf8"));
+      for (const product of snapshot.products ?? []) {
+        for (const line of product.technicalSpecs?.lines ?? []) {
+          if (SPEC_PLACEHOLDER.test(line)) errors.push(`Generated spec placeholder còn lại ở product ${product.legacySourceId}: ${line}`);
+        }
+      }
+    } catch (error) {
+      errors.push(`Không đọc được generated catalog để kiểm tra placeholder: ${error.message}`);
+    }
+  }
+
+  if (isProjectCatalog) {
+    const inventory = collectSpecTranslationInventory({ sourceDir: options.dataDir });
+    reports.push(`Spec translation coverage: ${inventory.summary.total.translated}/${inventory.summary.total.unique} chuỗi; còn thiếu ${inventory.summary.total.missing} (dòng ${inventory.summary.lines.missing}, ô bảng ${inventory.summary.cells.missing}).`);
+    reports.push(`Spec English remainder: ${inventory.summary.remainingEnglishLines.unique} chuỗi dòng, ${inventory.summary.remainingEnglishLines.occurrences} occurrences.`);
+  }
 
   return {
     errors: [...new Set(errors)],

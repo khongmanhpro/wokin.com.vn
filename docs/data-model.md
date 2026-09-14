@@ -15,7 +15,7 @@ Schema hiện tại có `schemaVersion: 1`, được khóa đồng thời trong 
 
 ### Input canonical trong `data/`
 
-Pipeline chỉ hash và tiêu thụ bảy file sau:
+Pipeline chỉ hash và tiêu thụ tám file sau:
 
 | File | Vai trò |
 | --- | --- |
@@ -25,6 +25,7 @@ Pipeline chỉ hash và tiêu thụ bảy file sau:
 | `product_dates.json` | Ngày xuất bản theo legacy product ID và legacy slug. |
 | `products.json` | Product archive gốc, gồm tên/slug/SKU, category, mô tả, spec HTML và attributes. |
 | `products_vi.json` | Bản dịch tiếng Việt và canonical product slug theo legacy product ID. |
+| `spec-translations-vi.json` | Bản dịch đã review cho từng dòng spec và ô bảng; khớp theo chuỗi nguồn đã chuẩn hóa. |
 | `vi-glossary.json` | Tên category, nhãn UI và từ điển dùng khi normalize spec. |
 
 Các file archive/hỗ trợ khác có thể cùng tồn tại trong `data/`, nhưng không phải input của `build:data` nếu không có trong danh sách trên. Các file ảnh dưới `public/` là dependency kiểm tra: mỗi đường dẫn manifest phải an toàn, là đường dẫn tương đối và tồn tại. Nội dung binary của ảnh hiện không nằm trong checksum pipeline.
@@ -50,7 +51,7 @@ Pipeline chủ động xóa và `check:data` chủ động từ chối các dupl
 `catalog.generated.json` có các trường root:
 
 - `schemaVersion`: hiện là `1`.
-- `sourceChecksum`: SHA-256 tổng hợp từ bảy input canonical.
+- `sourceChecksum`: SHA-256 tổng hợp từ tám input canonical.
 - `canonicalSlugSha256`: checksum của các cặp `legacySourceId|canonicalSlug`, sắp theo ID.
 - `categories`: category normalized.
 - `products`: product normalized.
@@ -106,7 +107,7 @@ Builder serialize JSON bằng canonical formatting: object keys được sắp x
 
 Checksum được tính như sau:
 
-1. Mỗi trong bảy source file có SHA-256 trên raw bytes.
+1. Mỗi trong tám source file có SHA-256 trên raw bytes.
 2. `sourceChecksum` là SHA-256 của chuỗi tên file + NUL + checksum file, theo thứ tự `SOURCE_FILES` cố định.
 3. Bốn payload chính (`catalog.generated.json`, `categories.json`, `products_vi.json`, `vi-glossary.json`) được hash; `outputChecksum` là SHA-256 tổng hợp theo tên file đã sort.
 4. `README.md` nhúng `outputChecksum`.

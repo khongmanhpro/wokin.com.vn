@@ -57,11 +57,11 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-09-14 bởi Claude_
+_Cập nhật: 2026-09-14 bởi Codex_
 
-- **Nhánh `main`:** Phase 0–11 đã commit. Commit mới nhất liên quan: `30443e5`.
-- **Gate:** 65 tests PASS, build 1452 trang, validate:export PASS, audit 0 lỗ hổng.
-- **Kết luận nghiệm thu:** **NO-GO production.** Kỹ thuật đạt; bị chặn bởi nội dung spec và các quyết định giao diện (xem mục 3).
+- **Nhánh `main`:** Phase 0–11 đã commit; prompt tiếp nhận ở `98e8d3b`. Thay đổi C1 hiện chưa commit.
+- **Gate (Claude chạy lại ngoài sandbox, 2026-09-14):** audit 0, typecheck PASS, **68/68 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS. (`EPERM` trong log Codex là do sandbox của Codex.)
+- **Kết luận nghiệm thu:** **NO-GO production.** Kỹ thuật đạt; nội dung spec đang được dịch theo lô và các quyết định giao diện vẫn chờ (xem mục 3).
 - **Payload CMS worktree:** 11 commit trên nhánh riêng + ~36 file sửa chưa commit. Admin UX **chưa được nghiệm thu**. Chưa merge vào `main`.
 - **Chưa push, chưa deploy** bất cứ thứ gì.
 
@@ -71,7 +71,7 @@ _Cập nhật: 2026-09-14 bởi Claude_
 
 | ID | Việc | Trạng thái | Chờ ai | Ghi chú |
 |---|---|---|---|---|
-| C1 | Dịch lại spec sản phẩm: 1168/1357 SP có dòng bị thay bằng "Đặc tính kỹ thuật" (2773 dòng mất nội dung), ~738 dòng lẫn tiếng Anh, 64 SP header bảng tiếng Anh. Khối lượng: ~5754 dòng nguồn không trùng + ~1644 ô bảng | **Blocker**, sẵn sàng giao Codex | Codex | Đặc tả: `docs/prompts/CODEX-CONTINUE.md`. Chi tiết lỗi: `docs/phase-11-acceptance.md` §3 |
+| C1 | Dịch lại spec sản phẩm: đã thêm inventory + từ điển review + gate bảo toàn số liệu; coverage hiện 282/7400 chuỗi. Còn 7118 chuỗi thiếu (5594 dòng + 1524 ô bảng) | **Blocker**, đang làm theo lô | Codex | `npm run spec:inventory -- --next-batch 220`; lô kế tiếp bắt đầu `GRIT`. Placeholder generated = 0; 10011 dòng vẫn giữ đủ |
 | D1 | Độ giống giao diện: header cam, hero ảnh lifestyle, trust banner cam, banner marketing | Chờ quyết định | Người dùng | `AGENTS.md` chỉ cho tải logo → cần WOKIN cấp ảnh marketing hoặc chấp nhận khác bản gốc |
 | D2 | Trang Liên hệ không có địa chỉ/điện thoại/email công ty; form đã tắt từ Phase 7 | Chờ quyết định | Người dùng | Cần thông tin liên hệ VN chính thức + backend form nếu bật lại |
 | D3 | Tương phản màu cam thương hiệu (#FE7700) không đạt WCAG AA | Chờ quyết định | Người dùng | Đề xuất chữ tối trên nút cam |
@@ -115,6 +115,46 @@ _Cập nhật: 2026-09-14 bởi Claude_
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-09-14 — Claude — Review tiến độ C1 của Codex
+**Yêu cầu:** Review xem Codex làm tới đâu.
+**Đã làm (chỉ review, không sửa code của Codex):**
+- Đọc diff: `build-catalog-data.mjs` (tra từ điển trước, bỏ placeholder, gate bảo toàn số liệu cho dòng + ô bảng), `validate-catalog.mjs` (fail khi generated còn placeholder, báo coverage), `spec-translation-inventory.mjs` + test, `catalog.ts` (bỏ placeholder ở fallback). Thiết kế đúng đặc tả C1.1/C1.2.
+- Soi mẫu bản dịch: chất lượng tốt, số liệu giữ đúng; `STOCK NO.` → `MÃ KHO` khớp nhận diện header bảng Phase 11.
+**Kiểm chứng:** audit 0; typecheck PASS; `npm test` 68/68 PASS; validate:data PASS (coverage 282/7400); check:data PASS; build 1452 trang; validate:export + smoke PASS; placeholder trong generated = 0.
+**Phát hiện:**
+1. **Tiến độ chậm:** 2 phiên được 282/7400 (3,8%, ~141 chuỗi/phiên, dưới mức 150–250 của prompt). Giữ tốc độ này thì cần ~50 phiên.
+2. **Trạng thái trung gian hiện ra nhiều tiếng Anh hơn:** placeholder đã bỏ nên dòng chưa dịch hiển thị nguyên tiếng Anh hoặc lai (vd SKU 830912: "Rated Điện áp: 220V", "Noise: 88db", "Suitable for workshop use."). Không mất thông tin nữa, nhưng không được release khi chưa xong.
+3. **Inventory tính dư:** 805/1524 ô thiếu chỉ là số + đơn vị (vd `11mm`), không cần dịch; 94 mục trong từ điển là bản sao y nguồn. Coverage thật cần loại nhóm này.
+4. **Đòn bẩy chưa dùng:** 1317 dòng thiếu có dạng "Nhãn: số liệu" với chỉ 692 nhãn khác nhau (top: input power 52, size 35, rated current 28). Từ điển nhãn + gate số liệu sẽ phủ nhanh.
+5. **Gate số liệu ép giữ `pc/pcs`** → câu kém tự nhiên ("Kèm 2pcs bộ pin", "100pcs trong một túi"). Nên coi `N pc(s)` tương đương `N chiếc/cái/bộ`.
+6. Regex `englishRemainder` bỏ sót từ phổ biến (`rated`, `noise`, `air`) → báo cáo English remainder thấp hơn thực tế.
+**Commit:** chưa commit (thay đổi C1 của Codex vẫn chưa commit)
+**Việc tiếp theo:** chờ người dùng quyết định có cập nhật prompt Codex theo phát hiện 3–6 hay không, và có commit checkpoint hạ tầng C1 không.
+
+### 2026-09-14 — Codex — C1 lô dịch tiếp theo
+**Yêu cầu:** Tiếp tục dịch thông số kỹ thuật sản phẩm theo checkpoint C1.
+**Đã làm:**
+- Dịch thêm các nhãn kích thước/màu sắc/đóng gói và tính năng có nghĩa rõ ràng trong `data/spec-translations-vi.json`; giữ nguyên mã model, số đo, tiêu chuẩn và đơn vị.
+- Coverage tăng từ 141 lên **282/7400 chuỗi**; số thiếu giảm còn 7118 (5594 dòng + 1524 ô bảng).
+**Kiểm chứng:** `npm run spec:inventory -- --next-batch 20` → 282 đã dịch, lô kế tiếp bắt đầu `GRIT`; `npm run build:data` → PASS 1357 SP/30 danh mục/1720 ảnh; `npm run check:data` → PASS; `npm run validate:data` → PASS, English remainder 2605 chuỗi/3503 occurrences; `npm run typecheck` → PASS; test C1 → 9/9 PASS; `npm run build` → PASS 1452 trang; `node scripts/validate-static-export.mjs` → PASS 1447 route/10271 file/1357 JSON-LD.
+**Thuật ngữ cần review:** `GRIT`, `Skin card`, `Non-Ferrous-Alloy`, `Reverse Rotation Auto Stop Mode` và các mục kỹ thuật còn lại trong batch.
+**Commit:** chưa commit
+**Còn dở / rủi ro:** 7118 chuỗi chưa có bản dịch review; chưa đạt 100% coverage nên vẫn NO-GO production.
+**Việc tiếp theo:** tiếp tục batch từ `GRIT`, ưu tiên khoảng 150–250 chuỗi; chạy lại inventory và các gate sau batch.
+
+### 2026-09-14 — Codex — C1.1/C1.2 và lô dịch spec đầu tiên
+**Yêu cầu:** Đọc prompt tiếp nhận và tiếp tục xử lý blocker dịch thông số kỹ thuật sản phẩm.
+**Đã làm:**
+- Xuất `parseLegacySpec` và `normalizedSpecText` dùng chung; thêm `scripts/spec-translation-inventory.mjs` + `npm run spec:inventory` để kiểm kê theo tần suất và lấy batch kế tiếp.
+- Thêm `data/spec-translations-vi.json`, tích hợp tra từ điển khớp chính xác trước fallback; fallback giữ nội dung nguồn, không sinh placeholder.
+- Thêm gate không cho mất token số/đơn vị ở spec và ô bảng; `validate:data` fail nếu generated snapshot còn placeholder. Cập nhật runtime fallback và tài liệu data model.
+- Dịch/chuẩn hóa lô đầu: 141/7400 chuỗi (coverage trước → sau: 0 → 141; 5756 dòng, 1644 ô bảng được inventory).
+**Kiểm chứng:** `npm run spec:inventory -- --next-batch 10` → 141 đã dịch, 7259 thiếu; `npm run build:data` → PASS 1357 SP/30 danh mục/1720 ảnh; `npm run check:data` → PASS; `npm run validate:data` → PASS, báo English remainder 2658 chuỗi/3856 occurrences; `npm run typecheck` → PASS; test hẹp → 9/9 PASS; `npm run build` → PASS 1452 trang; `npm run validate:export` → static export PASS (1447 route/10271 file/1357 JSON-LD), smoke server fail `EPERM`; `npm test` → 66/68 PASS, 2 test mở localhost fail `EPERM` do sandbox.
+**Thuật ngữ cần review:** `Drop forged special tool steel`, `Chemically molybdenum`, `blow mould case`, `Non-Ferrous-Alloy` và các nhãn bảng hỗn hợp còn tiếng Anh.
+**Commit:** chưa commit
+**Còn dở / rủi ro:** 7259 chuỗi chưa có bản dịch review; generated snapshot hiện giữ nguyên tiếng Anh ở fallback để không mất dữ liệu. Chưa đạt tiêu chí 100% coverage.
+**Việc tiếp theo:** chạy lô kế tiếp từ `10 boxes`, ưu tiên khoảng 150–250 chuỗi theo `--next-batch 220`; sau mỗi lô chạy inventory + gate số liệu.
 
 ### 2026-09-14 — Claude — Viết prompt tiếp nhận cho Codex
 **Yêu cầu:** Viết prompt để Codex vào vẫn hiểu dự án và xử lý việc tiếp theo.

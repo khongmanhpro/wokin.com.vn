@@ -70,6 +70,11 @@ function makeFixture() {
     terms: [["color box", "hộp màu"]],
     spec_labels: { Voltage: "Điện áp", Packing: "Đóng gói" },
   });
+  writeJson(path.join(sourceDir, "spec-translations-vi.json"), {
+    schemaVersion: 1,
+    lines: {},
+    cells: {},
+  });
   writeJson(path.join(sourceDir, "catalog-baseline.json"), {
     schemaVersion: 1,
     expected: {
@@ -171,6 +176,48 @@ test("catalog build preserves a table-only product spec", async () => {
     const snapshot = JSON.parse(readFileSync(path.join(fixture.outputDir, "catalog.generated.json"), "utf8"));
     assert.deepEqual(snapshot.products[0].technicalSpecs.lines, []);
     assert.deepEqual(snapshot.products[0].packaging.table[1], ["TEST-101", "6"]);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("catalog build prefers reviewed spec translations and rejects numeric loss", async () => {
+  const { buildCatalogData } = await loadBuilder();
+  const fixture = makeFixture();
+  try {
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: {
+        "> Voltage: 20V": "> Điện áp danh định: 20V",
+        "> Packing: color box": "> Đóng gói: hộp màu",
+      },
+      cells: { "STOCK NO.": "MÃ SẢN PHẨM", "QTY./CARTON": "SL/THÙNG" },
+    });
+    await buildCatalogData(fixture);
+    const snapshot = JSON.parse(readFileSync(path.join(fixture.outputDir, "catalog.generated.json"), "utf8"));
+    assert.deepEqual(snapshot.products[0].technicalSpecs.lines, ["> Điện áp danh định: 20V", "> Đóng gói: hộp màu"]);
+    assert.deepEqual(snapshot.products[0].packaging.table[0], ["MÃ SẢN PHẨM", "SL/THÙNG"]);
+
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: { "> Voltage: 20V": "> Đặc tính kỹ thuật: 20V" },
+      cells: {},
+    });
+    await assert.rejects(buildCatalogData(fixture), /technical spec placeholder is not allowed/i);
+
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: { "> Voltage: 20V": "> Điện áp danh định: 10V" },
+      cells: {},
+    });
+    await assert.rejects(buildCatalogData(fixture), /bản dịch làm mất số liệu 20v/i);
+
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: {},
+      cells: { "TEST-101": "TEST" },
+    });
+    await assert.rejects(buildCatalogData(fixture), /packaging row 2 cell 1: bản dịch làm mất số liệu 101/i);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
   }

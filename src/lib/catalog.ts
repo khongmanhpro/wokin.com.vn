@@ -219,11 +219,11 @@ function translateText(text: string): string {
     .replace(/Blowing Volume/gi, "Lưu lượng thổi")
     .replace(/3-Speed control for versatility to switch/gi, "Điều khiển 3 cấp tốc độ linh hoạt")
     .replace(/Folding handle design; 2-in-1 design makes blower &amp; vacuum can be switched at will/gi, "Tay cầm gập; thiết kế 2 trong 1 cho phép chuyển đổi chế độ thổi và hút")
-    .replace(/With (\d+)pc dust bag/gi, "Kèm $1 túi chứa bụi")
+    .replace(/With (\d+)(pcs?) dust bag/gi, "Kèm $1$2 túi chứa bụi")
     .replace(/Tool Only: Battery and Charger not included/gi, "Chỉ thân máy: không kèm pin và bộ sạc");
-  for (const [source, target] of Object.entries(glossary.spec_labels).sort(
-    (a, b) => b[0].length - a[0].length,
-  )) {
+  for (const [source, target] of Object.entries(glossary.spec_labels)
+    .filter(([source]) => !/^pcs?$/i.test(source))
+    .sort((a, b) => b[0].length - a[0].length)) {
     output = output.replace(new RegExp(escapeRegExp(source), "gi"), target);
   }
   for (const [source, target] of sortedTermPairs) {
@@ -238,35 +238,26 @@ function translateText(text: string): string {
     .replace(/Blowing Volume/gi, "Lưu lượng thổi")
     .replace(/3-Speed control for versatility to switch/gi, "Điều khiển 3 cấp tốc độ linh hoạt")
     .replace(/Folding handle design; 2-in-1 design makes (?:blower|máy thổi) &amp; vacuum can be switched at will/gi, "Tay cầm gập; thiết kế 2 trong 1 cho phép chuyển đổi chế độ thổi và hút")
-    .replace(/With (\d+)pc dust bag/gi, "Kèm $1 túi chứa bụi")
+    .replace(/With (\d+)(pcs?) dust bag/gi, "Kèm $1$2 túi chứa bụi")
     .replace(/Tool Only/gi, "Chỉ thân máy")
     .replace(/(?:Battery|Pin) and Charger not included/gi, "không kèm pin và bộ sạc")
     .replace(/color box/gi, "hộp màu")
     .replace(/\bSIZE\b/gi, "KÍCH THƯỚC")
     .replace(/\bTANK\b/gi, "BÌNH CHỨA")
     .replace(/\bMAX\. RPM\b/gi, "VÒNG\/PHÚT TỐI ĐA")
-    .replace(/With (\d+)pc/gi, "Kèm $1 chi tiết");
+    .replace(/With (\d+)(pcs?)/gi, "Kèm $1$2 chi tiết");
 }
 
 const englishRemainder = /\b(?:and|with|for|from|into|only|not|included|material|steel|iron|aluminum|handle|packing|size|speed|design|motor|control|suitable|surface|blade|cutting|voltage|power|length|diameter|approval|soft|start|blowing|volume|dust|bag|variable|switch|makes|can|will|color|box|chrome|finish|made|high|quality|plastic|rubber|packed|feature|features)\b/i;
-
-function metricSummary(text: string): string {
-  const metrics = text.match(/\d+(?:[.,/×x*–-]\d+)*(?:\s?(?:V|W|kW|Hz|rpm|N[.·]?m|mm|cm|m|kg|g|L|min|bar|psi|A|Ah|mAh|°C|°|%|pcs?))?/gi) ?? [];
-  return [...new Set(metrics)].join(" · ");
-}
 
 function translateSpecLine(rawLine: string): string {
   const raw = rawLine.trim();
   if (!raw) return "";
   const translated = translateText(raw);
   if (!englishRemainder.test(translated)) return translated.replace(/^>\s*/, "> ");
-  const metrics = metricSummary(raw);
-  const [rawLabel] = raw.replace(/^>\s*/, "").split(":", 1);
-  const translatedLabel = translateText(rawLabel).trim();
-  const label = englishRemainder.test(translatedLabel) || translatedLabel === rawLabel
-    ? (raw.includes(":") ? "Thông số kỹ thuật" : "Đặc tính kỹ thuật")
-    : translatedLabel;
-  return `> ${label}${metrics ? `: ${metrics}` : ""}`;
+  // This fallback is only for callers providing legacy HTML directly. Keep
+  // the translated/source wording instead of dropping it behind a placeholder.
+  return translated.replace(/^>\s*/, "> ");
 }
 
 const blockedSpecElements = new Set(["iframe", "script", "style"]);
