@@ -59,7 +59,7 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 _Cập nhật: 2026-09-14 bởi Codex_
 
-- **Nhánh `main`:** Phase 0–11 đã commit; prompt tiếp nhận ở `98e8d3b`. Thay đổi C1 hiện chưa commit.
+- **Nhánh `main`:** Phase 0–11 đã commit; hạ tầng C1 + 282 bản dịch commit ở `a40cff1`; prompt Codex v2 ở commit kế tiếp.
 - **Gate (Claude chạy lại ngoài sandbox, 2026-09-14):** audit 0, typecheck PASS, **68/68 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS. (`EPERM` trong log Codex là do sandbox của Codex.)
 - **Kết luận nghiệm thu:** **NO-GO production.** Kỹ thuật đạt; nội dung spec đang được dịch theo lô và các quyết định giao diện vẫn chờ (xem mục 3).
 - **Payload CMS worktree:** 11 commit trên nhánh riêng + ~36 file sửa chưa commit. Admin UX **chưa được nghiệm thu**. Chưa merge vào `main`.
@@ -71,7 +71,7 @@ _Cập nhật: 2026-09-14 bởi Codex_
 
 | ID | Việc | Trạng thái | Chờ ai | Ghi chú |
 |---|---|---|---|---|
-| C1 | Dịch lại spec sản phẩm: đã thêm inventory + từ điển review + gate bảo toàn số liệu; coverage hiện 282/7400 chuỗi. Còn 7118 chuỗi thiếu (5594 dòng + 1524 ô bảng) | **Blocker**, đang làm theo lô | Codex | `npm run spec:inventory -- --next-batch 220`; lô kế tiếp bắt đầu `GRIT`. Placeholder generated = 0; 10011 dòng vẫn giữ đủ |
+| C1 | Dịch lại spec sản phẩm: hạ tầng inventory + từ điển + gate số liệu đã commit (`a40cff1`); coverage 282/7400 chuỗi. Khối lượng thật ước ~4300 dòng tự do + 692 nhãn + ~700 ô bảng | **Blocker**, bước tiếp: **C1.2b** rồi C1.3 | Codex | Làm theo `docs/prompts/CODEX-CONTINUE.md` v2. Placeholder generated = 0; dòng chưa dịch đang hiện tiếng Anh nên chưa release |
 | D1 | Độ giống giao diện: header cam, hero ảnh lifestyle, trust banner cam, banner marketing | Chờ quyết định | Người dùng | `AGENTS.md` chỉ cho tải logo → cần WOKIN cấp ảnh marketing hoặc chấp nhận khác bản gốc |
 | D2 | Trang Liên hệ không có địa chỉ/điện thoại/email công ty; form đã tắt từ Phase 7 | Chờ quyết định | Người dùng | Cần thông tin liên hệ VN chính thức + backend form nếu bật lại |
 | D3 | Tương phản màu cam thương hiệu (#FE7700) không đạt WCAG AA | Chờ quyết định | Người dùng | Đề xuất chữ tối trên nút cam |
@@ -116,6 +116,15 @@ _Cập nhật: 2026-09-14 bởi Codex_
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-09-14 — Claude — Commit checkpoint C1 + prompt Codex v2
+**Yêu cầu:** Làm cả hai: commit checkpoint hạ tầng C1 và cập nhật prompt Codex theo phát hiện review.
+**Đã làm:**
+- Xác nhận Codex không còn ghi file (file cuối sửa 13:46, trạng thái trùng lúc chạy gate), rồi commit toàn bộ thay đổi C1 của Codex + entry review.
+- Viết lại `docs/prompts/CODEX-CONTINUE.md` (v2): baseline mới (`a40cff1`, 68 tests, test smoke `EPERM` trong sandbox không phải regression); C1.1/C1.2 đánh dấu xong; thêm **C1.2b** làm trước khi dịch tiếp: (1) `needsTranslation` + allowlist dùng chung, loại ô chỉ có số/đơn vị khỏi `missing`; (2) mục `labels` cho dòng `Nhãn: số liệu` (692 nhãn phủ ~1317 dòng); (3) gate số liệu coi `N pcs` ≈ số N để dịch thành lượng từ tiếng Việt; (4) báo cáo English remainder dựa trên output generated. C1.3: mục tiêu ≥500 chuỗi/nhãn mỗi phiên, ưu tiên nhãn → dòng tự do → ô bảng; cấm dòng lai và `pcs` trong câu tiếng Việt.
+**Kiểm chứng:** trước commit `npm run check:data` PASS; các gate đầy đủ đã chạy lúc review trên cùng trạng thái (68/68 tests, build, validate:export PASS).
+**Commit:** `a40cff1` feat(data): add reviewed spec translation pipeline (C1 checkpoint); prompt v2 + entry này ở commit kế tiếp.
+**Việc tiếp theo:** chạy Codex với prompt v2, bắt đầu C1.2b.
+
 ### 2026-09-14 — Claude — Review tiến độ C1 của Codex
 **Yêu cầu:** Review xem Codex làm tới đâu.
 **Đã làm (chỉ review, không sửa code của Codex):**
@@ -129,8 +138,8 @@ _Cập nhật: 2026-09-14 bởi Codex_
 4. **Đòn bẩy chưa dùng:** 1317 dòng thiếu có dạng "Nhãn: số liệu" với chỉ 692 nhãn khác nhau (top: input power 52, size 35, rated current 28). Từ điển nhãn + gate số liệu sẽ phủ nhanh.
 5. **Gate số liệu ép giữ `pc/pcs`** → câu kém tự nhiên ("Kèm 2pcs bộ pin", "100pcs trong một túi"). Nên coi `N pc(s)` tương đương `N chiếc/cái/bộ`.
 6. Regex `englishRemainder` bỏ sót từ phổ biến (`rated`, `noise`, `air`) → báo cáo English remainder thấp hơn thực tế.
-**Commit:** chưa commit (thay đổi C1 của Codex vẫn chưa commit)
-**Việc tiếp theo:** chờ người dùng quyết định có cập nhật prompt Codex theo phát hiện 3–6 hay không, và có commit checkpoint hạ tầng C1 không.
+**Commit:** checkpoint hạ tầng C1 + 282 bản dịch: `a40cff1` (người dùng đồng ý)
+**Việc tiếp theo:** cập nhật prompt Codex (xem entry trên).
 
 ### 2026-09-14 — Codex — C1 lô dịch tiếp theo
 **Yêu cầu:** Tiếp tục dịch thông số kỹ thuật sản phẩm theo checkpoint C1.
