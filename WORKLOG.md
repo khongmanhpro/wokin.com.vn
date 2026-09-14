@@ -57,10 +57,10 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-09-14 bởi Claude (review C1.2d đạt; gate chạy lại PASS 77/77)_
+_Cập nhật: 2026-09-14 bởi Claude (commit C1.2b–d `f0ebdf4`; prompt Codex v7)_
 
-- **Nhánh `main`:** Phase 0–11 và checkpoint hạ tầng C1 đã commit; thay đổi C1.2b + C1.2c + C1.2d hiện tại đang để uncommitted theo quy định chưa được người dùng cho phép commit.
-- **Gate (Codex, 2026-09-14):** audit 0, typecheck PASS, **77/77 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS.
+- **Nhánh `main`:** Phase 0–11, checkpoint hạ tầng C1 (`a40cff1`) và C1.2b–d (`f0ebdf4`) đã commit. Working tree sạch (trừ untracked được phép).
+- **Gate (Claude chạy lại trước commit `f0ebdf4`, 2026-09-14):** audit 0, typecheck PASS, **77/77 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS.
 - **Kết luận nghiệm thu:** **NO-GO production.** Kỹ thuật đạt; nội dung spec đang được dịch theo lô và các quyết định giao diện vẫn chờ (xem mục 3).
 - **Payload CMS worktree:** 11 commit trên nhánh riêng + ~36 file sửa chưa commit. Admin UX **chưa được nghiệm thu**. Chưa merge vào `main`.
 - **Chưa push, chưa deploy** bất cứ thứ gì.
@@ -71,7 +71,7 @@ _Cập nhật: 2026-09-14 bởi Claude (review C1.2d đạt; gate chạy lại P
 
 | ID | Việc | Trạng thái | Chờ ai | Ghi chú |
 |---|---|---|---|---|
-| C1 | **C1.2d hoàn tất**; coverage hiện **1232 đã dịch / 1547 không cần dịch / 4621 còn thiếu trên 7400** (dòng 4298, ô bảng 323; 758 nhãn chưa phủ) | **Blocker**; C1.3 cần dịch review thủ công trước khi production | Codex (2026-09-14) | Placeholder = 0; English remainder generated 4415 chuỗi/5841 occurrences (dòng 4161/5417, ô 254/424). Quality gate: hybrid có dấu 0, Vietnamese+pcs 0, `N chi tiết` tự động ngoài từ điển 0; audit rộng còn 46 chuỗi/80 occurrences Việt trộn English ngoài allowlist (đều ở ô bảng chưa dịch). Dictionary 217 dòng / 274 nhãn / 28 ô (519 mục). Lô kế tiếp bắt đầu từ nhãn `size`. |
+| C1 | **C1.2d hoàn tất**; coverage hiện **1232 đã dịch / 1547 không cần dịch / 4621 còn thiếu trên 7400** (dòng 4298, ô bảng 323; 758 nhãn chưa phủ) | **Blocker**; C1.2b–d commit `f0ebdf4`. Kế tiếp C1.3.0 (sửa "êmer" + khoảng trắng sau `:`) rồi 46 ô bảng lai → nhãn `size` | Codex (prompt v7) | Placeholder = 0; English remainder generated 4415 chuỗi/5841 occurrences (dòng 4161/5417, ô 254/424). Quality gate: hybrid có dấu 0, Vietnamese+pcs 0, `N chi tiết` tự động ngoài từ điển 0; audit rộng còn 46 chuỗi/80 occurrences Việt trộn English ngoài allowlist (đều ở ô bảng chưa dịch). Dictionary 217 dòng / 274 nhãn / 28 ô (519 mục). Lô kế tiếp bắt đầu từ nhãn `size`. |
 | D1 | Độ giống giao diện: header cam, hero ảnh lifestyle, trust banner cam, banner marketing | Chờ quyết định | Người dùng | `AGENTS.md` chỉ cho tải logo → cần WOKIN cấp ảnh marketing hoặc chấp nhận khác bản gốc |
 | D2 | Trang Liên hệ không có địa chỉ/điện thoại/email công ty; form đã tắt từ Phase 7 | Chờ quyết định | Người dùng | Cần thông tin liên hệ VN chính thức + backend form nếu bật lại |
 | D3 | Tương phản màu cam thương hiệu (#FE7700) không đạt WCAG AA | Chờ quyết định | Người dùng | Đề xuất chữ tối trên nút cam |
@@ -115,6 +115,15 @@ _Cập nhật: 2026-09-14 bởi Claude (review C1.2d đạt; gate chạy lại P
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-09-14 — Claude — Commit checkpoint C1.2b–d + prompt Codex v7
+**Yêu cầu:** Người dùng đồng ý commit checkpoint và cập nhật prompt để Codex làm C1.3.
+**Đã làm:**
+- Xác nhận Codex không còn ghi file sau lần chạy gate (không file nào mới hơn log gate), `check:data` PASS checksum `0a2de779…`; commit 15 file C1.2b–d (gồm `scripts/spec-translation-utils.mjs` mới), không đưa `.claude/`, `reports/`, `.hermes/*` vào.
+- `docs/prompts/CODEX-CONTINUE.md` v7: baseline `f0ebdf4`, working tree sạch; đánh dấu C1.2b–d đã commit; thêm **C1.3.0** (biên từ cho mọi regex cụm từ cứng, mở rộng `hasHybridToken` sang đuôi phụ âm không có trong tiếng Việt, chuẩn hoá khoảng trắng sau `:`, có test); đổi thứ tự C1.3: **46 ô bảng lai** → nhãn `size` → dòng tự do → ô còn lại; thêm tiêu chí hoàn thành C1.3.0.
+**Kiểm chứng:** gate đầy đủ đã chạy ngay trước commit trên cùng trạng thái (xem entry review C1.2d): audit 0, typecheck, 77/77 test, validate:data, check:data, build 1452 trang, validate:export + smoke PASS. `git diff --check` PASS.
+**Commit:** `f0ebdf4` feat(data): harden spec translation fallback and gates (C1.2b-d); prompt v7 + entry này ở commit kế tiếp. Chưa push/deploy.
+**Việc tiếp theo:** chạy Codex: `Đọc và thực hiện đúng docs/prompts/CODEX-CONTINUE.md`.
 
 ### 2026-09-14 — Claude — Review C1.2d của Codex
 **Yêu cầu:** Codex báo xong C1.2d, kiểm tra.

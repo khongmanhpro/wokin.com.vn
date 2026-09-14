@@ -4,6 +4,7 @@
 > `Đọc và thực hiện đúng docs/prompts/CODEX-CONTINUE.md`
 > Prompt dùng lại được nhiều phiên. Phiên mới tự biết tiếp từ đâu nhờ `WORKLOG.md` và `npm run spec:inventory`.
 >
+> Phiên bản 7 (2026-09-14, sau review lần 4 của Claude): C1.2b–C1.2d **đã commit ở `f0ebdf4`**. Làm C1.3: đầu phiên sửa 2 lỗi nhỏ (C1.3.0), rồi dịch 46 ô bảng lai trước, sau đó nhãn từ `size`.
 > Phiên bản 6 (2026-09-14, Codex đã hoàn tất C1.2d): C1.2b–C1.2d đã sửa và gate pass, vẫn **chưa commit**. Việc kế tiếp là C1.3 dịch review thủ công từ nhãn `size`.
 > Phiên bản 5 (2026-09-14, sau review lần 3 của Claude): C1.2c xong nhưng còn 4 lỗi fallback/allowlist. Thêm **C1.2d**, làm **trước** C1.3. C1.2b–C1.2d vẫn **chưa commit**.
 > Phiên bản 4 (2026-09-14, Codex đã xử lý C1.2c): C1.2c đã xong nhưng **chưa commit**; C1.3 chưa đạt mục tiêu khối lượng vì lô tự động bị loại sau audit chất lượng.
@@ -36,9 +37,9 @@ npm run check:data
 npm run spec:inventory
 ```
 
-Kỳ vọng tại lần bàn giao (v6): nhánh `main`, commit mới nhất `d79767d` (hoặc mới hơn), **77 tests PASS**, check:data PASS (checksum `0a2de779082143c68e9088f7db658c47f3c4307fdbb4309d914b126ae2c0b287`), inventory `1232 translated / 1547 notNeeded / 4621 missing`, từ điển 217 dòng / 274 nhãn / 28 ô. Việc kế tiếp: **C1.3** bắt đầu từ `size`. Untracked được phép: `.claude/`, `reports/`, vài file `.hermes/*.py`, `.hermes/plans/*`.
+Kỳ vọng tại lần bàn giao (v7): nhánh `main`, commit mới nhất `f0ebdf4` hoặc commit docs ngay sau nó, **working tree sạch** với các file đang theo dõi, **77 tests PASS**, check:data PASS (checksum `0a2de779082143c68e9088f7db658c47f3c4307fdbb4309d914b126ae2c0b287`), inventory `1232 translated / 1547 notNeeded / 4621 missing`, từ điển 217 dòng / 274 nhãn / 28 ô. Việc kế tiếp: **C1.3.0** rồi C1.3 (46 ô bảng lai → nhãn `size`). Untracked được phép: `.claude/`, `reports/`, vài file `.hermes/*.py`, `.hermes/plans/*`.
 
-Thay đổi C1.2b **chưa commit** là trạng thái hợp lệ, tiếp tục làm trên đó; **không revert**: `WORKLOG.md`, `data/spec-translations-vi.json`, `docs/data-model.md`, `scripts/build-catalog-data.mjs`, `scripts/spec-translation-inventory.mjs`, `scripts/spec-translation-utils.mjs` (mới), `scripts/validate-catalog.mjs`, `src/data/*` (generated), `tests/catalog-data-pipeline.test.mjs`, `tests/spec-translation-inventory.test.mjs`.
+C1.2b–C1.2d đã commit ở `f0ebdf4`. Mọi thay đổi chưa commit mới sinh ra trong phiên của bạn là của bạn; không revert thay đổi của người khác.
 
 - Trong sandbox Codex, 2 test mở cổng localhost (smoke static server) có thể fail `EPERM`. Đây **không phải** regression: ghi "EPERM do sandbox" vào log, **không** sửa hay bỏ test đó. Mọi test khác phải PASS.
 - Nếu khác kỳ vọng ngoài điểm trên: **dừng**, báo người dùng khác biệt cụ thể, không tự "sửa cho khớp".
@@ -58,17 +59,17 @@ Thay đổi C1.2b **chưa commit** là trạng thái hợp lệ, tiếp tục l�
 
 ## Việc cần làm: C1 — Dịch thông số kỹ thuật sản phẩm (blocker production)
 
-### Trạng thái (Claude kiểm chứng 2026-09-14, review lần 2)
+### Trạng thái (Claude kiểm chứng 2026-09-14, review lần 4)
 
 | Hạng mục | Trạng thái |
 |---|---|
 | C1.1 Inventory `npm run spec:inventory [-- --next-batch N]` dùng `parseLegacySpec` chung | ✅ Xong |
 | C1.2 Từ điển `data/spec-translations-vi.json` (`lines`, `cells`) tra trước fallback; build fail khi có placeholder hoặc mất token số | ✅ Xong |
 | Placeholder "Đặc tính kỹ thuật" trong generated | ✅ 0 |
-| C1.2b allowlist `needsTranslation`, `labels`, gate `N pcs`, remainder trên generated | ✅ Xong, **chưa commit** |
-| C1.2c Sửa 5 lỗi review lần 2 | ✅ Xong, chưa commit |
-| C1.2d Sửa 4 lỗi review lần 3 (câu lai có dấu, `N chi tiết` tự động, allowlist tiếng Việt/từ mượn, satin) | ✅ Xong, chưa commit |
-| C1.3 Coverage | ⏳ **1232 translated / 1547 notNeeded / 4621 missing** (4298 dòng, 758 nhãn, 323 ô); bắt đầu lô review thủ công từ nhãn `size` |
+| C1.2b allowlist `needsTranslation`, `labels`, gate `N pcs`, remainder trên generated | ✅ Xong, commit `f0ebdf4` |
+| C1.2c Sửa 5 lỗi review lần 2 | ✅ Xong, commit `f0ebdf4` |
+| C1.2d Sửa 4 lỗi review lần 3 (câu lai có dấu, `N chi tiết` tự động, allowlist tiếng Việt/từ mượn, satin) | ✅ Xong, commit `f0ebdf4` (review lần 4: đạt; còn 2 lỗi nhỏ → C1.3.0) |
+| C1.3 Coverage | ⏳ **1232 translated / 1547 notNeeded / 4621 missing** (4298 dòng, 758 nhãn, 323 ô); còn 46 ô bảng lai hiển thị; làm C1.3.0 rồi dịch ô lai → nhãn `size` |
 
 Hệ quả trạng thái trung gian: dòng chưa dịch vẫn hiển thị **nguyên tiếng Anh** (vd "Suitable for workshop use."); các câu lai có dấu và `N chi tiết` tự động đã được chặn. Không mất thông tin, nhưng chưa release được vì còn 4621 mục thiếu.
 
@@ -149,7 +150,7 @@ C1.2b đã xong. Claude review ngày 2026-09-14 (entry "Claude — Review C1.2b 
 
 ---
 
-### C1.2d — Sửa lỗi review lần 3 (làm TRƯỚC C1.3; TDD: test fail trước)
+### C1.2d — Sửa lỗi review lần 3 (✅ ĐÃ XONG, đặc tả để tham khảo, KHÔNG làm lại)
 
 Claude review 2026-09-14 (entry "Claude — Review C1.2c + lô thử C1.3 của Codex" trong WORKLOG). Gate kỹ thuật PASS, nhưng generated còn lỗi chất lượng và gate cuối không thể đạt. **Không dịch lô mới trong bước này.**
 
@@ -201,10 +202,15 @@ Claude review 2026-09-14 (entry "Claude — Review C1.2c + lô thử C1.3 của 
 
 **Mục tiêu khối lượng:** mỗi phiên **tối thiểu 500 mục mới được ghi vào từ điển** (dòng + nhãn + ô; không tính mục được phân loại lại `notNeeded`), hoặc làm liên tục tới khi hết ngữ cảnh/thời gian. Báo cáo cả "số mục mới" lẫn coverage. Phiên trước chỉ ghi được ~320 mục. Lô ~150–250 mục; sau **mỗi lô** chạy `build:data` + `check:data` + `spec:inventory` (điểm dừng an toàn). Chạy `npm test` + `validate:data` sau mỗi 2–3 lô và cuối phiên.
 
+**Bước C1.3.0 — Sửa nhỏ từ review lần 4 (làm đầu phiên, TDD, không tính vào 500 mục):**
+1. **Chuỗi lai "> Khởi động êmer"** (3 lần, nguồn "Soft starter"): regex cứng `/Soft start/gi` trong `translateText` thiếu biên từ. Thêm biên từ Unicode (như `replaceWholePhrase`) cho **mọi** regex cụm từ cứng trong `translateText` (`Brushless Motor`, `CE approval`, `Soft start`, `color box`, `Tool Only`…). Mở rộng `hasHybridToken` bắt chữ có dấu kèm đuôi phụ âm không có trong tiếng Việt: `/[<chữ có dấu>][a-z]*[bdfjklqrswxz](?![\p{L}\d])/iu` (Claude đã chạy thử trên generated hiện tại: đúng 1 hit, không false positive). Test: `> Soft starter` không thành "êmer"; `hasHybridToken("Khởi động êmer") === true`.
+2. **Thiếu khoảng trắng sau dấu `:`** ("> Đóng gói:hộp màu"): khi output dòng là tiếng Việt, chuẩn hoá `Nhãn:giá trị` → `Nhãn: giá trị`. Không đụng `:` trong số/giờ (`1:10`, `10:30`) hoặc URL. Test cả hai trường hợp.
+
 **Thứ tự ưu tiên:**
-1. `labels` (692 nhãn → phủ ~1317 dòng)
-2. Dòng tự do theo tần suất giảm dần
-3. Ô bảng còn chữ (header viết HOA như `MÃ KHO`, `KÍCH THƯỚC`, `SL/THÙNG`)
+1. **46 ô bảng lai** đang hiển thị (header như "OPERATING Áp suất khí", "FREE Tốc độ", "MAX. OPENING KÍCH THƯỚC", "CABLE KÍCH THƯỚC", "Charging Điện áp", "Công suất CONSUMPTION"). Lấy danh sách từ báo cáo quality `câu Việt trộn English` (tìm chuỗi **nguồn** tương ứng trong inventory), ghi bản dịch vào `cells`. Header phải giữ viết HOA như các header đã có (`MÃ KHO`, `KÍCH THƯỚC`). Kỳ vọng chỉ số `Việt trộn English` 46 → 0.
+2. `labels` còn thiếu (758 nhãn), bắt đầu từ `size`
+3. Dòng tự do theo tần suất giảm dần
+4. Ô bảng còn chữ còn lại
 
 **Mẹo tăng tốc hợp lệ:** gom các dòng cùng mẫu (vd `> Packing: <N>pcs in <bao bì>`, `> Material: <vật liệu>`) và dịch nhất quán cùng lúc. Vẫn phải ghi **từng chuỗi nguồn** vào `lines` (hoặc dùng `labels` khi đúng điều kiện). Không thêm regex dịch tự do mới vào pipeline.
 
@@ -240,6 +246,7 @@ Kiểm tra thêm:
 - [x] C1.2b xong, có test cho: `needsTranslation`, `labels`, `pc/pcs`, báo cáo English remainder trên generated
 - [x] C1.2c xong: 0 `pcs` trong target tiếng Việt (có gate), ignore list tường minh, token có gạch nối xét từng phần, fallback dòng không tạo câu lai, thuật ngữ satin thống nhất
 - [x] C1.2d xong: 0 token lai có dấu, 0 `N chi tiết` tự động, allowlist tách tiếng Việt/từ mượn, gate target từ điển fail-mode, satin thống nhất
+- [ ] C1.3.0 xong: 0 chuỗi "êmer"/đuôi phụ âm lai, regex cứng có biên từ, chuẩn hoá khoảng trắng sau `:`; 46 ô bảng lai → 0
 - [ ] `missing = 0` (dòng, nhãn, ô bảng)
 - [ ] 0 placeholder, 0 dòng lai/tiếng Anh ngoài allowlist, 0 `pcs` trong câu tiếng Việt
 - [ ] Gate coverage + English remainder ở fail-mode
