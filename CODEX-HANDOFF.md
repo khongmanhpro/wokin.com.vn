@@ -181,11 +181,38 @@ Giới hạn đã biết:
 - Chưa chạy axe/Lighthouse hoặc browser E2E thực tế; test mới là source assertions và DOM focus-loop harness, không thay thế audit runtime.
 - Cần visual/accessibility manual audit desktop/mobile ở Phase 11.
 
+## Phase 10 — CI, deploy artifact và release checklist
+
+Đã hoàn thành.
+
+Đã thực hiện:
+
+- `.github/workflows/ci.yml`: `npm ci` → audit high → typecheck → test → validate:data → check:data → build → validate:export → package:release; upload `out/` và release pack (không deploy).
+- `scripts/package-release.mjs`: dựng `release/hostinger/` (+ `.htaccess`), `SHA256SUMS`, `wokin-hostinger.tar.gz` deterministic; chặn source map, `.env`, secret, symlink, thư mục dev.
+- `tests/release-artifact.test.mjs`, `RELEASE-CHECKLIST.md`, cập nhật `DEPLOYMENT.md`.
+- `.gitignore` bỏ qua `release/`, `.hermes/worktrees/`, `.hermes/xlsx-venv/`.
+
+Verification (2026-09-14):
+
+```text
+npm audit --audit-level=high  PASS — 0 vulnerabilities
+npm run typecheck             PASS
+npm test                      PASS — 64 tests
+npm run validate:data         PASS
+npm run check:data            PASS
+npm run build                 PASS — 1452 static pages
+npm run validate:export       PASS — 1447 routes / 10271 artifacts
+npm run package:release       PASS — 10272 files, SHA256SUMS verify 100% OK
+determinism                   PASS — 2 lần package cùng SHA-256 archive
+```
+
+Giới hạn: GitHub Actions chưa chạy thật — `origin/main` mới có initial commit, 15 commit local chưa push.
+
 ## Phase tiếp theo
 
-### Phase 10 — CI, deploy artifact và release checklist
+### Phase 11 — final production acceptance
 
-Ưu tiên reproducible build, CI gates, artifact/deployment verification và tài liệu release; không tự deploy/push.
+Browser audit desktop/mobile, so sánh visual với site gốc, accessibility/Lighthouse runtime.
 
 ## Historical acceptance — Phase 4
 

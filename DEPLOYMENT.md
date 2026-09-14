@@ -4,10 +4,27 @@
 
 ## Chuẩn bị artifact
 
-1. Chạy toàn bộ gate: `npm run typecheck`, `npm test`, `npm run validate:data`, `npm run build`, `npm run validate:export`, và `npm audit --json`.
-2. Upload **nội dung bên trong** `out/` vào document root của domain.
-3. Copy `deploy/hostinger/.htaccess` thành `.htaccess` ở cùng document root. Bật hiển thị dotfile trong file manager để xác nhận file thực sự được upload.
+1. Từ clean checkout, chạy `npm ci`, `npm audit --audit-level=high`, `npm run typecheck`, `npm test`, `npm run validate:data`, `npm run check:data`, `npm run build` và `npm run validate:export`.
+2. Tạo release pack bằng `npm run package:release`. Lệnh mặc định đọc `out/` và tạo `release/`; có thể chỉ định đường dẫn bằng `npm run package:release -- --out-dir <out-dir> --release-dir <release-dir>`.
+3. Upload **nội dung bên trong** `release/hostinger/` vào document root của domain. `.htaccess` đã được copy vào đúng package root; bật hiển thị dotfile trong file manager để xác nhận file thực sự được upload.
 4. Nếu Hostinger/LiteSpeed không áp dụng `Header`, bật module/tính năng response headers trong hPanel hoặc cấu hình các header tương đương tại CDN. Không dùng Next.js `headers()` làm phương án thay thế cho static export.
+
+Packager không sửa `out/`, từ chối release destination đã tồn tại và dựng package qua thư mục tạm trước khi publish. Nó fail nếu export chứa source map, `.env`, secret/credential file hoặc secret signature đã biết, raw audit JSON, symlink, `node_modules`, `.git`, `.next`, `.cache` hay `.npm`.
+
+## Bố cục release pack
+
+```text
+release/
+├── hostinger/                 # document root: toàn bộ nội dung out/ + .htaccess
+├── SHA256SUMS                 # SHA-256, sắp xếp theo relative path hostinger/...
+└── wokin-hostinger.tar.gz     # deterministic tar.gz chứa hostinger/ và SHA256SUMS
+```
+
+`SHA256SUMS` không tự checksum archive để tránh vòng tham chiếu. Archive cố định owner, mode và mtime trong tar/gzip để hai lần package cùng input tạo cùng SHA-256. Trước upload, kiểm tra manifest từ thư mục `release/` bằng `sha256sum -c SHA256SUMS` trên Linux hoặc `shasum -a 256 -c SHA256SUMS` trên macOS, rồi thử `tar -tzf release/wokin-hostinger.tar.gz` và giải nén vào một thư mục trống.
+
+CI chạy cùng các gate trên `ubuntu-latest` và chỉ upload hai nhóm build output sau khi mọi gate pass: raw `out/` để review, cùng `SHA256SUMS`/`wokin-hostinger.tar.gz` để bàn giao Hostinger. CI không deploy production và không đưa `node_modules`, source tree hoặc raw audit JSON vào artifact.
+
+Quy trình release, staging verification, rollback và approval gate đầy đủ nằm trong `RELEASE-CHECKLIST.md`.
 
 ## Redirect URL legacy
 
