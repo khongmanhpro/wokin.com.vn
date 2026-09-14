@@ -71,7 +71,7 @@ _Cập nhật: 2026-09-14 bởi Claude_
 
 | ID | Việc | Trạng thái | Chờ ai | Ghi chú |
 |---|---|---|---|---|
-| C1 | Dịch lại spec sản phẩm: 1168/1357 SP có dòng bị thay bằng "Đặc tính kỹ thuật" (2773 dòng mất nội dung), ~738 dòng lẫn tiếng Anh, 64 SP header bảng tiếng Anh | **Blocker** | Người dùng duyệt phương án | Chi tiết: `docs/phase-11-acceptance.md` §3. Logic lỗi: `translateSpecLine` trong `scripts/build-catalog-data.mjs` và `src/lib/catalog.ts` |
+| C1 | Dịch lại spec sản phẩm: 1168/1357 SP có dòng bị thay bằng "Đặc tính kỹ thuật" (2773 dòng mất nội dung), ~738 dòng lẫn tiếng Anh, 64 SP header bảng tiếng Anh. Khối lượng: ~5754 dòng nguồn không trùng + ~1644 ô bảng | **Blocker**, sẵn sàng giao Codex | Codex | Đặc tả: `docs/prompts/CODEX-CONTINUE.md`. Chi tiết lỗi: `docs/phase-11-acceptance.md` §3 |
 | D1 | Độ giống giao diện: header cam, hero ảnh lifestyle, trust banner cam, banner marketing | Chờ quyết định | Người dùng | `AGENTS.md` chỉ cho tải logo → cần WOKIN cấp ảnh marketing hoặc chấp nhận khác bản gốc |
 | D2 | Trang Liên hệ không có địa chỉ/điện thoại/email công ty; form đã tắt từ Phase 7 | Chờ quyết định | Người dùng | Cần thông tin liên hệ VN chính thức + backend form nếu bật lại |
 | D3 | Tương phản màu cam thương hiệu (#FE7700) không đạt WCAG AA | Chờ quyết định | Người dùng | Đề xuất chữ tối trên nút cam |
@@ -87,6 +87,7 @@ _Cập nhật: 2026-09-14 bởi Claude_
 | File | Nội dung | Còn đúng? |
 |---|---|---|
 | `WORKLOG.md` | File này: trạng thái + nhật ký | Nguồn chính |
+| `docs/prompts/CODEX-CONTINUE.md` | Prompt tiếp nhận cho Codex: nạp ngữ cảnh, quy tắc, đặc tả chi tiết việc C1, việc ngoài phạm vi, cách báo cáo | Dùng lại nhiều phiên |
 | `AGENTS.md` | Brief gốc cho agent: quy tắc clone, tiếng Việt, SEO chống duplicate | Quy tắc còn hiệu lực; phần G0–G5 là kế hoạch ban đầu (vd không dùng Tailwind, form liên hệ đã bỏ) |
 | `DESIGN.md` | Design tokens trích từ site gốc | Đúng, trừ `--text` đã thành `#767676` |
 | `PROMPT-CLONE-NEXTJS.md` | Kiến trúc, routes, schema ban đầu | Tham khảo |
@@ -114,6 +115,15 @@ _Cập nhật: 2026-09-14 bởi Claude_
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-09-14 — Claude — Viết prompt tiếp nhận cho Codex
+**Yêu cầu:** Viết prompt để Codex vào vẫn hiểu dự án và xử lý việc tiếp theo.
+**Đã làm:**
+- Tạo `docs/prompts/CODEX-CONTINUE.md`: thứ tự nạp ngữ cảnh, baseline cần xác nhận, quy tắc cấm, đặc tả C1 (inventory → từ điển `data/spec-translations-vi.json` + gate → dịch theo lô → kiểm chứng), bảng việc ngoài phạm vi (D1–D3, R1–R2, P1–P2), cách báo cáo vào WORKLOG.
+- Đo khối lượng C1: ~5754 dòng spec nguồn không trùng (~189 nghìn ký tự), ~1644 ô bảng có chữ (ước lượng bằng tách HTML đơn giản; Codex phải đo lại bằng `parseLegacySpec`).
+**Kiểm chứng:** đối chiếu nguồn SKU 830912 trong `data/products.json` khớp ví dụ trong prompt.
+**Commit:** cùng commit với entry này
+**Việc tiếp theo:** người dùng chạy Codex với prompt; Codex bắt đầu C1.1.
 
 ### 2026-09-14 — Claude — Tạo WORKLOG.md
 **Yêu cầu:** Tạo một file .md để mọi lần làm việc đều ghi lại, AI khác tiếp nhận vẫn hiểu.
