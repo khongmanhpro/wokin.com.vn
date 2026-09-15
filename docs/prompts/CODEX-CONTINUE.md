@@ -4,7 +4,8 @@
 > `Đọc và thực hiện đúng docs/prompts/CODEX-CONTINUE.md`
 > Prompt dùng lại được nhiều phiên. Phiên mới tự biết tiếp từ đâu nhờ `WORKLOG.md` và `npm run spec:inventory`.
 >
-> Phiên bản 14 (2026-09-15, Codex tiếp tục C1.3): thêm 508 key mới (3 nhãn + 505 dòng); coverage `3867 translated / 1678 notNeeded / 1855 missing`; **chưa commit**. Các ngoại lệ `3-in-1`, đơn vị kg/lb và ký hiệu dính đã có test hẹp; rà nhóm nguồn mơ hồ còn lại, rồi tiếp tục từ `> Chips: High-quality SMD LED.6500K`.
+> Cập nhật checkpoint 2026-09-15: toàn bộ thay đổi v12–v14 đã commit/push trong `12baf0f`. Các ghi chú “chưa commit”/HEAD `159834c` bên dưới là trạng thái lịch sử trước checkpoint. Baseline tiếp nhận mới: `12baf0f` hoặc commit docs sau đó; 82 tests PASS, dữ liệu/coverage giữ nguyên. Không làm lại C1.3.2.
+> Phiên bản 14 (2026-09-15, Codex tiếp tục C1.3): thêm 508 key mới (3 nhãn + 505 dòng); coverage `3867 translated / 1678 notNeeded / 1855 missing`; đã commit ở checkpoint trên. Các ngoại lệ `3-in-1`, đơn vị kg/lb và ký hiệu dính đã có test hẹp; rà nhóm nguồn mơ hồ còn lại, rồi tiếp tục từ `> Chips: High-quality SMD LED.6500K`.
 > Phiên bản 13 (2026-09-14, Codex tiếp tục C1.3): thêm 523 key mới (38 nhãn + 485 dòng), sửa 6 bản dịch; coverage `3356 translated / 1667 notNeeded / 2377 missing`; **chưa commit**. Rà nhóm ngoại lệ nguồn/gate bên dưới, rồi tiếp tục dòng thông thường từ `> 1pc hex key wrench` theo inventory.
 > Phiên bản 12 (2026-09-14, Codex tiếp nhận và hoàn tất C1.3.2 + lô tiếp): C1.3.2 đã sửa dấu inch `”` và quy tắc “Bộ N”; thêm 775 key dictionary mới từ `0utside clamp`; **chưa commit**. Phiên mới tiếp tục từ `max.torque` theo inventory.
 > Phiên bản 11 (2026-09-14, sau review lần 6 của Claude): lô C1.3 + C1.3.1 **đã commit ở `df991d3`**. Đầu phiên làm **C1.3.2** (2 lỗi nhỏ), sau đó dịch lô tiếp từ `0utside clamp`.

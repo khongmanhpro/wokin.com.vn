@@ -38,7 +38,7 @@
 | Hosting | Hostinger (Apache/LiteSpeed). Upload `release/hostinger/` (có sẵn `.htaccess`) |
 | Dữ liệu | 1.357 sản phẩm, 30 danh mục. Nguồn: `data/*.json` → `npm run build:data` → `src/data/catalog.generated.json` |
 | CMS (song song) | Payload CMS 3.88 + Next 16 + PostgreSQL, nằm ở worktree `.hermes/worktrees/payload-r1` (nhánh `checkpoint/payload-r1-r4-1`) |
-| Remote | `origin` = github.com/khongmanhpro/wokin.com.vn. `origin/main` mới có initial commit, **chưa push các phase** |
+| Remote | `origin` = github.com/khongmanhpro/wokin.com.vn. Đã push main tới checkpoint `12baf0f` ngày 2026-09-15 |
 | Đường dẫn | `/Volumes/data AI/wokin.com.vn` (**có dấu cách**, luôn quote) |
 
 ### Lệnh chính
@@ -57,13 +57,13 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-09-15 bởi Codex (kiểm tra lại và chuẩn bị commit/push checkpoint theo yêu cầu)_
+_Cập nhật: 2026-09-15 bởi Codex (đã kiểm tra, commit và push checkpoint `12baf0f`)_
 
-- **Nhánh `main`:** Phase 0–11, checkpoint hạ tầng C1 (`a40cff1`) và C1.2b–d (`f0ebdf4`) đã commit. C1.3.0 + C1.3.1 + lô 530 nhãn/46 ô đã commit ở `df991d3`; C1.3.2 và lô tiếp theo đang **chưa commit**; untracked `.claude/`, `.hermes/`, `reports/` vẫn được giữ nguyên.
+- **Nhánh `main`:** Phase 0–11 và C1.3 tới hiện tại đã commit/push. C1.3.2 cùng các lô tiếp 775/523/508 key nằm trong `12baf0f`; untracked `.claude/`, `.hermes/`, `reports/` giữ nguyên ngoài commit.
 - **Gate sau phiên tiếp tục C1.3 (2026-09-15):** typecheck PASS, **82/82 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS, `git diff --check` PASS; npm audit 0 vulnerabilities.
 - **Kết luận nghiệm thu:** **NO-GO production.** Các gate kỹ thuật hiện đạt; nội dung spec còn 1855 chuỗi thiếu và các quyết định giao diện vẫn chờ (xem mục 3).
 - **Payload CMS worktree:** 11 commit trên nhánh riêng + ~36 file sửa chưa commit. Admin UX **chưa được nghiệm thu**. Chưa merge vào `main`.
-- **Chưa push, chưa deploy** bất cứ thứ gì.
+- **Đã push main lên GitHub; chưa deploy live.** CI của `12baf0f`: run `34912149736`, queued lúc ghi nhận.
 - **Local dev `:3001`:** đã sửa lỗi chunk rồi dừng theo yêu cầu; phiên kiểm tra này không khởi động lại server dev.
 
 ---
@@ -77,7 +77,7 @@ _Cập nhật: 2026-09-15 bởi Codex (kiểm tra lại và chuẩn bị commit/
 | D2 | Trang Liên hệ không có địa chỉ/điện thoại/email công ty; form đã tắt từ Phase 7 | Chờ quyết định | Người dùng | Cần thông tin liên hệ VN chính thức + backend form nếu bật lại |
 | D3 | Tương phản màu cam thương hiệu (#FE7700) không đạt WCAG AA | Chờ quyết định | Người dùng | Đề xuất chữ tối trên nút cam |
 | R1 | Kiểm `.htaccess` (headers, 301) và đo Lighthouse mobile trên staging Hostinger | Chưa làm | Cần staging | `RELEASE-CHECKLIST.md` mục 4 |
-| R2 | Push lên GitHub để CI chạy thật | Chưa làm | Người dùng cho phép push | |
+| R2 | Push lên GitHub để CI chạy thật | Đã push 2026-09-15; chờ CI | GitHub Actions | Checkpoint `12baf0f`, run `34912149736` |
 | L1 | Đồng bộ lại bundle tạm `.next` của local dev `:3001` | Xong 2026-09-15 | — | Đã dừng đúng server `:3001`, xoá `.next`, chạy lại; trang chủ 200, hết lỗi chunk `124`. Server cổng 3000 không bị đụng. |
 | P1 | Payload admin UX roadmap (UX-0 → UX-9) | Đang dở | — | `.hermes/plans/2026-08-28_233449-admin-ux-codex-roadmap.md`; backlog go-live: `.hermes/worktrees/payload-r1/.hermes/plans/2026-08-29_184212-go-live-po-backlog.md` |
 | P2 | Gộp nhánh Payload với `main` | Chưa làm | — | **Sẽ conflict**, xem mục 5 |
@@ -117,6 +117,14 @@ _Cập nhật: 2026-09-15 bởi Codex (kiểm tra lại và chuẩn bị commit/
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-09-15 — Codex — Xác nhận push GitHub
+**Yêu cầu:** Kiểm tra, commit và đưa dự án lên GitHub.
+**Đã làm:** Commit `12baf0f` gồm 10 file tracked; push main thành công từ `9be51a9` tới `12baf0f` qua SSH có sẵn. HTTPS bị từ chối vì token thiếu scope workflow; SSH hoàn tất mà không đổi quyền token hay cấu hình Git toàn máy.
+**Kiểm chứng:** GitHub đã tạo CI run https://github.com/khongmanhpro/wokin.com.vn/actions/runs/34912149736 cho đúng SHA `12baf0f7af2a3e97c3347bb92605e4bde4b45179`, queued lúc ghi nhận. Các gate local đạt như entry bên dưới.
+**Commit:** `12baf0f` feat(data): checkpoint Vietnamese spec translations and token guards; cập nhật nhật ký trong commit docs tiếp theo.
+**Còn dở / rủi ro:** Chưa có kết quả CI; C1 còn 1855 chuỗi, font Tomorrow chưa thay. Những lô C1.3 ghi “chưa commit” trong lịch sử đã được gom vào `12baf0f`.
+**Việc tiếp theo:** Kiểm tra CI; tiếp tục nội dung/font theo yêu cầu. Chưa deploy live.
 
 ### 2026-09-15 — Codex — Kiểm tra và commit checkpoint C1.3
 **Yêu cầu:** Kiểm tra dự án lần nữa, commit và đưa lên GitHub.
