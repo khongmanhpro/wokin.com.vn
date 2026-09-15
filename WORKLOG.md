@@ -57,13 +57,14 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-09-14 bởi Claude (commit lô C1.3 `df991d3`; prompt Codex v11)_
+_Cập nhật: 2026-09-15 bởi Codex (kiểm tra lại và chuẩn bị commit/push checkpoint theo yêu cầu)_
 
-- **Nhánh `main`:** Phase 0–11, checkpoint hạ tầng C1 (`a40cff1`) và C1.2b–d (`f0ebdf4`) đã commit. C1.3.0 + C1.3.1 + lô 530 nhãn/46 ô đã commit ở `df991d3`; untracked `.claude/`, `.hermes/`, `reports/` vẫn được giữ nguyên.
-- **Gate sau C1.3.1 (2026-09-14):** typecheck PASS, **80/80 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS, `git diff --check` PASS; npm audit 0 vulnerabilities.
-- **Kết luận nghiệm thu:** **NO-GO production.** Kỹ thuật đạt; nội dung spec đang được dịch theo lô và các quyết định giao diện vẫn chờ (xem mục 3).
+- **Nhánh `main`:** Phase 0–11, checkpoint hạ tầng C1 (`a40cff1`) và C1.2b–d (`f0ebdf4`) đã commit. C1.3.0 + C1.3.1 + lô 530 nhãn/46 ô đã commit ở `df991d3`; C1.3.2 và lô tiếp theo đang **chưa commit**; untracked `.claude/`, `.hermes/`, `reports/` vẫn được giữ nguyên.
+- **Gate sau phiên tiếp tục C1.3 (2026-09-15):** typecheck PASS, **82/82 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS, `git diff --check` PASS; npm audit 0 vulnerabilities.
+- **Kết luận nghiệm thu:** **NO-GO production.** Các gate kỹ thuật hiện đạt; nội dung spec còn 1855 chuỗi thiếu và các quyết định giao diện vẫn chờ (xem mục 3).
 - **Payload CMS worktree:** 11 commit trên nhánh riêng + ~36 file sửa chưa commit. Admin UX **chưa được nghiệm thu**. Chưa merge vào `main`.
 - **Chưa push, chưa deploy** bất cứ thứ gì.
+- **Local dev `:3001`:** đã sửa lỗi chunk rồi dừng theo yêu cầu; phiên kiểm tra này không khởi động lại server dev.
 
 ---
 
@@ -71,12 +72,13 @@ _Cập nhật: 2026-09-14 bởi Claude (commit lô C1.3 `df991d3`; prompt Codex 
 
 | ID | Việc | Trạng thái | Chờ ai | Ghi chú |
 |---|---|---|---|---|
-| C1 | **C1.3.0 + C1.3.1 (lô 532 mục) hoàn tất**; coverage hiện **1946 đã dịch / 1589 không cần dịch / 3865 còn thiếu trên 7400** (3613 dòng, 282 nhãn, 252 ô) | **Blocker**; C1.2b–d commit `f0ebdf4`, lô C1.3 commit `df991d3` (review Claude: đạt). Kế tiếp C1.3.2 (dấu inch `”`, quy tắc "Bộ N") rồi lô từ `0utside clamp`. C1.3.1 đã sửa `SL`, bảo toàn mã/khoảng trắng/đơn vị, gate nhãn chết và gate kỹ thuật; đã review + commit | Codex (prompt v11, C1.3.2) | Generated: English remainder 3733 chuỗi/5013 occurrences (dòng 3545/4689, ô 188/324). Quality gate: hybrid có dấu 0, Vietnamese+pcs 0, `N chi tiết` tự động ngoài từ điển 0, Việt trộn English ngoài allowlist 0. Dictionary hiện 217 dòng / 758 nhãn / 74 ô = 1049 mục. Checksum generated `7cd4e91aea89c1166b0f67d85e260a2ec4e6e92b4e2d267cfdf7aa09c854f84f`. |
+| C1 | **C1.3 đang tiếp tục**; coverage **3867 đã dịch / 1678 không cần dịch / 1855 còn thiếu trên 7400** (1657 dòng, 2 nhãn, 198 ô) | **Blocker**; nền `df991d3`; C1.3.2, lô 775 mục, lô 523 mục và lô **508 key mới** đều chưa commit. Lô mới thêm 3 nhãn + 505 dòng; coverage translated tăng 511 nhờ nhận diện đúng số liệu nguồn. | Codex (prompt v14) | English remainder 1800 chuỗi/1932 occurrences (dòng 1624/1626, ô 176/306); quality 0/0/0/0. Dictionary: 1703 dòng / 1078 nhãn / 74 ô = 2855 mục. Checksum `57040312e538c0313e6bbd2330cffdd82b95ae83bd0cdbc6d1e0b0def556e016`. Còn hai nhãn nguồn lỗi; sau nhóm nguồn mơ hồ, dòng kế tiếp: `> Chips: High-quality SMD LED.6500K`. |
 | D1 | Độ giống giao diện: header cam, hero ảnh lifestyle, trust banner cam, banner marketing | Chờ quyết định | Người dùng | `AGENTS.md` chỉ cho tải logo → cần WOKIN cấp ảnh marketing hoặc chấp nhận khác bản gốc |
 | D2 | Trang Liên hệ không có địa chỉ/điện thoại/email công ty; form đã tắt từ Phase 7 | Chờ quyết định | Người dùng | Cần thông tin liên hệ VN chính thức + backend form nếu bật lại |
 | D3 | Tương phản màu cam thương hiệu (#FE7700) không đạt WCAG AA | Chờ quyết định | Người dùng | Đề xuất chữ tối trên nút cam |
 | R1 | Kiểm `.htaccess` (headers, 301) và đo Lighthouse mobile trên staging Hostinger | Chưa làm | Cần staging | `RELEASE-CHECKLIST.md` mục 4 |
 | R2 | Push lên GitHub để CI chạy thật | Chưa làm | Người dùng cho phép push | |
+| L1 | Đồng bộ lại bundle tạm `.next` của local dev `:3001` | Xong 2026-09-15 | — | Đã dừng đúng server `:3001`, xoá `.next`, chạy lại; trang chủ 200, hết lỗi chunk `124`. Server cổng 3000 không bị đụng. |
 | P1 | Payload admin UX roadmap (UX-0 → UX-9) | Đang dở | — | `.hermes/plans/2026-08-28_233449-admin-ux-codex-roadmap.md`; backlog go-live: `.hermes/worktrees/payload-r1/.hermes/plans/2026-08-29_184212-go-live-po-backlog.md` |
 | P2 | Gộp nhánh Payload với `main` | Chưa làm | — | **Sẽ conflict**, xem mục 5 |
 
@@ -115,6 +117,99 @@ _Cập nhật: 2026-09-14 bởi Claude (commit lô C1.3 `df991d3`; prompt Codex 
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-09-15 — Codex — Kiểm tra và commit checkpoint C1.3
+**Yêu cầu:** Kiểm tra dự án lần nữa, commit và đưa lên GitHub.
+**Đã làm:** Review diff pipeline/gate và tests, kiểm tra mẫu bản dịch; xác nhận origin/main không có commit mới và local đi trước 25 commit. Chỉ đưa 10 file tracked đang thay đổi vào checkpoint; giữ nguyên các file cá nhân `.claude/`, `.hermes/`, `reports/` ngoài commit. Dùng thông tin đăng nhập có sẵn của đúng tài khoản khongmanhpro cho Git, không thay cấu hình đăng nhập toàn máy.
+**Kiểm chứng:** audit 0 vulnerabilities; typecheck PASS; 82/82 tests PASS; validate:data/check:data PASS (checksum `57040312e538c0313e6bbd2330cffdd82b95ae83bd0cdbc6d1e0b0def556e016`); build 1452 trang; validate:export PASS 1447 route, 10271 artifact, 1357 Product JSON-LD; smoke 11×200 + 3×404; diff whitespace PASS.
+**Commit:** checkpoint `feat(data): checkpoint Vietnamese spec translations and token guards`; hash và kết quả push ghi ở entry xác nhận tiếp theo.
+**Còn dở / rủi ro:** Đây là checkpoint, chưa production-ready: còn 1855 chuỗi thiếu, Tomorrow chưa thay, các mục D1–D3/R1 và Payload vẫn mở. Chưa kiểm tra lại toàn bộ giao diện hay audit thủ công từng bản dịch trong phiên này.
+**Việc tiếp theo:** Push main lên origin và xác nhận GitHub CI.
+
+### 2026-09-15 — Codex — Dừng server dev cổng 3000 và 3001
+**Yêu cầu:** Người dùng yêu cầu dừng tất cả tiến trình cổng 3000 và 30001 (30001 không có listener nên hiểu là 3001).
+**Đã làm:** Dừng nhẹ (SIGTERM) đúng 2 tiến trình cha: dev server dự án (`next dev -p 3001`, PID 14975) và dev server thư mục khác `/Users/khongmanh/projects/wokin-next` (PID 89063, Next v16.2.10).
+**Kiểm chứng:** `ps` không còn 4 PID liên quan; `lsof -iTCP:3000,3001,30001` không còn listener (`PORTS_FREE`).
+**Commit:** chưa commit (không sửa file mã nguồn).
+**Còn dở / rủi ro:** Muốn xem site lại thì chạy `npm run dev -- -p 3001` trong `/Volumes/data AI/wokin.com.vn`.
+**Việc tiếp theo:** Tiếp tục C1.3 từ `> Chips: High-quality SMD LED.6500K` khi người dùng yêu cầu.
+
+### 2026-09-15 — Codex — Sửa lỗi runtime local dev `:3001`
+**Yêu cầu:** Người dùng duyệt sửa an toàn lỗi `Cannot find module './124.js'`.
+**Đã làm:** Dừng nhẹ đúng tiến trình dev của dự án (PID 92970, cổng 3001), giữ nguyên server cổng 3000 của thư mục khác; xoá duy nhất `/Volumes/data AI/wokin.com.vn/.next`; chạy lại một server `next dev -p 3001`.
+**Kiểm chứng:** `lsof` sau sửa: `:3001` do tiến trình mới giữ, `:3000` vẫn tiến trình cũ; log dev mới `Ready`, `GET / 200`, không còn `Cannot find module`/`124.js`; `curl http://localhost:3001/` → `200`, HTML 161KB, không có marker runtime-error. Vài cảnh báo Fast Refresh full-reload chỉ còn trong lúc biên dịch lại đầu tiên.
+**Commit:** chưa commit (chỉ chạm `.next` là artifact tái tạo, không sửa mã nguồn).
+**Còn dở / rủi ro:** Tab trình duyệt đang mở trang lỗi cũ cần refresh thủ công một lần để thoát overlay lỗi.
+**Việc tiếp theo:** Tiếp tục C1.3 từ `> Chips: High-quality SMD LED.6500K` theo `docs/prompts/CODEX-CONTINUE.md`.
+
+### 2026-09-15 — Codex — Chẩn đoán lỗi runtime local dev
+**Yêu cầu:** Người dùng hỏi log trên màn hình báo lỗi gì.
+**Đã làm:** Đối chiếu require stack trong màn hình lỗi với bundle `.next` và tiến trình dev đang chạy; không sửa mã nguồn hoặc cache.
+**Kiểm chứng:** `.next/server/webpack-runtime.js` tạo tên chunk `./<id>.js`; `.next/server/app/page.js` yêu cầu chunk `124`; `.next/server/124.js` không tồn tại, còn `.next/server/chunks/124.js` tồn tại. Server dự án là Next.js 15.5.24 tại `http://localhost:3001`; một server khác, ở thư mục khác, dùng cổng 3000.
+**Commit:** chưa commit.
+**Còn dở / rủi ro:** Bundle tạm không đồng bộ nên các route App Router có thể tiếp tục báo lỗi cho tới khi tái tạo `.next`; đây không phải lỗi dữ liệu/nội dung trang đã được kiểm chứng từ ảnh chụp.
+**Việc tiếp theo:** Nếu người dùng yêu cầu sửa, dừng đúng server `:3001`, tái tạo `.next`, chạy lại một server dev rồi kiểm tra route bị lỗi.
+
+### 2026-09-15 — Codex — Tiếp tục C1.3: 508 key từ điển và sửa gate nguồn lỗi
+**Yêu cầu:** Người dùng yêu cầu tiếp tục dịch C1 theo `docs/prompts/CODEX-CONTINUE.md`.
+**Đã làm:**
+- Đối chiếu trực tiếp sản phẩm nguồn cho các ngoại lệ đầu inventory. Dịch 3 nhãn và **505 dòng** mới (508 key từ điển); coverage translated tăng thêm **511** nhờ các chuỗi được nhận diện đúng sau sửa gate.
+- Thu hẹp nhận diện kỹ thuật đúng ba mẫu sai đã kiểm chứng: `in-1` của `3-in-1`, chuỗi đổi đơn vị kiểu `Pounds/454kgs`, và mảnh biểu diễn kích thước/mô-men xoắn (`X60X180CM`, `M/0-220Lb`). Không mở allowlist câu tiếng Anh rộng.
+- Chuẩn hóa gate số cho `kg/lb` số nhiều, đơn vị nối bằng dấu gạch/dấu phẩy và `13,mm`; bổ sung test âm để chuỗi kích thước có hậu tố tiếng Anh vẫn bị phát hiện. Thêm mã/đơn vị tường minh chỉ khi xuất hiện trong nguồn (`AWG`, `Pa`, `AAA`, `BSPT`, `AWS`).
+- Dịch tiếp nhóm phụ kiện, vật liệu, pin/sạc, thông số cơ khí và nhãn điều chỉnh. Các nguồn mơ hồ vẫn giữ lại: hai nhãn tay nâng lỗi, `1pc 1pc core connecting rod`, dòng thanh nối CrV có đơn vị dính, thương hiệu/định dạng chưa rõ.
+**Số liệu trước → sau:** coverage **3356/1667/2377 → 3867/1678/1855**; translated +511, notNeeded +11, missing -522. Missing: 2171 dòng/2 nhãn/206 ô → **1657 dòng/2 nhãn/198 ô**. Dictionary **1198/1075/74 → 1703/1078/74** (dòng/nhãn/ô); tổng +508. English remainder **2314/2457 → 1800/1932**; quality bốn nhóm vẫn 0/0.
+**Kiểm chứng:** `npm test` → **82/82 PASS**; `npm run build:data`, `npm run check:data`, `npm run validate:data`, `npm run typecheck` → PASS; `npm audit --audit-level=high` → 0 vulnerabilities; `npm run build` → **1452 trang**; `npm run validate:export` → **1447 route / 10271 artifact / 1357 Product JSON-LD**, smoke 11×200 + 3×404; `git diff --check` → PASS. Checksum `57040312e538c0313e6bbd2330cffdd82b95ae83bd0cdbc6d1e0b0def556e016`.
+**Commit:** chưa commit/push/deploy.
+**Còn dở / rủi ro:** C1 vẫn NO-GO production do còn 1855 chuỗi thiếu. Không suy đoán hai nhãn lỗi `2 stage long arms8`, `3 stage short arms6`; các dòng nguồn dính/số lặp và thương hiệu chưa đủ ngữ cảnh cần xử lý riêng.
+**Việc tiếp theo:** tiếp tục từ `> Chips: High-quality SMD LED.6500K` sau khi rà nhóm ngoại lệ đầu inventory; sau đó dịch theo cụm C–D và ô bảng còn thiếu. Chỉ commit khi người dùng cho phép.
+
+### 2026-09-15 — Codex — Nghiên cứu font thay Tomorrow có tiếng Việt
+**Yêu cầu:** Người dùng yêu cầu tìm font hỗ trợ tiếng Việt tương tự Tomorrow.
+**Đã làm:** Đối chiếu metadata chính thức trong kho Google Fonts cho Tomorrow, Saira/Saira Semi Condensed, Chakra Petch, Exo 2, Barlow Semi Condensed và Be Vietnam Pro.
+**Kiểm chứng:** Tomorrow chỉ có subset `latin`, `latin-ext`, `menu`, không có `vietnamese`; Saira, Saira Semi Condensed, Chakra Petch, Exo 2, Barlow Semi Condensed và Be Vietnam Pro đều khai báo subset `vietnamese` trong metadata Google Fonts.
+**Commit:** chưa commit.
+**Còn dở / rủi ro:** Chưa đổi font trong mã; độ “giống Tomorrow” là đánh giá thị giác cần xác nhận trên giao diện thực tế.
+**Việc tiếp theo:** Ưu tiên thử Saira Semi Condensed hoặc Chakra Petch cho heading/menu; giữ Be Vietnam Pro cho body.
+
+### 2026-09-15 — Codex — Kiểm tra font tiếng Việt trên local
+**Yêu cầu:** Người dùng hỏi font có hỗ trợ tiếng Việt không và vì sao giao diện bị vỡ.
+**Đã làm:** Kiểm tra `src/app/layout.tsx`, `src/app/globals.css`, CSS font đã biên dịch và giao diện local ở `http://localhost:3001/`.
+**Kiểm chứng:** Body dùng `Be Vietnam Pro` với subset `vietnamese`; heading/menu dùng `Tomorrow` với `latin` + `latin-ext`. CSS Tomorrow không khai báo dải ký tự tiếng Việt mở rộng `U+1EA0–U+1EF1`, nên các chữ như `Ợ`, `Ệ`, `Ồ` rơi từng ký tự sang Arial fallback, tạo cảm giác chữ bị vỡ/lệch kiểu. Giao diện vẫn phản hồi `HTTP 200`.
+**Commit:** chưa commit.
+**Còn dở / rủi ro:** Chưa thay font vì người dùng mới yêu cầu kiểm tra, chưa yêu cầu chỉnh giao diện.
+**Việc tiếp theo:** Nếu được duyệt, đổi heading/menu tiếng Việt sang `Be Vietnam Pro` để đồng nhất; giữ Tomorrow cho nội dung chỉ Latin/số nếu cần.
+
+### 2026-09-15 — Codex — Khởi động local dev server
+**Yêu cầu:** Người dùng yêu cầu “chạy dự án lên”.
+**Đã làm:** Khởi động Next.js development server cho dự án WOKIN Clone.
+**Kiểm chứng:** `npm run dev` → server sẵn sàng tại `http://localhost:3001`; `curl -I http://localhost:3001/` → `HTTP/1.1 200 OK`. Cổng 3000 đang được `next-server (v16.2.10)` sử dụng nên Next.js tự chọn cổng 3001.
+**Commit:** chưa commit.
+**Còn dở / rủi ro:** Server chạy trong phiên terminal hiện tại; dừng khi phiên bị đóng.
+**Việc tiếp theo:** Mở `http://localhost:3001` để xem site.
+
+### 2026-09-14 — Codex — Tiếp tục C1.3: 523 mục và sửa 6 bản dịch
+**Yêu cầu:** Người dùng yêu cầu “TIẾP TỤC”, theo prompt v12.
+**Đã làm:**
+- Xác nhận nền 82 tests PASS, checksum `5522393a…`, coverage 2750/1657/2993; giữ các thay đổi chưa commit và untracked hiện có.
+- Thêm **523 mục thực mới: 38 nhãn + 485 dòng**, chia 3 lô (174, 185, 164); mọi key đã đối chiếu có trong nguồn, không có target sao y nguồn, không có vi phạm gate số/mã/English/token lai. Không tính những mục chỉ phân loại lại `notNeeded` vào 523.
+- Đối chiếu dữ liệu sản phẩm, sửa 6 mục cũ: `raint reservoir` của súng phun sơn → dung tích bình sơn; `max. drive through` của cầu nâng → chiều rộng xe đi qua; đèn pin `3 lever` → 3 mức; giữ lại chuẩn MID cấp 2; `dead blow mallet` → búa chống nảy; `Die handle` → tay quay bàn ren và đường kính ngoài.
+- Cho phép `min` trong mẫu số đo thực như `5.5L/min`, chuỗi cỡ số `3-4-5-6mm`, đơn vị VAC; bổ sung các tên vật liệu/chuẩn và từ Việt không dấu gặp trong lô. Thêm assertion âm/dương để `min speed`, `with/min`, `3-4-5-Green` vẫn cần dịch.
+**Số liệu trước → sau:** coverage **2750/1657/2993 → 3356/1667/2377**; translated tăng 606, notNeeded tăng 10, missing giảm 616. Dictionary **713/1037/74 → 1198/1075/74** (dòng/nhãn/ô). Remainder **2923/3334 → 2314/2457**; quality bốn nhóm đều 0/0. Đính chính dòng trạng thái phiên v12: từ 1946 lên 2750 là **+804** translated; +525 chỉ là chênh lệch sau lô nhãn 2225 → 2750.
+**Kiểm chứng:** sau mỗi lô `build:data`, `check:data`, inventory PASS. Cuối phiên: `npm test` **82/82 PASS**, typecheck PASS, audit 0 vulnerabilities, validate:data/check:data PASS, build **1452 trang**, validate:export **1447 route / 10271 artifact / 1357 Product JSON-LD**, smoke **11×200 + 3×404**. Đối chiếu HTML 10 SP thuộc 10 danh mục: toàn bộ dòng spec khớp generated, số dòng và token số khớp nguồn. Checksum cuối **`1829fa3d5366536385f5c8d1896e184b4a6b6be7b31c176ea7406960867e00f2`**. `git diff --check` PASS.
+**Cần review / còn dở:** hai nhãn `2 stage long arms8`, `3 stage short arms6` vẫn missing. Nhóm đầu inventory cần xử lý riêng: `30000/mim`, `Strong-Metal`, `Strong-Metal-Thickness`, `0Pcs blades`, câu bị ngắt; guard kỹ thuật hiểu nhầm `in-1` trong `3-in-1` và `Pounds/454kgs` là mã; ô/ký hiệu dính như `13,mm`, `0-300N.M/0-220Lb•ft`. Các mục này chưa ghi bản dịch để tránh mất thông tin hoặc nới gate. Chưa đạt C1.4, chưa production-ready.
+**Commit:** chưa commit/push/deploy.
+**Việc tiếp theo:** rà nhóm ngoại lệ nêu trên bằng nguồn và test hẹp; sau đó tiếp tục dòng `> 1pc hex key wrench` theo inventory và ô bảng còn thiếu. Chỉ commit khi được cho phép.
+
+### 2026-09-14 — Codex — C1.3.2 + lô dịch tiếp từ `0utside clamp`
+**Yêu cầu:** Đọc và thực hiện đúng `docs/prompts/CODEX-CONTINUE.md` v11.
+**Đã làm:**
+- Hoàn tất C1.3.2 theo TDD: `numericTokens` coi dấu inch cong `”` như `″`; sửa 3 nhãn adapter giữ dấu inch. Thêm gate quy tắc lượng từ: 123 nhãn không có `set` không dùng “Bộ N”, 2 nhãn có `set` dùng “Bộ N”; test tăng từ 80 lên 82.
+- Dịch tiếp theo thứ tự inventory từ `0utside clamp`: thêm **775 key dictionary mới** (279 nhãn, 496 dòng; không tính phân loại lại `notNeeded`), giữ số liệu/mã/đơn vị và xử lý các đơn vị kỹ thuật dạng khoảng số.
+- Cập nhật allowlist kỹ thuật/từ mượn có kiểm chứng và sửa `quantityStyleViolation` để nhận tiền tố `> ` trong dòng spec.
+**Kiểm chứng:** `npm run build:data` → PASS, checksum `5522393a6f8f3a9c276e94637fe562b96bd0266871596df6df2505d7ee1471dd`; `npm run check:data` → PASS; `npm run spec:inventory` → **2750 translated / 1657 notNeeded / 2993 missing**, missing 2781 dòng / 29 nhãn / 212 ô, English remainder 2923 chuỗi / 3334 occurrences, quality 0/0/0/0; `npm test` → **82/82 PASS**; `npm run validate:data` → PASS; `npm run typecheck` → PASS; `npm audit --audit-level=high` → 0 vulnerabilities; `npm run build` → PASS 1452 trang; `npm run validate:export` → PASS 1447 route, 10271 artifact, 1357 Product JSON-LD, smoke 11 route 200 + 3 legacy 404; `git diff --check` → PASS.
+**Commit:** chưa commit, chưa push/deploy theo quy định.
+**Còn dở / rủi ro:** C1 vẫn **NO-GO production** vì còn 2993 chuỗi thiếu. Hai nhãn nguồn lỗi `2 stage long arms8` và `3 stage short arms6` vẫn để missing, không đoán lại; inventory batch kế tiếp bắt đầu ở `max.torque`.
+**Việc tiếp theo:** tiếp tục lô nhãn/dòng theo `npm run spec:inventory -- --next-batch ...`, chạy build/check/inventory sau mỗi lô; chỉ commit khi người dùng cho phép.
 
 ### 2026-09-14 — Claude — Prompt Codex v11 sau commit lô C1.3
 **Yêu cầu:** Tiếp theo review C1.3.1 (người dùng đã duyệt sửa xong rồi commit).

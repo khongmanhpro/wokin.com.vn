@@ -5,16 +5,16 @@
     "products": 1357
   },
   "generatedFiles": {
-    "catalog.generated.json": "0fb24e4c742293bf5681b8360243ac352c7548a20a442c1246376850654af62e",
+    "catalog.generated.json": "b5505db78ea9b6f3f28f872a94e714051e897cd62518ccfac9e1724d18a9e8d9",
     "categories.json": "0a7deeeed327a5c78188d517a0f1c07bcfa965ed441dfc341cad52cb7f889108",
     "products_vi.json": "c323788e0d479274161271ca5428e3abc247875ecdf96c62c5dc0d6d58da31f2",
-    "README.md": "dba17f740a591f0215ab3670afb691b63bbab91d1a4380d41e2d60443187ab56",
+    "README.md": "2cc6e0423a010745b65e6990be11f3cb1eb166e8c56fb54ddda1cbfc5685777c",
     "search-index.json": "702a2cdfa1325f1e6a86c5d22feb90dd788297740293a4314772b988a7a597e4",
     "vi-glossary.json": "45e43ef7065667609d609af73b5b2b74e7d96104d4165e630b6d3f33420f0dca"
   },
-  "outputChecksum": "7cd4e91aea89c1166b0f67d85e260a2ec4e6e92b4e2d267cfdf7aa09c854f84f",
+  "outputChecksum": "57040312e538c0313e6bbd2330cffdd82b95ae83bd0cdbc6d1e0b0def556e016",
   "schemaVersion": 1,
-  "sourceChecksum": "c5234c011de86c0d85831795f53b8b616070df0c7d648cc82617cf1d5b0d621b",
+  "sourceChecksum": "01a297b71a900de7a552abfef952ca13874b406d010ac6b176ee7afdf7bbaf1c",
   "sourceFiles": {
     "catalog-baseline.json": "04543d63672098efb10b63256de369f277036f6fa8dc109d95a32470e7e4fea4",
     "categories.json": "9559002493186a5ba9f26b1e616003fed0b7e853a196a5b4f6d8be4c2b21b47d",
@@ -22,7 +22,7 @@
     "product_dates.json": "8f789c7f21b70edeaaa9103c2fde764de3c4c580b355a969ced7d5415ba5c4a1",
     "products_vi.json": "70a120fbb771851931d66408eb0dd47d7382a25e4da1a9046584e4858c02bc6a",
     "products.json": "ead0552bb11510045cad3cd40d70680a01d276d103a8eb4ed2adfa2383f0235c",
-    "spec-translations-vi.json": "cd91a8a81841391a7c5758481bbffad7def4f570411f7b305f83c098f9953a7d",
+    "spec-translations-vi.json": "ecfb8e1686183abc211f193fcb7d70ed1a79dbdc57a5fc0ff7bcd17220fa850c",
     "vi-glossary.json": "7eedddad5646d17e5ccbd26314069edc7da80df639c8d3f760e0cb37ee743068"
   }
 }

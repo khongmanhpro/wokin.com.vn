@@ -4,6 +4,9 @@
 > `Đọc và thực hiện đúng docs/prompts/CODEX-CONTINUE.md`
 > Prompt dùng lại được nhiều phiên. Phiên mới tự biết tiếp từ đâu nhờ `WORKLOG.md` và `npm run spec:inventory`.
 >
+> Phiên bản 14 (2026-09-15, Codex tiếp tục C1.3): thêm 508 key mới (3 nhãn + 505 dòng); coverage `3867 translated / 1678 notNeeded / 1855 missing`; **chưa commit**. Các ngoại lệ `3-in-1`, đơn vị kg/lb và ký hiệu dính đã có test hẹp; rà nhóm nguồn mơ hồ còn lại, rồi tiếp tục từ `> Chips: High-quality SMD LED.6500K`.
+> Phiên bản 13 (2026-09-14, Codex tiếp tục C1.3): thêm 523 key mới (38 nhãn + 485 dòng), sửa 6 bản dịch; coverage `3356 translated / 1667 notNeeded / 2377 missing`; **chưa commit**. Rà nhóm ngoại lệ nguồn/gate bên dưới, rồi tiếp tục dòng thông thường từ `> 1pc hex key wrench` theo inventory.
+> Phiên bản 12 (2026-09-14, Codex tiếp nhận và hoàn tất C1.3.2 + lô tiếp): C1.3.2 đã sửa dấu inch `”` và quy tắc “Bộ N”; thêm 775 key dictionary mới từ `0utside clamp`; **chưa commit**. Phiên mới tiếp tục từ `max.torque` theo inventory.
 > Phiên bản 11 (2026-09-14, sau review lần 6 của Claude): lô C1.3 + C1.3.1 **đã commit ở `df991d3`**. Đầu phiên làm **C1.3.2** (2 lỗi nhỏ), sau đó dịch lô tiếp từ `0utside clamp`.
 > Phiên bản 10 (2026-09-14, Codex hoàn tất C1.3.1): đã sửa 5 mục review, chạy đủ gate, **chưa commit** để chờ review + commit; không mở batch mới. Coverage hiện `1946 translated / 1589 notNeeded / 3865 missing`, checksum generated `7cd4e91aea89c1166b0f67d85e260a2ec4e6e92b4e2d267cfdf7aa09c854f84f`.
 > Phiên bản 9 (2026-09-14, sau review lần 5 của Claude): lô C1.3 (C1.3.0 + 532 mục) **chưa commit** vì còn lỗi nội dung. Làm **C1.3.1** (sửa 5 mục review) rồi dừng để review + commit; chưa dịch lô mới.
@@ -41,7 +44,7 @@ npm run check:data
 npm run spec:inventory
 ```
 
-Kỳ vọng tại lần bàn giao (v11): nhánh `main`, commit mới nhất `df991d3` hoặc commit docs ngay sau nó, **working tree sạch** với các file đang theo dõi, **80 tests PASS**, check:data PASS (checksum `7cd4e91aea89c1166b0f67d85e260a2ec4e6e92b4e2d267cfdf7aa09c854f84f`), inventory `1946 translated / 1589 notNeeded / 3865 missing`, từ điển 217 dòng / 758 nhãn / 74 ô. Việc kế tiếp: **C1.3.2**, rồi lô dịch tiếp theo từ `0utside clamp`. Untracked được phép: `.claude/`, `reports/`, vài file `.hermes/*.py`, `.hermes/plans/*`.
+Kỳ vọng tại lần bàn giao (v14): nhánh `main`, HEAD `159834c` (nền dữ liệu `df991d3`), working tree có các thay đổi **chưa commit** của C1.3.2 + lô 775 mục + lô 523 mục + lô 508 key; **82 tests PASS**, check:data PASS (checksum `57040312e538c0313e6bbd2330cffdd82b95ae83bd0cdbc6d1e0b0def556e016`), inventory `3867 translated / 1678 notNeeded / 1855 missing`, từ điển 1703 dòng / 1078 nhãn / 74 ô. Việc kế tiếp: rà nhóm nguồn mơ hồ, rồi tiếp tục `> Chips: High-quality SMD LED.6500K`; không làm lại C1.3.2. Untracked được phép: `.claude/`, `reports/`, vài file `.hermes/*.py`, `.hermes/plans/*`.
 
 C1.2b–C1.2d đã commit ở `f0ebdf4`; C1.3.0–C1.3.1 + lô 530 nhãn/46 ô ở `df991d3`. Mọi thay đổi chưa commit mới sinh ra trong phiên của bạn là của bạn; không revert thay đổi của người khác.
 
@@ -63,7 +66,7 @@ C1.2b–C1.2d đã commit ở `f0ebdf4`; C1.3.0–C1.3.1 + lô 530 nhãn/46 ô �
 
 ## Việc cần làm: C1 — Dịch thông số kỹ thuật sản phẩm (blocker production)
 
-### Trạng thái (Codex cập nhật 2026-09-14, sau C1.3.1; chờ review + commit)
+### Trạng thái (Codex cập nhật 2026-09-15, sau lô tiếp C1.3 thêm 508 key; chưa commit)
 
 | Hạng mục | Trạng thái |
 |---|---|
@@ -73,9 +76,9 @@ C1.2b–C1.2d đã commit ở `f0ebdf4`; C1.3.0–C1.3.1 + lô 530 nhãn/46 ô �
 | C1.2b allowlist `needsTranslation`, `labels`, gate `N pcs`, remainder trên generated | ✅ Xong, commit `f0ebdf4` |
 | C1.2c Sửa 5 lỗi review lần 2 | ✅ Xong, commit `f0ebdf4` |
 | C1.2d Sửa 4 lỗi review lần 3 (câu lai có dấu, `N chi tiết` tự động, allowlist tiếng Việt/từ mượn, satin) | ✅ Xong, commit `f0ebdf4` (review lần 4: đạt; còn 2 lỗi nhỏ → C1.3.0) |
-| C1.3 Coverage | ⏳ **1946 translated / 1589 notNeeded / 3865 missing** (3613 dòng, 282 nhãn, 252 ô); C1.3.0 + C1.3.1 đã xong, commit `df991d3` (review lần 6: đạt); dictionary 217 dòng / 758 nhãn / 74 ô; **C1.3.2** rồi lô tiếp từ `0utside clamp` |
+| C1.3 Coverage | ⏳ **3867 translated / 1678 notNeeded / 1855 missing** (1657 dòng, 2 nhãn, 198 ô); C1.3.0 + C1.3.1 đã commit `df991d3`, C1.3.2 và ba lô 775 + 523 + 508 key đã làm nhưng chưa commit; dictionary 1703 dòng / 1078 nhãn / 74 ô; rà ngoại lệ rồi tiếp tục từ `> Chips: High-quality SMD LED.6500K` |
 
-Hệ quả trạng thái trung gian: dòng chưa dịch vẫn hiển thị **nguyên tiếng Anh** (vd "Suitable for workshop use."); các câu lai có dấu và `N chi tiết` tự động đã được chặn. Không mất thông tin, nhưng chưa release được vì còn 3865 mục thiếu.
+Hệ quả trạng thái trung gian: dòng chưa dịch vẫn hiển thị **nguyên tiếng Anh**; các câu lai có dấu và `N chi tiết` tự động đã được chặn. Chưa release được vì còn 1855 mục thiếu.
 
 ### Phát hiện review lần 1 (✅ đã xử lý ở C1.2b, chỉ để tham khảo)
 
@@ -206,7 +209,7 @@ Claude review 2026-09-14 (entry "Claude — Review C1.2c + lô thử C1.3 của 
 
 **Mục tiêu khối lượng:** mỗi phiên **tối thiểu 500 mục mới được ghi vào từ điển** (dòng + nhãn + ô; không tính mục được phân loại lại `notNeeded`), hoặc làm liên tục tới khi hết ngữ cảnh/thời gian. Báo cáo cả "số mục mới" lẫn coverage. Phiên trước chỉ ghi được ~320 mục. Lô ~150–250 mục; sau **mỗi lô** chạy `build:data` + `check:data` + `spec:inventory` (điểm dừng an toàn). Chạy `npm test` + `validate:data` sau mỗi 2–3 lô và cuối phiên.
 
-**Bước C1.3.2 — Sửa nhỏ từ review lần 6 (làm đầu phiên, TDD, không tính vào 500 mục):**
+**Bước C1.3.2 — Sửa nhỏ từ review lần 6 (✅ ĐÃ XONG ở phiên v12; không làm lại, không tính vào 500 mục):**
 1. **Dấu inch `”` (U+201D) bị mất mà gate không bắt:** 3 nhãn "1pc 1/2” dr. socket adapter", "1pc 1/4” …", "1pc 3/8” …" → "…truyền động 1/2". Nguyên nhân: `numericTokens` chỉ nhận `" ″ ′ '` sau số, `normalizeTechnicalToken` xoá `“”`. Coi `”` tương đương `″` (chuẩn hoá `”`→`″` khi so khớp, không xoá). Sửa 3 target (giữ dấu inch). Test: label target thiếu dấu inch cho nguồn `1/2”` → build fail.
 2. **Quy tắc lượng từ dòng liệt kê chưa theo:** 123 nhãn dạng `Npcs X` (không có `set`) đang dịch "Bộ N X" (vd "12pcs combination spanners" → "Bộ 12 cờ lê kết hợp"); 2 nhãn có `set` ("6pcs punch set", "9pcs hex key set") lại thiếu "Bộ". Sửa: không có `set` → "N X"; có `set` → "Bộ N X". Thêm kiểm tra (report hoặc gate) đếm target vi phạm, kỳ vọng 0. Ghi số trước → sau vào WORKLOG.
 
@@ -257,9 +260,14 @@ Chốt chuẩn (áp dụng cho cả mục cũ và mới, ghi vào `vi-glossary.j
 
 **Thứ tự ưu tiên:**
 1. **Đã hoàn tất:** 46 ô bảng lai đã ghi vào `cells`; quality `Việt trộn English` hiện 0/0.
-2. `labels` còn thiếu (282 nhãn), tiếp tục từ `0utside clamp`
-3. Dòng tự do theo tần suất giảm dần
+2. Rà nhóm ngoại lệ nguồn/gate dưới đây; 2 nhãn còn thiếu đều là nguồn lỗi, không đoán.
+3. Dòng tự do theo tần suất giảm dần; dòng thông thường kế tiếp `> Chips: High-quality SMD LED.6500K`.
 4. Ô bảng còn chữ còn lại
+
+**Ngoại lệ cần review ở đầu inventory (chưa dịch):**
+- Hai nhãn `2 stage long arms8`, `3 stage short arms6`; không sửa số liệu nguồn bằng suy đoán.
+- Nguồn mơ hồ/sai định dạng còn lại: `1pc 1pc core connecting rod`, `2pcs CrV 1/2″ Dr. extension bars: 125(5”), 250(10”)mm`, `3.5HP Briggs & Stratton petrol engine`, `3M VDE Cable 1.0mm2`, `9 CS twist drill bits`, và mục pin `Li-Polymer`. Đối chiếu ngữ cảnh sản phẩm trước khi dịch.
+- Đã xử lý có test hẹp: `in-1` trong `3-in-1`, quy đổi `Pounds/454kgs`, ký hiệu `13,mm`, mảnh kích thước `X60X180CM` và mô-men `M/0-220Lb`. Chỉ mở rộng gate cho đúng các dạng số liệu này; không thêm allowlist tiếng Anh rộng để cho qua.
 
 **Mẹo tăng tốc hợp lệ:** gom các dòng cùng mẫu (vd `> Packing: <N>pcs in <bao bì>`, `> Material: <vật liệu>`) và dịch nhất quán cùng lúc. Vẫn phải ghi **từng chuỗi nguồn** vào `lines` (hoặc dùng `labels` khi đúng điều kiện). Không thêm regex dịch tự do mới vào pipeline.
 
@@ -297,7 +305,7 @@ Kiểm tra thêm:
 - [x] C1.2d xong: 0 token lai có dấu, 0 `N chi tiết` tự động, allowlist tách tiếng Việt/từ mượn, gate target từ điển fail-mode, satin thống nhất
 - [x] C1.3.0 xong: 0 chuỗi "êmer"/đuôi phụ âm lai, regex cứng có biên từ, chuẩn hoá khoảng trắng sau `:`; 46 ô bảng lai → 0
 - [x] C1.3.1 xong: `sl` đúng nghĩa, chuẩn hoá `:` không đụng mã, 0 nhãn chết (gate), gate giữ mã/đơn vị/loại đầu vít, 532 mục mới rà lại theo chuẩn thuật ngữ; chờ review + commit
-- [ ] C1.3.2 xong: `”` được gate coi là dấu inch, 3 target sửa; 0 vi phạm quy tắc "Bộ N" (123 → 0, 2 → 0)
+- [x] C1.3.2 xong: `”` được gate coi là dấu inch, 3 target sửa; 0 vi phạm quy tắc "Bộ N" (123 → 0, 2 → 0)
 - [ ] `missing = 0` (dòng, nhãn, ô bảng)
 - [ ] 0 placeholder, 0 dòng lai/tiếng Anh ngoài allowlist, 0 `pcs` trong câu tiếng Việt
 - [ ] Gate coverage + English remainder ở fail-mode

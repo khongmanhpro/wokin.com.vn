@@ -413,6 +413,75 @@ test("C1.3.1 keeps SL semantics, code colons, and rejects dead label translation
   }
 });
 
+test("C1.3.2 treats curly inch quotes as numeric tokens", async () => {
+  const { buildCatalogData } = await loadBuilder();
+  const { numericTokens, preservesNumericTokens, preservesTechnicalTokens } = await import(new URL("../scripts/spec-translation-utils.mjs", import.meta.url));
+  assert.deepEqual(numericTokens("1/2”"), numericTokens("1/2″"));
+  assert.deepEqual(numericTokens("454kgs"), numericTokens("454 kg"));
+  assert.deepEqual(numericTokens("1000-Pounds"), numericTokens("1000 lb"));
+  assert.deepEqual(numericTokens("13,mm"), numericTokens("13 mm"));
+  assert.equal(
+    preservesTechnicalTokens(
+      "with 3-in-1 indicator light (overload + output + oil alarm light)",
+      "có đèn báo 3 trong 1 (quá tải + đầu ra + báo động dầu)",
+    ),
+    true,
+  );
+  assert.equal(
+    preservesTechnicalTokens("1000-Pounds/454kgs Weight Capacity", "Tải trọng 1000 lb/454 kg"),
+    true,
+  );
+  assert.equal(
+    preservesNumericTokens("1000-Pounds/454kgs Weight Capacity", "Tải trọng 1000 lb/454 kg"), true);
+  assert.equal(
+    preservesTechnicalTokens("120X60X180CM(LxWxH)", "Kích thước 120×60×180cm (D×R×C)"),
+    true,
+  );
+  assert.equal(
+    preservesTechnicalTokens("0-300N.M/0-220Lb•ft", "Dải mô-men xoắn: 0-300 N·m/0-220 lb-ft"),
+    true,
+  );
+  const fixture = makeFixture();
+  try {
+    const productsFile = path.join(fixture.sourceDir, "products.json");
+    const products = JSON.parse(readFileSync(productsFile, "utf8"));
+    products[0].short_description = "<p>&gt; 1pc 1/2” dr. socket adapter: 1/2”</p>";
+    writeJson(productsFile, products);
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: {},
+      labels: { "1pc 1/2” dr. socket adapter": "1 đầu chuyển tuýp truyền động 1/2" },
+      cells: {},
+    });
+    await assert.rejects(buildCatalogData(fixture), /labels.*numeric|numeric.*labels|1pc 1\/2/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("C1.3.2 enforces Bộ only for source labels containing set", async () => {
+  const { buildCatalogData } = await loadBuilder();
+  const fixture = makeFixture();
+  try {
+    const productsFile = path.join(fixture.sourceDir, "products.json");
+    const products = JSON.parse(readFileSync(productsFile, "utf8"));
+    products[0].short_description = "<p>&gt; 12pcs combination spanners: 8, 10, 12mm<br>&gt; 6pcs punch set: 6mm</p>";
+    writeJson(productsFile, products);
+    writeJson(path.join(fixture.sourceDir, "spec-translations-vi.json"), {
+      schemaVersion: 1,
+      lines: {},
+      labels: {
+        "12pcs combination spanners": "Bộ 12 cờ lê kết hợp",
+        "6pcs punch set": "6 mũi đột",
+      },
+      cells: {},
+    });
+    await assert.rejects(buildCatalogData(fixture), /Bộ|set|lượng từ|quantity/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
 test("catalog check detects manual edits in generated data", async () => {
   const { buildCatalogData } = await loadBuilder();
   const fixture = makeFixture();

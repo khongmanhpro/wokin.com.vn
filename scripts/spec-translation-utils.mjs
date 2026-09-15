@@ -1,9 +1,10 @@
 export const UNIT_WORDS = new Set([
-  "mm", "cm", "m", "km", "kg", "g", "mg", "l", "ml", "v", "w", "kw", "a", "ah", "mah", "hz", "rpm", "min", "bar", "psi", "mpa", "nm", "lb", "lbs", "oz", "hp", "db",
+  "vac",
+  "mm", "cm", "m", "km", "kg", "kgs", "g", "mg", "l", "ml", "v", "w", "kw", "a", "ah", "mah", "hz", "rpm", "bpm", "min", "bar", "psi", "mpa", "nm", "lb", "lbs", "oz", "hp", "db", "dba", "ft", "awg", "pa",
 ]);
 
 export const CODE_WORDS = new Set([
-  "crv", "cr-v", "cr-mo", "s2", "sk5", "hss", "abs", "pvc", "tpr", "pp", "tpe", "ce", "gs", "din", "iso", "ansi", "sae", "en", "vde", "wokin", "loncin", "ph", "pz", "tx", "torx", "dr", "sl",
+  "crv", "cr-v", "cr-mo", "s2", "sk5", "hss", "abs", "pvc", "tpr", "pp", "tpe", "ce", "gs", "din", "iso", "ansi", "sae", "en", "vde", "wokin", "loncin", "lifan", "aaa", "bspt", "aws", "ph", "pz", "tx", "torx", "dr", "sl", "tig",
 ]);
 
 const SIZE_WORDS = new Set(["xl", "xxl", "s", "m", "l"]);
@@ -12,15 +13,19 @@ const SIZE_WORDS = new Set(["xl", "xxl", "s", "m", "l"]);
 // in Vietnamese copy. These are safe globally, unlike unaccented Vietnamese
 // words which can collide with ordinary English prose.
 export const LOANWORDS = Object.freeze(new Set([
-  "ac", "acrylic", "carbon", "carton", "crmo", "dc", "led", "li-ion", "pa", "pc",
-  "lithium-ion", "npt", "phillips", "poly", "polyester", "pozidriv", "rpm",
-  "satin", "scfm", "sds-plus", "sds-max", "skin", "tct", "torx", "usb",
+  // Material names and certification marks present in reviewed source specs.
+  "eva", "opp", "lithium", "polystyrene", "mid", "type-c", "latex", "ptfe", "pu", "pet", "diesel", "lumen",
+  // Source-only unit typo retained in two reviewed router specifications.
+  "mim",
+  "ac", "acrylic", "bmc", "bpm", "carbon", "carton", "cdi", "cfm", "cb", "cotton", "crmo", "dc", "etl", "hepa", "hcs", "hdpe", "hex", "ii", "iec", "inch", "ipm", "kg", "laser", "lcd", "lb", "led", "li-ion", "mdf", "nh", "nr", "nylon", "od", "oxford", "pa", "pc", "pe",
+  "lithium-ion", "npt", "phillips", "poly", "polyester", "polyurethane", "pozidriv", "rpm",
+  "satin", "scfm", "sds-plus", "sds-max", "skin", "snr", "tci", "tct", "ul", "usb",
 ]));
 
 const TECHNICAL_CODE_WORDS = new Set([
-  "abs", "ansi", "as/nzs", "ce", "cr-mo", "cr-v", "crv", "din", "en", "gs", "hss", "ip", "iso", "ph", "phillips", "poly", "pozidriv", "pp", "pvc", "pz", "sae", "s2", "scfm", "sds-plus", "sds-max", "sk5", "sl", "torx", "tpr", "tpe", "tx", "vde",
+  "abs", "ansi", "as/nzs", "ce", "cr-mo", "cr-v", "crv", "din", "en", "gs", "hss", "ip", "iso", "ph", "phillips", "poly", "pozidriv", "pp", "pvc", "pz", "sae", "s2", "scfm", "sds-plus", "sds-max", "sk5", "sl", "tig", "torx", "tpr", "tpe", "tx", "vde",
 ]);
-const PAREN_TECHNICAL_TOKENS = new Set([...UNIT_WORDS, "inch", ...TECHNICAL_CODE_WORDS]);
+const PAREN_TECHNICAL_TOKENS = new Set([...UNIT_WORDS, "ft-lb", "inch", ...TECHNICAL_CODE_WORDS]);
 
 const VIETNAMESE_DIACRITIC_RE = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/iu;
 const HYBRID_SUFFIX_RE = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ][a-z]*s(?![\p{L}\d])/iu;
@@ -70,6 +75,9 @@ function isTechnicalParentheticalToken(token, source, index) {
 
 function isAllowedToken(token, source, index) {
   const normalized = normalizeWord(token);
+  // A denominator in an actual measurement (e.g. 5.5L/min), not prose
+  // such as "min speed" or "with/min". Keep the source unit verbatim.
+  if (normalized === "min" && /\d\s*(?:[a-z]+[²³]?)?\s*\/\s*$/iu.test(source.slice(0, index))) return true;
   if (isTechnicalParentheticalToken(token, source, index)) return true;
   if (SIZE_WORDS.has(normalized) || CODE_WORDS.has(normalized)) return true;
   if (UNIT_WORDS.has(normalized)) return isNumericPrefix(source, index);
@@ -80,10 +88,14 @@ function isAllowedToken(token, source, index) {
   // while ABC-2 remains a code. Full material/code allowlist entries above
   // (for example Cr-V) are always accepted.
   if (normalized.includes("-")) {
+    const numericUnit = normalized.match(/^\d+(?:-\d+)*([a-z]+)$/i);
+    if (numericUnit && UNIT_WORDS.has(numericUnit[1])) return true;
+    const dimension = normalized.match(/^\d+(?:-\d+)?x\d+([a-z]+)$/i);
+    if (dimension && UNIT_WORDS.has(dimension[1])) return true;
     if (/^[a-z\d]+-\d+$/i.test(token)) return true;
     const parts = normalized.split("-");
     if (parts.length > 1 && parts.every((part) =>
-      SIZE_WORDS.has(part) || CODE_WORDS.has(part) || /^(?=.*[a-z])(?=.*\d)[a-z\d]+$/i.test(part)
+      SIZE_WORDS.has(part) || CODE_WORDS.has(part) || UNIT_WORDS.has(part) || /^(?=.*[a-z])(?=.*\d)[a-z\d]+$/i.test(part)
     )) return true;
     return false;
   }
@@ -95,6 +107,8 @@ function isAllowedToken(token, source, index) {
 // copy. This is explicit by design: do not derive it from glossary targets,
 // otherwise an English word such as "satin" could be hidden from the audit.
 export const VIETNAMESE_ASCII_WORDS = Object.freeze(new Set([
+  // Vietnamese words verified in the C1.3 continuation batch.
+  "ga", "linh", "titan", "quanh", "quy", "tham", "qua", "song", "gai", "thao", "hay", "lao", "xanh", "puly", "ngay", "xa", "minh", "kia", "cacbua", "silic", "so", "mang", "ray", "thu", "gom", "axetic", "silicone", "khai", "bu", "cacbon", "gang", "xung",
   // Verified Vietnamese words found in reviewed technical copy. Ambiguous
   // collisions (the, in, than, go, may, con, pin, ...) are only ignored when
   // the surrounding string already contains Vietnamese diacritics.
@@ -106,7 +120,7 @@ export const VIETNAMESE_ASCII_WORDS = Object.freeze(new Set([
   "tia", "tiet", "tinh", "treo", "trong", "trung", "tua", "va", "vao", "vi", "xo", "xuat",
   "xi-lanh", "xy-lanh", "sl", "niken", "molypden", "nung",
   // Additional unaccented Vietnamese words used in reviewed C1.3 labels.
-  "bi", "bo", "chu", "lanh", "loe", "nam", "ngang", "pha", "phay", "quan", "sang", "sao", "tam", "taro", "then", "tra", "trang", "xi", "xoay",
+  "ba", "ban", "bi", "bo", "chai", "chu", "co", "cong", "da", "gia", "ghim", "khe", "khay", "khu", "keo", "lanh", "loe", "nam", "ngang", "nhau", "ong", "pha", "phay", "phanh", "quan", "sang", "sao", "su", "sung", "tam", "taro", "thau", "then", "tra", "trang", "vai", "van", "vanadi", "berili", "que", "axit", "xi", "xoay",
 ]));
 
 export function englishWordTokens(value, ignoredWords = new Set(), minimumLetters = 2) {
@@ -132,13 +146,18 @@ export function needsTranslation(value) {
   return englishWordTokens(value).length > 0;
 }
 
-const NUMERIC_UNITS = "kpa|rpm|mAh|pcs?|hp|kw|nm|mm|cm|km|kg|mg|ml|hz|psi|bar|ah|nm|lb|kv|ma|°c|°|v|w|a|g|l|m|min|%";
+const NUMERIC_UNITS = "kpa|rpm|mAh|pcs?|hp|kw|nm|mm|cm|km|kgs?|mg|ml|hz|psi|bar|ah|nm|lbs?|pounds?|kv|ma|°c|°|v|w|a|g|l|m|min|%";
 
 export function numericTokens(value) {
   const source = String(value ?? "");
-  const values = [...source.matchAll(new RegExp(`\\d+(?:[.,]\\d+)?(?:\\/\\d+(?:[.,]\\d+)?)?(?:(?:\\s?(?:${NUMERIC_UNITS})(?!\\p{L}))|[\"″′'])?`, "giu"))]
+  const values = [...source.matchAll(new RegExp(`\\d+(?:[.,]\\d+)?(?:\\/\\d+(?:[.,]\\d+)?)?(?:(?:(?:\\s*|[-,])(?:${NUMERIC_UNITS})(?!\\p{L}))|°|[\"″”′'])?`, "giu"))]
     .map(([token]) => {
-      const normalized = token.replace(/\s+/g, "").toLowerCase();
+      const normalized = token.replace(/\s+/g, "").replace(/[”]/gu, "″").toLowerCase()
+        .replace(/[-,](?=(?:kgs?|lbs?|pounds?)$)/u, "")
+        .replace(/,(?=[a-z]+$)/u, "")
+        .replace(/pounds?$/u, "lb")
+        .replace(/kgs?$/u, "kg")
+        .replace(/lbs?$/u, "lb");
       return /\d+(?:pcs?)$/i.test(normalized) ? normalized.replace(/pcs?$/i, "") : normalized;
     });
   const codes = [...source.matchAll(/\b(?:m|t|ph|pz|sl|s|n|x)\d+(?:[.,]\d+)?/gi)]
@@ -168,7 +187,15 @@ function technicalTokens(value) {
     const normalized = normalizeTechnicalToken(token);
     const index = match.index ?? 0;
     const inParentheses = parentheticalRanges.some(([start, end]) => index >= start && index < end);
-    const codeLike = /[A-Za-z]/.test(token) && /\d/.test(token) && !/^(?:pc|pcs)$/i.test(token);
+    // `in-1` is the prose tail of 3-in-1, not a model code. A phrase such
+    // as Pounds/454kgs is a written weight conversion, not a technical ID.
+    const proseMeasurement = /^in-\d+$/i.test(token)
+      || /^[a-z]+\/\d+(?:[.,]\d+)?(?:kgs?|lbs?)$/i.test(token)
+      // Fragments such as X60X180CM and M/0-220Lb are respectively a
+      // dimension and a torque-range notation, not product/model codes.
+      || /^x\d+(?:x\d+)+(?:mm|cm|m)?$/i.test(token)
+      || /^[a-z]\/\d+-\d+(?:[a-z]+)?$/i.test(token);
+    const codeLike = /[A-Za-z]/.test(token) && /\d/.test(token) && !/^(?:pc|pcs)$/i.test(token) && !proseMeasurement;
     if ((inParentheses && PAREN_TECHNICAL_TOKENS.has(normalized)) || TECHNICAL_CODE_WORDS.has(normalized) || codeLike) tokens.add(normalized);
   }
   return tokens;

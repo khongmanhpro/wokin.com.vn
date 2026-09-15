@@ -90,6 +90,16 @@ function hasVietnameseQuantityAbbreviation(value) {
   return hasVietnameseText(value) && /\d\s?pcs?\b/i.test(value);
 }
 
+function quantityStyleViolation(source, target) {
+  const normalizedSource = String(source).replace(/^>\s*/u, "");
+  if (!/^\d+\s?pcs?\b/i.test(normalizedSource)) return "";
+  const sourceHasSet = /\bset\b/i.test(normalizedSource);
+  const targetHasBo = /^\s*Bộ\s+\d+\b/iu.test(String(target).replace(/^>\s*/u, ""));
+  if (sourceHasSet && !targetHasBo) return "target của nhãn có `set` phải dùng `Bộ N`";
+  if (!sourceHasSet && targetHasBo) return "target của nhãn không có `set` không được dùng `Bộ N`";
+  return "";
+}
+
 function decodeHtmlEntities(value) {
   return value.replace(/&(?:#(\d+)|#x([\da-f]+)|([a-z][\da-z]+));/gi, (entity, decimal, hex, named) => {
     if (named) return namedEntities[named.toLowerCase()] ?? entity;
@@ -372,6 +382,7 @@ function validateAndNormalize({ sourceDir, publicDir }) {
       else if (hasVietnameseQuantityAbbreviation(target)) errors.push(`spec-translations-vi.json: ${field} target chứa pcs viết tắt số lượng; dùng từ tiếng Việt (chiếc/cái/bộ). Source: ${source}`);
       else if (!preservesNumericTokens(source, target)) errors.push(`spec-translations-vi.json: ${field} target làm mất token số/đơn vị; giữ nguyên số, phân số, và ký hiệu. Source: ${source} Target: ${target}`);
       else if (!preservesTechnicalTokens(source, target)) errors.push(`spec-translations-vi.json: ${field} target làm mất mã/đơn vị/thuật ngữ kỹ thuật; giữ nguyên mã nguồn. Source: ${source} Target: ${target}`);
+      else if (quantityStyleViolation(source, target)) errors.push(`spec-translations-vi.json: ${field} ${quantityStyleViolation(source, target)}. Source: ${source} Target: ${target}`);
       else if (needsTranslation(target)) errors.push(`spec-translations-vi.json: ${field} target còn English ngoài allowlist; hãy dịch trọn câu. Source: ${source} Target: ${target}`);
       else if (hasHybridToken(target)) errors.push(`spec-translations-vi.json: ${field} target chứa token lai; hãy dịch trọn từ. Source: ${source} Target: ${target}`);
     }
