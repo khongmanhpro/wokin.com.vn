@@ -1,5 +1,5 @@
 export const SITE_NAME = "WOKIN TOOLS Việt Nam";
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://wokin.com.vn";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://wokin.vn";
 
 export const staticPages = [
   "",

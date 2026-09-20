@@ -166,7 +166,7 @@ test("an explicitly allowlisted missing SKU uses the product slug as its image k
 
 function pageHtml(route, { title = route || "Trang chủ", description = "Mô tả trang kiểm thử.", body = "" } = {}) {
   const pathname = route ? `/${route}/` : "/";
-  return `<!doctype html><html lang="vi"><head><title>${title} | WOKIN TOOLS</title><meta name="description" content="${description}"><link rel="canonical" href="https://wokin.com.vn${pathname}"></head><body>${body}</body></html>`;
+  return `<!doctype html><html lang="vi"><head><title>${title} | WOKIN TOOLS</title><meta name="description" content="${description}"><link rel="canonical" href="https://wokin.vn${pathname}"></head><body>${body}</body></html>`;
 }
 
 function writeRoute(outDir, route, html) {
@@ -190,13 +190,13 @@ function makeExportFixture() {
     const productMatch = route.match(/^san-pham\/san-pham-(\d+)$/);
     const productId = productMatch ? Number(productMatch[1]) : undefined;
     const title = productId ? `Sản phẩm ${productId}` : (route || "Trang chủ");
-    const canonical = `https://wokin.com.vn/${route}${route ? "/" : ""}`;
+    const canonical = `https://wokin.vn/${route}${route ? "/" : ""}`;
     const productJsonLd = productId ? {
       "@context": "https://schema.org",
       "@type": "Product",
       name: title,
       sku: `SKU-${productId}`,
-      image: ["https://wokin.com.vn/images/logo.png"],
+      image: ["https://wokin.vn/images/logo.png"],
       description: `Mô tả sản phẩm ${productId}.`,
       brand: { "@type": "Brand", name: "WOKIN" },
       url: canonical,
@@ -205,8 +205,8 @@ function makeExportFixture() {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Trang chủ", item: "https://wokin.com.vn/" },
-        { "@type": "ListItem", position: 2, name: "Sản phẩm", item: "https://wokin.com.vn/san-pham/" },
+        { "@type": "ListItem", position: 1, name: "Trang chủ", item: "https://wokin.vn/" },
+        { "@type": "ListItem", position: 2, name: "Sản phẩm", item: "https://wokin.vn/san-pham/" },
         { "@type": "ListItem", position: 3, name: title, item: canonical },
       ],
     } : undefined;
@@ -217,9 +217,9 @@ function makeExportFixture() {
   }
   mkdirSync(path.join(outDir, "images"), { recursive: true });
   writeFileSync(path.join(outDir, "images/logo.png"), "fixture image");
-  const urls = routes.map((route) => `<url><loc>https://wokin.com.vn/${route}${route ? "/" : ""}</loc></url>`).join("");
+  const urls = routes.map((route) => `<url><loc>https://wokin.vn/${route}${route ? "/" : ""}</loc></url>`).join("");
   writeFileSync(path.join(outDir, "sitemap.xml"), `<?xml version="1.0"?><urlset>${urls}</urlset>`);
-  writeFileSync(path.join(outDir, "robots.txt"), "User-Agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://wokin.com.vn/sitemap.xml\n");
+  writeFileSync(path.join(outDir, "robots.txt"), "User-Agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://wokin.vn/sitemap.xml\n");
   return { ...catalog, outDir };
 }
 
@@ -319,7 +319,7 @@ test("export validator rejects legacy HTML output", () => {
 test("export validator rejects robots rules that block Next.js assets", () => {
   const fixture = makeExportFixture();
   try {
-    writeFileSync(path.join(fixture.outDir, "robots.txt"), "User-Agent: *\nAllow: /\nDisallow: /_next/\nDisallow: /api/\nSitemap: https://wokin.com.vn/sitemap.xml\n");
+    writeFileSync(path.join(fixture.outDir, "robots.txt"), "User-Agent: *\nAllow: /\nDisallow: /_next/\nDisallow: /api/\nSitemap: https://wokin.vn/sitemap.xml\n");
     const result = run(exportScript, exportArgs(fixture));
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /không được chặn \/_next\//i);

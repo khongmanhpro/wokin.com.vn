@@ -12,7 +12,7 @@ function parseArgs(argv) {
   const options = {
     outDir: path.join(projectRoot, "out"),
     dataDir: path.join(projectRoot, "src/data"),
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://wokin.com.vn",
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://wokin.vn",
   };
   for (let index = 0; index < argv.length; index += 2) {
     const argument = argv[index];

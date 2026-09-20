@@ -39,7 +39,7 @@ Route canonical `/lien-he/` có form gửi tới Payload Admin, không gửi th�
 Trước khi build public production:
 
 1. Chạy migration Payload `20260920_000001_contact_submissions` trên database production.
-2. Đặt `CONTACT_ALLOWED_ORIGINS=https://wokin.com.vn` (và thêm hostname production thực tế nếu có) ở admin. Origin production phải dùng HTTPS.
+2. Đặt `CONTACT_ALLOWED_ORIGINS=https://wokin.vn` (và thêm hostname production thực tế nếu có) ở admin. Origin production phải dùng HTTPS.
 3. Build static site với `NEXT_PUBLIC_CONTACT_API_URL=https://<admin-host>/api/contact-submissions/submit`. Nếu bỏ biến này, form vẫn hiển thị nhưng chỉ báo chưa kết nối backend và không giả thông báo thành công.
 4. Kiểm thử cả success, validation, lỗi backend và rate limit; xác nhận một bản ghi xuất hiện trong Admin trước approval `GO`.
 
