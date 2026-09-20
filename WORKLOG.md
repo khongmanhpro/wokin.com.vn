@@ -61,11 +61,12 @@ _Cập nhật: 2026-09-16 bởi Codex (triển khai và nghiệm thu local admin
 
 - **Nhánh `main`:** Phase 0–11 và checkpoint C1.3 trước đó đã commit/push tại `12baf0f`; phiên này có thay đổi chưa commit ở từ điển spec, gate token, font heading và snapshot sinh tự động. Untracked `.claude/`, `.hermes/`, `reports/` giữ nguyên ngoài commit.
 - **Gate sau phiên tiếp tục C1.3 (2026-09-15):** typecheck PASS, **83/83 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS, `git diff --check` PASS; npm audit 0 vulnerabilities. Font heading đã chuyển từ Tomorrow sang Saira Semi Condensed với subset `vietnamese`.
-- **Kết luận nghiệm thu:** **NO-GO production.** Coverage tự động 0 thiếu không đồng nghĩa dịch đúng: audit lại phát hiện lỗi thuật ngữ, nhãn dính số và thông số nguồn cần xác minh. C1 mở lại để review ngữ nghĩa; liên hệ, giao diện và staging vẫn chờ (xem mục 3).
+- **Kết luận nghiệm thu:** **NO-GO production.** Coverage tự động 0 thiếu không đồng nghĩa dịch đúng: audit lại phát hiện lỗi thuật ngữ, nhãn dính số và thông số nguồn cần xác minh. C1 mở lại để review ngữ nghĩa; giao diện liên hệ đã cập nhật, backend form và staging vẫn chờ (xem mục 3).
 - **Payload CMS worktree:** Admin vẫn ở nhánh riêng, chưa merge vào `main`. Audit 2026-09-15: typecheck và 122 tests PASS; audit phụ thuộc production 13 findings (1 Critical/11 Moderate/1 Low); môi trường lệnh thiếu DB/secret/storage, chưa nghiệm thu runtime hiện tại. Xem `docs/admin-readiness-audit-2026-09-15.md`.
 - **Admin đã triển khai/kiểm thử local 2026-09-16:** Next 16.3.5/Payload 3.89.0, upload local, phân trang, preview và Việt hóa đã được bổ sung tại worktree riêng. DB thử loopback `54349`: 13/13 xác thực/quyền và 18/18 workflow HTTP PASS; typecheck, 130/130 tests và build PASS. Audit còn 5 Moderate qua chuỗi Drizzle/esbuild, không còn Critical/High. Browser xác nhận dashboard/editor/preview/media Owner; pagination browser trang 2 và responsive hoàn chỉnh chưa có bằng chứng. **Chưa GO/live.** Xem báo cáo worktree.
 - **Đã push main lên GitHub; chưa deploy live.** CI của `12baf0f`: run `34912149736`, queued lúc ghi nhận. Thay đổi phiên này chưa push.
 - **Local dev `:3001`:** đã sửa lỗi chunk rồi dừng theo yêu cầu; phiên kiểm tra này không khởi động lại server dev.
+- **Trang Liên hệ (2026-09-20):** đã bỏ mạng lưới phân phối khỏi trang và thay bằng form tư vấn responsive 5 trường; form kiểm tra dữ liệu ở client nhưng chưa gửi đi vì static site chưa có backend tiếp nhận.
 - **Audit deploy 2026-09-20:** trên working tree hiện tại (HEAD `8c88b6d`), `npm audit --audit-level=high`, typecheck, 83/83 tests, validate/check data, build 1452 trang và validate export (1447 route, 1357 Product JSON-LD, 11 smoke route HTTP 200 + 3 legacy HTTP 404) đều PASS. `npm run package:release` tạo 10.274 file; checksum 10.274/10.274 và static smoke trên package PASS. Chưa chạy `npm ci` clean-install trong lượt này; chưa có staging hostname để kiểm tra header/redirect; working tree vẫn dirty và chưa có approval `GO`, nên chưa được phép upload production.
 
 ---
@@ -76,7 +77,7 @@ _Cập nhật: 2026-09-16 bởi Codex (triển khai và nghiệm thu local admin
 |---|---|---|---|---|
 | C1 | Coverage **5690 đã dịch / 1710 không cần dịch / 0 thiếu trên 7400**; chưa đạt nghiệm thu ngữ nghĩa | **Mở lại — blocker nội dung** | Codex / chủ nội dung | Audit 2026-09-15 xác nhận: CHUCK CAPACITY → DUNG TÍCH ĐẦU KẸP; ống tưới → Độ dày tường (thinckness2); cầu nâng → tay dài 8: 45mm, tay ngắn 6: 00mm và Weight6: 10Kg; thang 3 steps → 3 cấp. Nguồn thang ghi 225 lbs/150kgs cần xác minh, không tự sửa số. Dictionary 3325 dòng / 1084 nhãn / 260 ô; checksum `b10c4b2b08956206ff885ba770f06e21ff13c2269881de060544b5bca54d683b`. |
 | D1 | Độ giống giao diện: header cam, hero ảnh lifestyle, trust banner cam, banner marketing | Chờ quyết định | Người dùng | `AGENTS.md` chỉ cho tải logo → cần WOKIN cấp ảnh marketing hoặc chấp nhận khác bản gốc |
-| D2 | Trang Liên hệ không có địa chỉ/điện thoại/email công ty; form đã tắt từ Phase 7 | Chờ quyết định | Người dùng | Cần thông tin liên hệ VN chính thức + backend form nếu bật lại |
+| D2 | Form Liên hệ đã có giao diện và kiểm tra dữ liệu; chưa có backend để gửi yêu cầu | Chờ quyết định | Người dùng | Cần chọn endpoint/hộp thư tiếp nhận trước khi bật gửi thật; hiện có hotline và Zalo dự phòng |
 | D3 | Tương phản màu cam thương hiệu (#FE7700) không đạt WCAG AA | Chờ quyết định | Người dùng | Đề xuất chữ tối trên nút cam |
 | R1 | Kiểm `.htaccess` (headers, 301) và đo Lighthouse mobile trên staging Hostinger | Chưa làm | Cần staging | `RELEASE-CHECKLIST.md` mục 4 |
 | R2 | Push lên GitHub để CI chạy thật | Đã push 2026-09-15; chờ CI | GitHub Actions | Checkpoint `12baf0f`, run `34912149736` |
@@ -121,6 +122,18 @@ _Cập nhật: 2026-09-16 bởi Codex (triển khai và nghiệm thu local admin
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-09-20 — Codex — Thiết kế lại form Liên hệ
+**Yêu cầu:** Xóa phần mạng lưới phân phối trên trang Liên hệ và thay bằng form để khách điền thông tin.
+**Đã làm:**
+- Xóa dữ liệu và giao diện mạng lưới phân phối khỏi `/lien-he/`.
+- Thêm `ContactForm` responsive với họ tên, số điện thoại, email tùy chọn, nhu cầu, nội dung và xác nhận đồng ý.
+- Thêm kiểm tra native/client-side, trạng thái minh bạch khi chưa có backend, cùng CTA gọi hotline/Zalo.
+- Cập nhật CSS theo hướng form một mục tiêu, tương phản cao, nhãn luôn hiển thị và bố cục mobile.
+**Kiểm chứng:** test contact + typecheck PASS; `npm run build` → PASS 1452 trang; `npm run validate:export` → PASS 1447 route + static smoke 11 HTTP 200/3 legacy 404; browser localhost `/lien-he/` hiển thị form, chọn nhu cầu và kiểm tra trạng thái thành công.
+**Commit:** thay đổi form đã commit trong phiên này với message `feat: replace distributor section with contact form`; hash cuối được Git xác nhận sau bước amend nhật ký.
+**Còn dở / rủi ro:** form hiện chưa truyền dữ liệu tới Workman; cần endpoint/backend được phê duyệt trước khi bật gửi thật.
+**Việc tiếp theo:** người dùng duyệt giao diện và cung cấp endpoint/hộp thư nếu muốn form gửi thật.
 
 ### 2026-09-20 — Codex — Rà lại bản sửa và chuẩn bị candidate commit
 **Yêu cầu:** Rà lại các bản sửa từ review và chuẩn bị commit.

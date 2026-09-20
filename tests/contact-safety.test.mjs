@@ -5,25 +5,29 @@ import test from "node:test";
 
 const projectRoot = path.resolve(import.meta.dirname, "..");
 const contactPage = readFileSync(path.join(projectRoot, "src/app/lien-he/page.tsx"), "utf8");
+const contactForm = readFileSync(path.join(projectRoot, "src/components/ContactForm.tsx"), "utf8");
 const contactData = readFileSync(path.join(projectRoot, "src/lib/contact.ts"), "utf8");
 
-test("contact page does not collect or submit personal data without an approved backend", () => {
-  assert.doesNotMatch(contactPage, /<(?:form|input|select|textarea|button)\b/i);
-  assert.doesNotMatch(contactPage, /type\s*=\s*["'{]?\s*submit/i);
-  assert.doesNotMatch(contactPage, /\b(?:action|formAction|onSubmit)\s*=/i);
-  assert.doesNotMatch(contactPage, /mailto:/i);
+test("contact page replaces the distributor network with a compact contact form", () => {
+  assert.match(contactPage, /<ContactForm\s*\/>/);
+  assert.doesNotMatch(contactPage, /MẠNG LƯỚI PHÂN PHỐI/i);
+  assert.match(contactForm, /name="fullName"/);
+  assert.match(contactForm, /name="phone"/);
+  assert.match(contactForm, /name="subject"/);
+  assert.match(contactForm, /name="message"/);
 });
 
-test("contact page uses honest inactive-flow copy and safe internal CTAs", () => {
-  assert.match(contactPage, /chưa được kích hoạt/i);
-  assert.match(contactPage, /không (?:cần|yêu cầu)[^<]{0,80}nhập (?:dữ liệu|thông tin)/i);
-  assert.doesNotMatch(contactPage, /CHÚNG TÔI LUÔN SẴN SÀNG/);
+test("contact form does not claim to send data before a backend is approved", () => {
+  assert.match(contactForm, /onSubmit=\{handleSubmit\}/);
+  assert.doesNotMatch(contactForm, /\b(?:action|formAction)\s*=/i);
+  assert.doesNotMatch(contactForm, /mailto:|fetch\(|XMLHttpRequest/i);
+  assert.match(contactForm, /chờ kết nối máy chủ tiếp nhận/i);
+  assert.doesNotMatch(contactForm, /(?:gửi|đã gửi)\s+thành công|yêu cầu\s+đã\s+(?:được\s+)?gửi/iu);
+});
+
+test("contact page keeps safe navigation CTAs", () => {
   assert.match(contactPage, /href="\/san-pham\/"/);
-  assert.match(contactPage, /href="\/nha-phan-phoi\/"/);
-  assert.doesNotMatch(
-    contactPage,
-    /\b(?:success|submitted)\b|(?:gửi|đã gửi)\s+thành công|yêu cầu\s+đã\s+(?:được\s+)?gửi/iu,
-  );
+  assert.match(contactPage, /zaloHref/);
 });
 
 test("contact page uses the verified Workman contact details", () => {
