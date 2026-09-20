@@ -12,6 +12,20 @@ function editorTabs(): EditorTab[] {
   return tabs.tabs as EditorTab[]
 }
 
+test('P0-5-R mounts product operations as a body-flow UI field after native tabs', () => {
+  assert.equal(Products.admin?.components?.edit?.beforeDocumentControls, undefined)
+
+  const tabsIndex = Products.fields.findIndex((field) => field.type === 'tabs')
+  const operationsIndex = Products.fields.findIndex((field) => 'name' in field && field.name === 'productOperations')
+  const operations = Products.fields[operationsIndex]
+
+  assert.ok(tabsIndex >= 0)
+  assert.ok(operationsIndex > tabsIndex)
+  assert.ok(operations && 'name' in operations && operations.name === 'productOperations')
+  assert.equal(operations.type, 'ui')
+  assert.equal(operations.admin?.components?.Field, '/components/ProductEditorHeader#ProductEditorHeader')
+})
+
 test('R5.2 organizes the Product editor into native Vietnamese sections without changing field paths', () => {
   const tabs = editorTabs()
 

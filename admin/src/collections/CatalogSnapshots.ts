@@ -7,7 +7,8 @@ const audit = auditHooks('catalog-snapshots')
 export const CatalogSnapshots: CollectionConfig = {
   slug: 'catalog-snapshots',
   access: { create: canCreateRelease, delete: canApproveRelease, read: activeAuthenticated, update: canApproveRelease },
-  admin: { group: 'Publishing foundation', useAsTitle: 'snapshotId' },
+  admin: { description: 'Bản chụp dữ liệu kỹ thuật phục vụ quy trình phát hành có kiểm soát.', group: 'Phát hành kỹ thuật', useAsTitle: 'snapshotId' },
+  labels: { singular: 'Bản chụp dữ liệu catalog', plural: 'Bản chụp dữ liệu catalog' },
   hooks: { afterChange: audit.afterChange, afterDelete: audit.afterDelete },
   fields: [
     { name: 'snapshotId', type: 'text', required: true, unique: true, index: true },

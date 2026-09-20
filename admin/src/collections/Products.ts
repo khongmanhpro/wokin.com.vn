@@ -5,6 +5,7 @@ import { activeAuthenticated, canCreateProduct, canDeleteProduct, canUpdateProdu
 import { canChangeProductContent, canChangeProductSEO, canChangeProductStatus } from '../access/fieldAccess'
 import { enforceProductMutationPolicy } from '../access/productPolicy'
 import { enforcePublishReadiness } from '../access/publishReadiness'
+import { productStatusLabel } from '../lib/productOperations'
 
 const productStatuses = ['draft', 'in_review', 'changes_requested', 'approved', 'published', 'archived'] as const
 const audit = auditHooks('products')
@@ -14,20 +15,24 @@ export const Products: CollectionConfig = {
   access: { create: canCreateProduct, delete: canDeleteProduct, read: activeAuthenticated, update: canUpdateProduct },
   admin: {
     defaultColumns: ['nameVi', 'sku', 'status', 'categories', 'legacySourceId', 'slugVi'],
-    group: 'Catalog',
+    description: 'Quản lý nội dung, trạng thái biên tập, hình ảnh và SEO của sản phẩm.',
+    group: 'Danh mục sản phẩm',
     listSearchableFields: ['nameVi', 'sku', 'legacySourceId'],
     pagination: { defaultLimit: 25, limits: [25, 50, 100] },
     useAsTitle: 'nameVi',
     components: {
       views: {
-        preview: {
-          Component: '/components/ProductDraftPreview#ProductDraftPreview',
-          path: '/preview',
-          meta: { robots: { index: false, follow: false } },
+        edit: {
+          preview: {
+            Component: '/components/ProductDraftPreview#ProductDraftPreview',
+            path: '/preview',
+            meta: { robots: { index: false, follow: false } },
+          },
         },
       },
     },
   },
+  labels: { singular: 'Sản phẩm', plural: 'Sản phẩm' },
   hooks: {
     afterChange: audit.afterChange,
     afterDelete: audit.afterDelete,
@@ -71,10 +76,10 @@ export const Products: CollectionConfig = {
           fields: [{
             name: 'specifications', type: 'array', required: false, label: 'Thông số kỹ thuật', access: { create: canChangeProductContent, update: canChangeProductContent },
             fields: [
-              { name: 'label', type: 'text', required: true },
-              { name: 'value', type: 'text', required: true },
-              { name: 'unit', type: 'text', required: false },
-              { name: 'sourceLine', type: 'text', required: false },
+              { name: 'label', label: 'Tên thông số', type: 'text', required: true },
+              { name: 'value', label: 'Giá trị', type: 'text', required: true },
+              { name: 'unit', label: 'Đơn vị', type: 'text', required: false },
+              { name: 'sourceLine', label: 'Dòng nguồn đối chiếu', type: 'text', required: false },
             ],
           }],
         },
@@ -84,8 +89,8 @@ export const Products: CollectionConfig = {
             {
               name: 'packaging', type: 'array', required: true, minRows: 1, label: 'Đóng gói', access: { create: canChangeProductContent, update: canChangeProductContent },
               fields: [{
-                name: 'cells', type: 'array', required: true, minRows: 1,
-                fields: [{ name: 'value', type: 'text', required: false }],
+                name: 'cells', label: 'Các ô trong hàng', type: 'array', required: true, minRows: 1,
+                fields: [{ name: 'value', label: 'Nội dung ô', type: 'text', required: false }],
               }],
             },
             {
@@ -105,18 +110,18 @@ export const Products: CollectionConfig = {
           label: 'Danh mục & hình ảnh',
           fields: [
             { name: 'categories', type: 'relationship', relationTo: 'categories', hasMany: true, required: true, label: 'Danh mục', access: { create: canChangeProductContent, update: canChangeProductContent } },
-            { name: 'media', type: 'relationship', relationTo: 'media', hasMany: true, required: true, label: 'Hình ảnh', access: { create: canChangeProductContent, update: canChangeProductContent } },
+            { name: 'media', type: 'relationship', relationTo: 'media', hasMany: true, required: true, label: 'Hình ảnh & quyền', access: { create: canChangeProductContent, update: canChangeProductContent }, admin: { components: { Cell: '/components/ProductReadinessBadge#ProductMediaReadinessCell' } } },
           ],
         },
         {
           label: 'SEO',
           fields: [{
-            name: 'seo', type: 'group', label: 'SEO', access: { create: canChangeProductSEO, update: canChangeProductSEO },
+            name: 'seo', type: 'group', label: 'SEO', access: { create: canChangeProductSEO, update: canChangeProductSEO }, admin: { components: { Cell: '/components/SeoReadinessBadge#ProductSeoReadinessCell' } },
             fields: [
-              { name: 'title', type: 'text' },
-              { name: 'description', type: 'textarea' },
-              { name: 'canonicalPath', type: 'text' },
-              { name: 'noIndex', type: 'checkbox', defaultValue: true },
+              { name: 'title', label: 'Tiêu đề tìm kiếm', type: 'text' },
+              { name: 'description', label: 'Mô tả tìm kiếm', type: 'textarea' },
+              { name: 'canonicalPath', label: 'Đường dẫn chuẩn', type: 'text' },
+              { name: 'noIndex', label: 'Không cho công cụ tìm kiếm lập chỉ mục', type: 'checkbox', defaultValue: true },
             ],
           }],
         },
@@ -125,7 +130,8 @@ export const Products: CollectionConfig = {
           fields: [
             {
               name: 'status', type: 'select', required: true, index: true, defaultValue: 'draft', label: 'Trạng thái',
-              options: productStatuses.map((value) => ({ label: value, value })),
+              options: productStatuses.map((value) => ({ label: productStatusLabel(value), value })),
+              admin: { components: { Cell: '/components/ProductStatusBadge#ProductStatusCell' } },
               access: { create: canChangeProductStatus, update: canChangeProductStatus },
             },
             { name: 'publishedAt', type: 'date', required: false, index: true, label: 'Ngày xuất bản', access: { create: canChangeProductStatus, update: canChangeProductStatus } },
@@ -150,6 +156,15 @@ export const Products: CollectionConfig = {
           }],
         },
       ],
+    },
+    {
+      name: 'productOperations',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/components/ProductEditorHeader#ProductEditorHeader',
+        },
+      },
     },
   ],
 }

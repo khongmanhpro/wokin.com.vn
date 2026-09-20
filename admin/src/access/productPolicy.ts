@@ -43,7 +43,7 @@ export const enforceProductMutationPolicy: CollectionBeforeChangeHook = ({ data,
   const requestedPublishedAt = data.publishedAt
 
   if (isPublishing) {
-    if (requestedPublishedAt !== undefined) throw new Error('publishedAt is server-derived during publishing')
+    if (requestedPublishedAt !== undefined && requestedPublishedAt !== originalDoc?.publishedAt) throw new Error('publishedAt is server-derived during publishing')
     data.publishedAt = new Date().toISOString()
   } else if (requestedPublishedAt !== undefined && requestedPublishedAt !== originalDoc?.publishedAt) {
     throw new Error('publishedAt can only change during approved-to-published')

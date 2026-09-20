@@ -7,7 +7,7 @@ type ReleaseInput = {
   categories: Array<{ id: string; legacySourceId: number; nameVi: string; slug: string; status: string; parentId: string | null }>
   media: Array<{ id: string; path: string; alt: string; rightsStatus: string }>
   products: Array<{ id: string; legacySourceId: number; sku: string | null; status: string; nameVi: string; slugVi: string; descriptionVi: string | null; specifications: Array<{ label: string; value: string; unit?: string }>; packaging: Array<{ cells: Array<{ value: string }> }>; attributes: Array<{ legacySourceId: number | null; name: string; values: Array<{ value: string }> }>; categoryIds: string[]; mediaIds: string[]; publishedAt: string | null }>
-  glossary: { ui: Record<string, string> }
+  glossary: { categories?: Record<string, string>; marketing?: Record<string, string>; spec_labels?: Record<string, string>; terms?: Array<[string, string]>; ui: Record<string, string> }
 }
 
 const forbiddenPublicText = /\b(?:www\.)?wokintools\.com\b|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i
@@ -120,7 +120,7 @@ export function exportReleaseSnapshot(input: ReleaseInput) {
       attributes: product.attributes.map((attribute) => ({ legacySourceId: attribute.legacySourceId, name: attribute.name, values: attribute.values.map((value) => value.value) })),
     })),
   }
-  const content = { schemaVersion: 2 as const, catalog, glossary: { ui: input.glossary.ui } }
+  const content = { schemaVersion: 2 as const, catalog, glossary: { categories: input.glossary.categories ?? {}, marketing: input.glossary.marketing ?? {}, spec_labels: input.glossary.spec_labels ?? {}, terms: input.glossary.terms ?? [], ui: input.glossary.ui } }
   const snapshotId = releaseId(content)
   const withoutChecksum = { ...content, snapshotId }
   const snapshot = { ...withoutChecksum, checksum: snapshotChecksum(withoutChecksum) }

@@ -142,6 +142,7 @@ test('production environment rejects non-HTTPS admin origin without echoing supp
     NODE_ENV: 'production',
     PAYLOAD_SECRET: 'production-secret-with-at-least-32-characters',
     STORAGE_ADAPTER: 'local',
+    CONTACT_ALLOWED_ORIGINS: 'https://wokin.vn',
   }
   assert.ok(validateEnvironment({ ...baseline, PAYLOAD_PUBLIC_SERVER_URL: 'http://admin.example.test' }).some((error) => /HTTPS/i.test(error)))
   assert.ok(validateEnvironment({ ...baseline }).some((error) => /PAYLOAD_PUBLIC_SERVER_URL/.test(error)))

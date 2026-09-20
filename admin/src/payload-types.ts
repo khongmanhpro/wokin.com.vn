@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     admins: Admin;
     categories: Category;
+    'contact-submissions': ContactSubmission;
     media: Media;
     products: Product;
     'review-requests': ReviewRequest;
@@ -86,6 +87,7 @@ export interface Config {
   collectionsSelect: {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'review-requests': ReviewRequestsSelect<false> | ReviewRequestsSelect<true>;
@@ -141,6 +143,9 @@ export interface AdminAuthOperations {
  */
 export interface Admin {
   id: string;
+  /**
+   * Vai trò quyết định quyền thao tác; mã kỹ thuật được máy chủ kiểm tra riêng.
+   */
   role: 'owner' | 'admin' | 'editor' | 'seo_reviewer' | 'media_manager' | 'publisher' | 'readonly';
   active: boolean;
   updatedAt: string;
@@ -187,6 +192,27 @@ export interface Category {
   createdAt: string;
 }
 /**
+ * Các yêu cầu liên hệ gửi từ website; chỉ quản trị viên được phân quyền mới xem được thông tin khách hàng.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-submissions".
+ */
+export interface ContactSubmission {
+  id: string;
+  fullName: string;
+  phone: string;
+  email?: string | null;
+  subject: 'product' | 'quote' | 'distribution' | 'other';
+  message: string;
+  consent: boolean;
+  status: 'new' | 'in_progress' | 'resolved' | 'spam';
+  notes?: string | null;
+  sourceUrl?: string | null;
+  submittedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Quản lý tệp đa phương tiện, đường dẫn lưu trữ và tình trạng quyền sử dụng.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -196,6 +222,9 @@ export interface Media {
   id: string;
   path: string;
   storageKey: string;
+  /**
+   * Mô tả ngắn nội dung ảnh để hỗ trợ người dùng trình đọc màn hình.
+   */
   alt: string;
   metadata:
     | {
@@ -206,8 +235,6 @@ export interface Media {
     | number
     | boolean
     | null;
-  width: number;
-  height: number;
   contentSha256: string;
   rightsStatus: 'pending' | 'cleared' | 'restricted' | 'expired';
   variants?:
@@ -222,8 +249,17 @@ export interface Media {
     | null;
   updatedAt: string;
   createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width: number;
+  height: number;
 }
 /**
+ * Quản lý nội dung, trạng thái biên tập, hình ảnh và SEO của sản phẩm.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
  */
@@ -361,6 +397,8 @@ export interface Redirect {
   createdAt: string;
 }
 /**
+ * Bản chụp dữ liệu kỹ thuật phục vụ quy trình phát hành có kiểm soát.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "catalog-snapshots".
  */
@@ -393,6 +431,8 @@ export interface CatalogSnapshot {
   createdAt: string;
 }
 /**
+ * Theo dõi trạng thái phát hành và dữ liệu snapshot đã được kiểm tra.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "releases".
  */
@@ -482,6 +522,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'categories';
         value: string | Category;
+      } | null)
+    | ({
+        relationTo: 'contact-submissions';
+        value: string | ContactSubmission;
       } | null)
     | ({
         relationTo: 'media';
@@ -606,6 +650,24 @@ export interface CategoriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-submissions_select".
+ */
+export interface ContactSubmissionsSelect<T extends boolean = true> {
+  fullName?: T;
+  phone?: T;
+  email?: T;
+  subject?: T;
+  message?: T;
+  consent?: T;
+  status?: T;
+  notes?: T;
+  sourceUrl?: T;
+  submittedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
@@ -613,8 +675,6 @@ export interface MediaSelect<T extends boolean = true> {
   storageKey?: T;
   alt?: T;
   metadata?: T;
-  width?: T;
-  height?: T;
   contentSha256?: T;
   rightsStatus?: T;
   variants?:
@@ -629,6 +689,13 @@ export interface MediaSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

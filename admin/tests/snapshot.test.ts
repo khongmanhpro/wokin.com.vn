@@ -20,6 +20,13 @@ const unsafeMediaPaths = [
   String.raw`images\..\product.jpg`,
 ]
 
+test('database-backed catalog CLIs load the configured environment before creating Payload', async () => {
+  for (const name of ['full-import-cli.ts', 'release-export-cli.ts']) {
+    const source = await readFile(path.resolve('../admin/src/catalog', name), 'utf8')
+    assert.match(source, /import 'dotenv\/config'/)
+  }
+})
+
 test('export is deterministic, validates, and excludes admin-only fields', async () => {
   const products = JSON.parse(await readFile(fixturePath, 'utf8'))
   const first = exportCatalogSnapshot(products)
@@ -148,7 +155,7 @@ test('public builder accepts a v2 release without discarding public fields', asy
   const category = { id: '11111111-1111-5111-8111-111111111111', legacySourceId: 1, nameVi: 'Dụng cụ', sourceName: 'Tools', slug: 'tools', status: 'active', parentId: null, sortOrder: 0 }
   const media = { id: '22222222-2222-5222-8222-222222222222', path: 'images/products/tool.jpg', alt: 'Dụng cụ', rightsStatus: 'cleared' }
   const product = { id: '33333333-3333-5333-8333-333333333333', legacySourceId: 1, sku: 'TOOL-1', status: 'published', nameVi: 'Dụng cụ thử nghiệm', slugVi: 'dung-cu-thu-nghiem', descriptionVi: 'Mô tả', specifications: [{ label: 'Điện áp', value: '20', sourceLine: '> Điện áp: 20' }], packaging: [], attributes: [{ legacySourceId: 7, name: 'Màu sắc', values: [{ value: 'Cam' }] }], categoryIds: [category.id], mediaIds: [media.id], publishedAt: '2026-08-01T00:00:00.000Z', sourceMetadata: {} }
-  const snapshot = exportReleaseSnapshot({ categories: [category], media: [media], products: [product] as never, glossary: { ui: { search: 'Tìm kiếm' } } })
+  const snapshot = exportReleaseSnapshot({ categories: [category], media: [media], products: [product] as never, glossary: { categories: { tools: 'Dụng cụ' }, marketing: { slogan: 'Chuẩn xác' }, spec_labels: { Voltage: 'Điện áp' }, terms: [['TOOL', 'Dụng cụ']], ui: { search: 'Tìm kiếm' } } as never })
   const snapshotFile = path.join(await mkdtemp(path.join(os.tmpdir(), 'wokin-v2-snapshot-')), 'release.json')
   const outputDir = await mkdtemp(path.join(os.tmpdir(), 'wokin-public-v2-'))
   await writeFile(snapshotFile, stableStringify(snapshot))
@@ -158,6 +165,8 @@ test('public builder accepts a v2 release without discarding public fields', asy
   assert.equal(catalog.products[0].publishedAt, product.publishedAt)
   assert.equal(catalog.products[0].legacyDescription, product.descriptionVi)
   assert.deepEqual(catalog.products[0].attributes, [{ legacySourceId: 7, name: 'Màu sắc', values: ['Cam'] }])
+  const glossary = JSON.parse(await readFile(path.join(outputDir, 'vi-glossary.json'), 'utf8'))
+  assert.deepEqual(glossary, { categories: { tools: 'Dụng cụ' }, marketing: { slogan: 'Chuẩn xác' }, spec_labels: { Voltage: 'Điện áp' }, terms: [['TOOL', 'Dụng cụ']], ui: { search: 'Tìm kiếm' } })
 })
 
 test('release artifact rerun is immutable when content is identical', async () => {

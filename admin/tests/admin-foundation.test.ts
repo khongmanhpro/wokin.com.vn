@@ -82,6 +82,14 @@ test('admin package exposes the complete R2 command surface', async () => {
   assert.match(packageJSON.scripts.verify, /typecheck.*test.*build/)
 })
 
+test('release validation command explicitly requires a caller-supplied snapshot path', async () => {
+  const packageJSON = JSON.parse(await readFile(path.join(adminRoot, 'package.json'), 'utf8'))
+  const command = packageJSON.scripts['validate:release']
+
+  assert.match(command, /--release/)
+  assert.match(command, /--snapshot/)
+})
+
 test('migration-managed Payload never auto-pushes schema and data commands use an explicit safe mode', async () => {
   const [packageJSON, payloadConfig, environmentExample] = await Promise.all([
     readFile(path.join(adminRoot, 'package.json'), 'utf8'),
@@ -111,13 +119,14 @@ test('admin CI validates database migrations and reruns when catalog contracts c
 })
 
 test('Docker, CI, and Payload branding configs enforce the R2 baseline', async () => {
-  const [compose, dockerfile, workflow, nextConfig, payloadConfig, styles] = await Promise.all([
+  const [compose, dockerfile, workflow, nextConfig, payloadConfig, styles, tokens] = await Promise.all([
     readFile(path.join(adminRoot, 'docker-compose.yml'), 'utf8'),
     readFile(path.join(adminRoot, 'Dockerfile'), 'utf8'),
     readFile(path.resolve(adminRoot, '../.github/workflows/admin-ci.yml'), 'utf8'),
     readFile(path.join(adminRoot, 'next.config.mjs'), 'utf8'),
     readFile(path.join(adminRoot, 'src/payload.config.ts'), 'utf8'),
     readFile(path.join(adminRoot, 'src/app/(payload)/custom.scss'), 'utf8'),
+    readFile(path.join(adminRoot, 'src/styles/admin-tokens.scss'), 'utf8'),
   ])
 
   assert.match(compose, /image:\s*postgres:16\.6-alpine/)
@@ -140,8 +149,9 @@ test('Docker, CI, and Payload branding configs enforce the R2 baseline', async (
   assert.match(nextConfig, /turbopack:\s*\{\s*root:/)
   assert.match(nextConfig, /allowedDevOrigins:\s*\[\s*'localhost',\s*'127\.0\.0\.1'\s*\]/)
   assert.match(payloadConfig, /graphics:/)
-  assert.match(payloadConfig, /afterNavLinks:/)
-  assert.match(styles, /#fe7700/i)
+  assert.match(payloadConfig, /Nav:\s*'\/components\/WokinNav#WokinNav'/)
+  assert.doesNotMatch(payloadConfig, /afterNavLinks:/)
+  assert.match(tokens, /#fe7700/i)
   assert.match(styles, /:focus-visible/)
   assert.match(styles, /prefers-reduced-motion/)
 })

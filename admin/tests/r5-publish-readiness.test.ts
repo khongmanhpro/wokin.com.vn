@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { enforceProductMutationPolicy } from '../src/access/productPolicy.js'
 import { enforcePublishReadiness } from '../src/access/publishReadiness.js'
 import { Products } from '../src/collections/Products.js'
-import { ProductDraftPreview } from '../src/components/ProductDraftPreview.js'
+import { ProductPreviewContent } from '../src/components/ProductDraftPreview.js'
 
 const approvedProduct = {
   id: 'product-1',
@@ -106,7 +106,8 @@ test('R5.5a assigns the publish timestamp on the server precisely for approved-t
 })
 
 test('R5.5a registers the protected persisted preview view with exact route and no-index robots', () => {
-  const preview = Products.admin?.components?.views?.preview as Record<string, unknown> | undefined
+  const views = Products.admin?.components?.views as { edit?: { preview?: Record<string, unknown> } } | undefined
+  const preview = views?.edit?.preview
 
   assert.deepEqual(preview, {
     Component: '/components/ProductDraftPreview#ProductDraftPreview',
@@ -116,7 +117,7 @@ test('R5.5a registers the protected persisted preview view with exact route and 
 })
 
 test('R5.5a renders the persisted product supplied by Payload as a direct doc prop', () => {
-  const markup = renderToStaticMarkup(ProductDraftPreview({ doc: approvedProduct } as never))
+  const markup = renderToStaticMarkup(ProductPreviewContent({ product: approvedProduct } as never))
 
   assert.match(markup, /Máy khoan/)
   assert.doesNotMatch(markup, /Sản phẩm chưa có dữ liệu/)

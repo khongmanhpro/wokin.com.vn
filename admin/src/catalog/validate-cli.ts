@@ -5,10 +5,14 @@ import { assertCatalogPublishSnapshot } from '../../../contracts/catalog-snapsho
 import { valueAfter } from './cli-args.js'
 
 async function main() {
-  const file = valueAfter(process.argv.slice(2), '--snapshot', path.resolve('snapshots/catalog-poc.json'))!
+  const args = process.argv.slice(2)
+  const releaseOnly = args.includes('--release')
+  const file = valueAfter(args, '--snapshot', releaseOnly ? undefined : path.resolve('snapshots/catalog-poc.json'))
+  if (!file) throw new Error('--release requires --snapshot <release-artifact>')
   const snapshot = JSON.parse(await readFile(file, 'utf8'))
   assertCatalogPublishSnapshot(snapshot)
-  console.log(`Valid catalog snapshot ${snapshot.snapshotId}: ${snapshot.products.length} products, ${snapshot.categories.length} categories, ${snapshot.media.length} media`)
+  if (releaseOnly && snapshot.schemaVersion !== 2) throw new Error('--release requires a schemaVersion 2 release artifact')
+  console.log(`Valid catalog snapshot ${snapshot.snapshotId}: ${snapshot.schemaVersion === 2 ? snapshot.catalog.products.length : snapshot.products.length} products, ${snapshot.schemaVersion === 2 ? snapshot.catalog.categories.length : snapshot.categories.length} categories${snapshot.schemaVersion === 2 ? '' : `, ${snapshot.media.length} media`}`)
 }
 
 main().catch((error: unknown) => {

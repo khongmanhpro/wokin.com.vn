@@ -39,6 +39,7 @@ async function findMedia(req: { payload: { find: unknown } }, ids: string[]): Pr
       limit: MEDIA_PAGE_LIMIT,
       depth: 0,
       overrideAccess: false,
+      req,
     })
     documents.push(...result.docs)
     hasNextPage = result.hasNextPage

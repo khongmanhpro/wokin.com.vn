@@ -5,6 +5,7 @@ import type { CollectionConfig } from 'payload'
 import { Admins } from '../src/collections/Admins.js'
 import { AuditEvents } from '../src/collections/AuditEvents.js'
 import { Categories } from '../src/collections/Categories.js'
+import { ContactSubmissions } from '../src/collections/ContactSubmissions.js'
 import { Media } from '../src/collections/Media.js'
 import { Pages } from '../src/collections/Pages.js'
 import { Redirects } from '../src/collections/Redirects.js'
@@ -18,6 +19,7 @@ const collections: Array<{
   listSearchableFields: string[]
 }> = [
   { collection: Categories, group: 'Danh mục', labels: { singular: 'Danh mục', plural: 'Danh mục' }, defaultColumns: ['nameVi', 'slug', 'status', 'sortOrder'], listSearchableFields: ['slug'] },
+  { collection: ContactSubmissions, group: 'Liên hệ', labels: { singular: 'Yêu cầu liên hệ', plural: 'Yêu cầu liên hệ' }, defaultColumns: ['fullName', 'phone', 'subject', 'status', 'submittedAt'], listSearchableFields: ['fullName', 'phone', 'email'] },
   { collection: Media, group: 'Nội dung', labels: { singular: 'Tệp đa phương tiện', plural: 'Tệp đa phương tiện' }, defaultColumns: ['storageKey', 'path', 'width', 'height', 'rightsStatus'], listSearchableFields: ['path', 'storageKey', 'contentSha256'] },
   { collection: Pages, group: 'Nội dung', labels: { singular: 'Trang', plural: 'Trang' }, defaultColumns: ['titleVi', 'slug', 'status'], listSearchableFields: ['slug'] },
   { collection: Redirects, group: 'Nội dung', labels: { singular: 'Chuyển hướng', plural: 'Chuyển hướng' }, defaultColumns: ['fromPath', 'toPath', 'statusCode', 'active'], listSearchableFields: ['fromPath', 'toPath'] },

@@ -128,11 +128,11 @@ test('R5.3 registers auditable review requests with durable identities and resol
   }
   assert.equal(byName('product')?.type, 'relationship')
   const comment = byName('comment') as { required?: boolean } | undefined
-  const state = byName('state') as { options?: string[] } | undefined
+  const state = byName('state') as { options?: Array<{ value: string; label: string }> } | undefined
   assert.equal(comment?.required, true)
   assert.deepEqual(
     state?.options,
-    ['open', 'resolved'],
+    [{ value: 'open', label: 'Đang chờ xử lý' }, { value: 'resolved', label: 'Đã hoàn tất' }],
   )
   assert.equal(reviewRequests.hooks?.afterChange?.length, 1)
   assert.equal(typeof reviewRequests.access?.create, 'function')

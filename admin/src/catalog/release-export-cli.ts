@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import 'dotenv/config'
 import { getPayload } from 'payload'
 
 import config from '../payload.config.js'
@@ -18,14 +19,17 @@ async function main() {
   const outputDir = requiredValue(args, '--output-dir')
   const glossaryFile = requiredValue(args, '--glossary')
   const glossary = JSON.parse(await readFile(glossaryFile, 'utf8'))
-  if (!glossary.ui || typeof glossary.ui !== 'object' || Array.isArray(glossary.ui)) throw new Error('Glossary must contain an object at ui')
+  for (const section of ['categories', 'marketing', 'spec_labels', 'ui']) {
+    if (!glossary[section] || typeof glossary[section] !== 'object' || Array.isArray(glossary[section])) throw new Error(`Glossary must contain an object at ${section}`)
+  }
+  if (!Array.isArray(glossary.terms) || !glossary.terms.every((term: unknown) => Array.isArray(term) && term.length === 2 && term.every((value) => typeof value === 'string'))) throw new Error('Glossary must contain string pairs at terms')
   const payload = await getPayload({ config })
   const repository = new PayloadFullCatalogRepository(payload)
   const snapshot = exportReleaseSnapshot(selectReleaseCandidate({
     categories: await repository.listCategories(),
     media: await repository.listMedia(),
     products: await repository.listProducts(),
-    glossary: { ui: glossary.ui },
+    glossary: { categories: glossary.categories, marketing: glossary.marketing, spec_labels: glossary.spec_labels, terms: glossary.terms, ui: glossary.ui },
   }))
   const artifact = await writeReleaseArtifact(outputDir, snapshot)
   console.log(`Release snapshot ${snapshot.snapshotId} (${snapshot.catalog.products.length} products) is available at ${artifact}`)

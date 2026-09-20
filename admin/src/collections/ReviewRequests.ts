@@ -55,7 +55,7 @@ export const enforceReviewRequestPolicy: CollectionBeforeChangeHook = ({ data, o
     if (!sameRelationship(originalDoc?.reviewer, actor.id) && !hasCapability(actor, 'user.manage')) {
       throw new Error('Only the assigned reviewer may resolve a review request')
     }
-    if (data.resolvedBy !== undefined && !sameRelationship(data.resolvedBy, actor.id)) {
+    if (data.resolvedBy !== undefined && !sameRelationship(data.resolvedBy, originalDoc?.resolvedBy) && !sameRelationship(data.resolvedBy, actor.id)) {
       throw new Error('Review request resolvedBy must be the active actor')
     }
     const resolution = data.resolution ?? originalDoc?.resolution
@@ -83,17 +83,26 @@ export const ReviewRequests: CollectionConfig = {
     listSearchableFields: ['product', 'requester', 'reviewer', 'state'],
     pagination: { defaultLimit: 25, limits: [25, 50, 100] },
     useAsTitle: 'comment',
+    components: {
+      views: {
+        queue: {
+          Component: '/components/ReviewQueue#ReviewQueue',
+          exact: true,
+          path: '/queue',
+        },
+      },
+    },
   },
   labels: { singular: 'Yêu cầu rà soát', plural: 'Yêu cầu rà soát' },
   hooks: { afterChange: audit.afterChange, afterDelete: audit.afterDelete, beforeChange: [enforceReviewRequestPolicy] },
   fields: [
-    { name: 'product', type: 'relationship', relationTo: 'products', required: true, index: true },
-    { name: 'requester', type: 'relationship', relationTo: 'admins', required: true, index: true },
-    { name: 'reviewer', type: 'relationship', relationTo: 'admins', required: true, index: true },
-    { name: 'comment', type: 'textarea', required: true },
-    { name: 'state', type: 'select', required: true, index: true, defaultValue: 'open', options: ['open', 'resolved'] },
-    { name: 'resolvedAt', type: 'date', index: true },
-    { name: 'resolvedBy', type: 'relationship', relationTo: 'admins', index: true },
-    { name: 'resolution', type: 'textarea' },
+    { name: 'product', label: 'Sản phẩm', type: 'relationship', relationTo: 'products', required: true, index: true },
+    { name: 'requester', label: 'Người gửi', type: 'relationship', relationTo: 'admins', required: true, index: true },
+    { name: 'reviewer', label: 'Người xử lý', type: 'relationship', relationTo: 'admins', required: true, index: true },
+    { name: 'comment', label: 'Ghi chú', type: 'textarea', required: true },
+    { name: 'state', label: 'Trạng thái', type: 'select', required: true, index: true, defaultValue: 'open', options: [{ value: 'open', label: 'Đang chờ xử lý' }, { value: 'resolved', label: 'Đã hoàn tất' }] },
+    { name: 'resolvedAt', label: 'Thời điểm hoàn tất', type: 'date', index: true, admin: { readOnly: true } },
+    { name: 'resolvedBy', label: 'Người hoàn tất', type: 'relationship', relationTo: 'admins', index: true, admin: { readOnly: true } },
+    { name: 'resolution', label: 'Kết luận xử lý', type: 'textarea' },
   ],
 }

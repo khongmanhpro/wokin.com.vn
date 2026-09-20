@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import 'dotenv/config'
 import { getPayload } from 'payload'
 
 import { stableStringify } from '../../../contracts/catalog-snapshot-validator.mjs'

@@ -20,18 +20,19 @@
     "test": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
     "validate:snapshot": "tsx src/catalog/validate-cli.ts",
-    "validate:release": "tsx src/catalog/validate-cli.ts --snapshot",
+    "validate:release": "tsx src/catalog/validate-cli.ts --release --snapshot",
     "verify": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
-    "@payloadcms/db-postgres": "3.88.0",
-    "@payloadcms/next": "3.88.0",
-    "@payloadcms/ui": "3.88.0",
+    "@payloadcms/db-postgres": "3.89.0",
+    "@payloadcms/next": "3.89.0",
+    "@payloadcms/translations": "3.89.0",
+    "@payloadcms/ui": "3.89.0",
     "cross-env": "7.0.3",
     "dotenv": "16.4.7",
     "graphql": "16.11.0",
-    "next": "16.3.0",
-    "payload": "3.88.0",
+    "next": "16.3.5",
+    "payload": "3.89.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "sharp": "0.35.4"
@@ -45,5 +46,10 @@
   },
   "engines": {
     "node": ">=20.9.0"
+  },
+  "overrides": {
+    "monaco-editor": {
+      "dompurify": "3.4.13"
+    }
   }
 }

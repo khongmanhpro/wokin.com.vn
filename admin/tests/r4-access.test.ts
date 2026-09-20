@@ -14,8 +14,10 @@ import {
   canChangeProductContent,
   canChangeProductStatus,
   canManageAdminSecurityFields,
+  isFirstUserBootstrap,
 } from '../src/access/fieldAccess.js'
 import { enforceProductMutationPolicy } from '../src/access/productPolicy.js'
+import { Admins } from '../src/collections/Admins.js'
 
 type Role = (typeof ROLES)[number]
 
@@ -80,6 +82,48 @@ test('admin security fields require user.manage and admins read is self-only wit
   assert.equal(await canManageAdminSecurityFields({ req: req('admin') } as any), true)
   assert.deepEqual(await adminsRead({ req: req('readonly', true, 'self') } as any), { id: { equals: 'self' } })
   assert.equal(await adminsRead({ req: req('admin') } as any), true)
+})
+
+test('first-user bootstrap renders and submits admin security fields while anonymous admin creation remains denied', async () => {
+  const bootstrapPostReq = {
+    method: 'POST',
+    // Payload's create-first-user form-state server action posts back to the
+    // admin view route; it is not the REST first-register endpoint.
+    url: 'http://localhost:3000/admin/create-first-user',
+    user: null,
+  }
+  const bootstrapGetReq = { ...bootstrapPostReq, method: 'GET' }
+  const anonymousCreateReq = {
+    method: 'POST',
+    routeParams: { collection: 'admins' },
+    url: 'http://localhost:3000/api/admins',
+    user: null,
+  }
+  const role = Admins.fields.find((field) => 'name' in field && field.name === 'role') as any
+  const active = Admins.fields.find((field) => 'name' in field && field.name === 'active') as any
+
+  assert.ok(role && active)
+  assert.equal(isFirstUserBootstrap(bootstrapGetReq), true)
+  assert.equal(isFirstUserBootstrap(bootstrapPostReq), true)
+  assert.equal(isFirstUserBootstrap({ ...bootstrapPostReq, url: 'http://localhost:3000/admin/collections/admins/create' }), false)
+  assert.equal(isFirstUserBootstrap({ ...bootstrapPostReq, url: 'http://localhost:3000/api/admins/first-register', routeParams: { collection: 'admins' } }), true)
+  assert.equal(isFirstUserBootstrap({ ...bootstrapPostReq, url: 'http://localhost:3000/admin/unrelated' }), false)
+  assert.equal(isFirstUserBootstrap({ ...bootstrapPostReq, method: 'DELETE' }), false)
+  assert.equal(await role.access?.create?.({ req: bootstrapGetReq } as any), true)
+  assert.equal(await active.access?.create?.({ req: bootstrapGetReq } as any), true)
+  assert.equal(await role.access?.create?.({ req: bootstrapPostReq } as any), true)
+  assert.equal(await active.access?.create?.({ req: bootstrapPostReq } as any), true)
+  assert.equal(typeof role.defaultValue === 'function' ? role.defaultValue({ req: bootstrapGetReq, user: null }) : role.defaultValue, 'owner')
+  assert.equal(typeof role.defaultValue === 'function' ? role.defaultValue({ req: { ...bootstrapPostReq, url: 'http://localhost:3000/api/admins/first-register', routeParams: { collection: 'admins' } }, user: null }) : role.defaultValue, 'owner')
+  const bootstrapHookResult = await Admins.hooks?.beforeChange?.[0]?.({
+    data: { active: false, role: 'readonly' },
+    operation: 'create',
+    req: { ...bootstrapPostReq, url: 'http://localhost:3000/api/admins/first-register', routeParams: { collection: 'admins' } },
+  } as any)
+  assert.deepEqual(bootstrapHookResult, { active: true, role: 'owner' })
+  assert.equal(await Admins.access?.create?.({ req: anonymousCreateReq } as any), false)
+  assert.equal(await role.access?.create?.({ req: anonymousCreateReq } as any), false)
+  assert.equal(await active.access?.create?.({ req: anonymousCreateReq } as any), false)
 })
 
 test('audit events require audit.read and inactive users lose all access immediately', async () => {

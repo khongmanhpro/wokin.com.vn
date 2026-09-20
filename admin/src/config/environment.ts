@@ -20,6 +20,10 @@ function hasUsableValue(value: string | undefined) {
   return Boolean(value?.trim()) && !placeholderPattern.test(value!.trim())
 }
 
+function contactOrigins(value: string | undefined): string[] {
+  return (value ?? '').split(',').map((origin) => origin.trim().replace(/\/$/u, '')).filter(Boolean)
+}
+
 export function validateEnvironment(env: NodeJS.ProcessEnv): string[] {
   const errors: string[] = []
   const missing = baseVariables.filter((name) => !hasUsableValue(env[name]))
@@ -63,6 +67,28 @@ export function validateEnvironment(env: NodeJS.ProcessEnv): string[] {
         if (publicURL.protocol !== 'https:') errors.push('PAYLOAD_PUBLIC_SERVER_URL must use HTTPS in production')
       } catch {
         errors.push('PAYLOAD_PUBLIC_SERVER_URL must be a valid HTTPS URL in production')
+      }
+    }
+
+    const configuredContactOrigins = contactOrigins(env.CONTACT_ALLOWED_ORIGINS)
+    if (configuredContactOrigins.length === 0) {
+      errors.push('Missing required environment variables: CONTACT_ALLOWED_ORIGINS')
+    } else {
+      for (const origin of configuredContactOrigins) {
+        try {
+          const parsedOrigin = new URL(origin)
+          if (!['http:', 'https:'].includes(parsedOrigin.protocol) || parsedOrigin.pathname !== '/' && parsedOrigin.pathname !== '') {
+            errors.push('CONTACT_ALLOWED_ORIGINS must contain only origin URLs')
+            break
+          }
+          if (parsedOrigin.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(parsedOrigin.hostname)) {
+            errors.push('CONTACT_ALLOWED_ORIGINS must use HTTPS in production')
+            break
+          }
+        } catch {
+          errors.push('CONTACT_ALLOWED_ORIGINS must contain valid HTTP(S) origin URLs')
+          break
+        }
       }
     }
   }
