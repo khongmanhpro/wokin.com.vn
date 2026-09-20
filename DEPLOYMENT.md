@@ -32,11 +32,18 @@ Quy trình release, staging verification, rollback và approval gate đầy đ�
 
 Không upload HTML cho ba route legacy và không thêm redirect product/category nếu chưa có mapping được xác minh từ dữ liệu local.
 
-## Decision gate cho kênh liên hệ
+## Contact backend và decision gate
 
-Route canonical `/lien-he/` hiện chỉ hiển thị trạng thái chưa kích hoạt và CTA nội bộ; trang không có form, không thu thập hoặc gửi PII. Không thêm lại form, `mailto:` giả, endpoint, provider, API key hay thông báo gửi thành công trước khi đơn vị vận hành phê duyệt đích nhận lead và quy trình dữ liệu.
+Route canonical `/lien-he/` có form gửi tới Payload Admin, không gửi thẳng tới email/provider bên thứ ba. Backend lưu bản ghi `contact-submissions`; quản trị viên có capability `settings.manage` xem và cập nhật trạng thái trong menu **Liên hệ**.
 
-Muốn kích hoạt contact flow phải có quyết định riêng về backend/provider, server-side validation, chống spam/rate limit, privacy/consent, quản lý secret và kiểm thử success/failure thực tế. Cho đến khi gate đó hoàn tất, artifact production phải giữ trạng thái CTA-only.
+Trước khi build public production:
+
+1. Chạy migration Payload `20260920_000001_contact_submissions` trên database production.
+2. Đặt `CONTACT_ALLOWED_ORIGINS=https://wokin.com.vn` (và thêm hostname production thực tế nếu có) ở admin. Origin production phải dùng HTTPS.
+3. Build static site với `NEXT_PUBLIC_CONTACT_API_URL=https://<admin-host>/api/contact-submissions/submit`. Nếu bỏ biến này, form vẫn hiển thị nhưng chỉ báo chưa kết nối backend và không giả thông báo thành công.
+4. Kiểm thử cả success, validation, lỗi backend và rate limit; xác nhận một bản ghi xuất hiện trong Admin trước approval `GO`.
+
+Form có server-side validation, consent bắt buộc, honeypot và giới hạn 5 lượt gửi mỗi IP/giờ. Không đưa database credential hoặc admin secret vào public build.
 
 ## Chính sách header
 

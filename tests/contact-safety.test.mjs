@@ -17,12 +17,14 @@ test("contact page replaces the distributor network with a compact contact form"
   assert.match(contactForm, /name="message"/);
 });
 
-test("contact form does not claim to send data before a backend is approved", () => {
+test("contact form sends only through the configured backend and keeps an honest fallback", () => {
   assert.match(contactForm, /onSubmit=\{handleSubmit\}/);
   assert.doesNotMatch(contactForm, /\b(?:action|formAction)\s*=/i);
-  assert.doesNotMatch(contactForm, /mailto:|fetch\(|XMLHttpRequest/i);
-  assert.match(contactForm, /chờ kết nối máy chủ tiếp nhận/i);
-  assert.doesNotMatch(contactForm, /(?:gửi|đã gửi)\s+thành công|yêu cầu\s+đã\s+(?:được\s+)?gửi/iu);
+  assert.match(contactForm, /fetch\(contactApiUrl/);
+  assert.match(contactForm, /backendMissingStatus/);
+  assert.match(contactForm, /name="website"/);
+  assert.doesNotMatch(contactForm, /mailto:|XMLHttpRequest|formsubmit\.co/i);
+  assert.doesNotMatch(contactForm, /https:\/\/admin\.[A-Za-z0-9.-]+\/api\/contact-submissions/);
 });
 
 test("contact page keeps safe navigation CTAs", () => {

@@ -57,7 +57,7 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-09-16 bởi Codex (triển khai và nghiệm thu local admin)_
+_Cập nhật: 2026-09-20 bởi Codex (nối form liên hệ vào Payload Admin; giữ nguyên C1)_
 
 - **Nhánh `main`:** Phase 0–11 và checkpoint C1.3 trước đó đã commit/push tại `12baf0f`; phiên này có thay đổi chưa commit ở từ điển spec, gate token, font heading và snapshot sinh tự động. Untracked `.claude/`, `.hermes/`, `reports/` giữ nguyên ngoài commit.
 - **Gate sau phiên tiếp tục C1.3 (2026-09-15):** typecheck PASS, **83/83 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS, `git diff --check` PASS; npm audit 0 vulnerabilities. Font heading đã chuyển từ Tomorrow sang Saira Semi Condensed với subset `vietnamese`.
@@ -66,7 +66,8 @@ _Cập nhật: 2026-09-16 bởi Codex (triển khai và nghiệm thu local admin
 - **Admin đã triển khai/kiểm thử local 2026-09-16:** Next 16.3.5/Payload 3.89.0, upload local, phân trang, preview và Việt hóa đã được bổ sung tại worktree riêng. DB thử loopback `54349`: 13/13 xác thực/quyền và 18/18 workflow HTTP PASS; typecheck, 130/130 tests và build PASS. Audit còn 5 Moderate qua chuỗi Drizzle/esbuild, không còn Critical/High. Browser xác nhận dashboard/editor/preview/media Owner; pagination browser trang 2 và responsive hoàn chỉnh chưa có bằng chứng. **Chưa GO/live.** Xem báo cáo worktree.
 - **Đã push main lên GitHub; chưa deploy live.** CI của `12baf0f`: run `34912149736`, queued lúc ghi nhận. Thay đổi phiên này chưa push.
 - **Local dev `:3001`:** đã sửa lỗi chunk rồi dừng theo yêu cầu; phiên kiểm tra này không khởi động lại server dev.
-- **Trang Liên hệ (2026-09-20):** đã bỏ mạng lưới phân phối khỏi trang và thay bằng form tư vấn responsive 5 trường; form kiểm tra dữ liệu ở client nhưng chưa gửi đi vì static site chưa có backend tiếp nhận.
+- **Trang Liên hệ (2026-09-20):** đã bỏ mạng lưới phân phối khỏi trang và thay bằng form tư vấn responsive 5 trường; form hiện gửi tới Payload endpoint `/api/contact-submissions/submit` khi build có `NEXT_PUBLIC_CONTACT_API_URL`.
+- **Contact backend (2026-09-20):** Payload Admin đã thêm collection `contact-submissions`, endpoint POST có validation server-side, consent, honeypot, rate limit 5/IP/giờ, CORS theo `CONTACT_ALLOWED_ORIGINS`, và quyền xem/sửa chỉ dành cho `settings.manage`. Migration đã đăng ký nhưng **chưa chạy trên database production**. Admin root route đã được đưa vào route group Payload để Next build production hợp lệ.
 - **Audit deploy 2026-09-20:** trên working tree hiện tại (HEAD `8c88b6d`), `npm audit --audit-level=high`, typecheck, 83/83 tests, validate/check data, build 1452 trang và validate export (1447 route, 1357 Product JSON-LD, 11 smoke route HTTP 200 + 3 legacy HTTP 404) đều PASS. `npm run package:release` tạo 10.274 file; checksum 10.274/10.274 và static smoke trên package PASS. Chưa chạy `npm ci` clean-install trong lượt này; chưa có staging hostname để kiểm tra header/redirect; working tree vẫn dirty và chưa có approval `GO`, nên chưa được phép upload production.
 
 ---
@@ -75,9 +76,9 @@ _Cập nhật: 2026-09-16 bởi Codex (triển khai và nghiệm thu local admin
 
 | ID | Việc | Trạng thái | Chờ ai | Ghi chú |
 |---|---|---|---|---|
-| C1 | Coverage **5690 đã dịch / 1710 không cần dịch / 0 thiếu trên 7400**; chưa đạt nghiệm thu ngữ nghĩa | **Mở lại — blocker nội dung** | Codex / chủ nội dung | Audit 2026-09-15 xác nhận: CHUCK CAPACITY → DUNG TÍCH ĐẦU KẸP; ống tưới → Độ dày tường (thinckness2); cầu nâng → tay dài 8: 45mm, tay ngắn 6: 00mm và Weight6: 10Kg; thang 3 steps → 3 cấp. Nguồn thang ghi 225 lbs/150kgs cần xác minh, không tự sửa số. Dictionary 3325 dòng / 1084 nhãn / 260 ô; checksum `b10c4b2b08956206ff885ba770f06e21ff13c2269881de060544b5bca54d683b`. |
+| C1 | Coverage **5694 đã dịch / 1706 không cần dịch / 0 thiếu trên 7400**; giữ nguyên dữ liệu nguồn | **Giữ nguyên theo yêu cầu** | — | Không sửa nội dung C1 trong lượt này. Thang SKU `682423` vẫn giữ nguyên chuỗi nguồn `225 lbs/150kgs` dù có chênh lệch quy đổi; chủ nội dung có thể mở lại khi có tài liệu kỹ thuật mới. Dictionary 3325 dòng / 1084 nhãn / 260 ô; checksum catalog `7022c96feef2e20f06f15d651a30d3e15d87d88077c2177551be1c0c78cbb6a6`. |
 | D1 | Độ giống giao diện: header cam, hero ảnh lifestyle, trust banner cam, banner marketing | Chờ quyết định | Người dùng | `AGENTS.md` chỉ cho tải logo → cần WOKIN cấp ảnh marketing hoặc chấp nhận khác bản gốc |
-| D2 | Form Liên hệ đã có giao diện và kiểm tra dữ liệu; chưa có backend để gửi yêu cầu | Chờ quyết định | Người dùng | Cần chọn endpoint/hộp thư tiếp nhận trước khi bật gửi thật; hiện có hotline và Zalo dự phòng |
+| D2 | Form Liên hệ + backend Payload lưu yêu cầu trong Admin | **Đang triển khai — chưa GO** | Người dùng / vận hành | Cần chạy migration production, đặt `CONTACT_ALLOWED_ORIGINS`, build với `NEXT_PUBLIC_CONTACT_API_URL`, rồi gửi thử và xác nhận bản ghi trong Admin |
 | D3 | Tương phản màu cam thương hiệu (#FE7700) không đạt WCAG AA | Chờ quyết định | Người dùng | Đề xuất chữ tối trên nút cam |
 | R1 | Kiểm `.htaccess` (headers, 301) và đo Lighthouse mobile trên staging Hostinger | Chưa làm | Cần staging | `RELEASE-CHECKLIST.md` mục 4 |
 | R2 | Push lên GitHub để CI chạy thật | Đã push 2026-09-15; chờ CI | GitHub Actions | Checkpoint `12baf0f`, run `34912149736` |
@@ -122,6 +123,27 @@ _Cập nhật: 2026-09-16 bởi Codex (triển khai và nghiệm thu local admin
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-09-20 — Codex — Nối form Liên hệ vào backend Admin, giữ nguyên C1
+**Yêu cầu:** Giữ nguyên C1; form Liên hệ phải gửi được dữ liệu và quản trị viên nhận/xem được trong Admin.
+**Đã làm:**
+- Thêm collection Payload `contact-submissions` với các trường khách gửi, trạng thái xử lý, ghi chú nội bộ và audit hook; dữ liệu khách gửi được khóa bất biến khi admin cập nhật.
+- Thêm endpoint POST `/api/contact-submissions/submit` với origin allowlist, validation số điện thoại/email/nội dung, consent, honeypot và rate limit; admin có capability `settings.manage` xem và xử lý trong nhóm **Liên hệ**.
+- Thêm migration PostgreSQL, generated types, biến môi trường `CONTACT_ALLOWED_ORIGINS`, kết nối CORS/CSRF và tài liệu build `NEXT_PUBLIC_CONTACT_API_URL`. Không chỉnh bất kỳ dữ liệu C1 nào.
+**Kiểm chứng:** public `npm run typecheck`, `npm test` → 86/86 PASS, `npm run build` → PASS 1452 trang; admin `npm run typecheck`, `npm test` → 133/133 PASS; admin `npm run generate:types` → PASS; admin production build với `NODE_ENV=production` → PASS (3 static + 2 dynamic routes). Đã đưa trang root redirect vào route group Payload để dùng root layout của Payload; migration chưa chạy vì chưa có database production.
+**Commit:** chưa commit.
+**Còn dở / rủi ro:** cần chạy migration trên DB thật, cấu hình hai biến môi trường production, kiểm thử POST thực tế và xác nhận bản ghi trong Admin; static preview không có endpoint nếu chưa build với `NEXT_PUBLIC_CONTACT_API_URL`.
+**Việc tiếp theo:** vận hành cấu hình Payload + database, build lại public, gửi thử form và chỉ sau đó xin approval GO/staging.
+
+### 2026-09-20 — Codex — Rà lại C1 sau khi cập nhật form
+**Yêu cầu:** Kiểm tra lại tình trạng C1 và lý do chưa GO LIVE.
+**Đã làm:**
+- Chạy lại inventory, check dữ liệu, validate catalog và toàn bộ test; không sửa bản dịch trong lượt audit.
+- Đối chiếu sản phẩm thang SKU `682423`: nguồn local và trang WOKIN chính thức đều ghi `Max Load: 225 lbs/150kgs` cùng bảng `3 steps`, `4 steps`, `5 steps`, `6 steps`.
+**Kiểm chứng:** `npm run spec:inventory` → 5694 đã dịch, 1706 không cần dịch, 0 thiếu, English remainder 0; `npm run check:data` → PASS checksum `7022c96feef2e20f06f15d651a30d3e15d87d88077c2177551be1c0c78cbb6a6`; `npm run validate:data` → PASS 1357 sản phẩm/30 danh mục/1720 ảnh; `npm test` → 86/86 PASS. Nguồn đối chiếu: https://www.wokintools.com/product/household-ladder/.
+**Commit:** chưa commit (chỉ cập nhật nhật ký audit).
+**Còn dở / rủi ro:** Gate tự động không đánh giá được đúng/sai ngữ nghĩa; `225 lbs` xấp xỉ 102 kg, không tương đương 150 kg. Cần chủ nội dung xác nhận giữ nguyên nguồn hay sửa theo tài liệu kỹ thuật chính thức.
+**Việc tiếp theo:** xin xác nhận C1 cho các thông số mâu thuẫn; sau đó mới chốt GO/NO-GO cùng staging và backend form.
 
 ### 2026-09-20 — Codex — Thiết kế lại form Liên hệ
 **Yêu cầu:** Xóa phần mạng lưới phân phối trên trang Liên hệ và thay bằng form để khách điền thông tin.

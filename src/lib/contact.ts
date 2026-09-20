@@ -11,3 +11,8 @@ export const companyContact = {
     tiktok: "https://www.tiktok.com/@workmanjsc",
   },
 } as const;
+
+// The static public site stays deployable without a backend. Set this at build
+// time when the Payload admin service is available, for example:
+// https://admin.example.com/api/contact-submissions/submit
+export const contactApiUrl = process.env.NEXT_PUBLIC_CONTACT_API_URL?.trim() ?? "";

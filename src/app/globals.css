@@ -901,6 +901,15 @@ h4 {
   accent-color: var(--primary);
 }
 
+.contact-honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .contact-form-actions {
   display: flex;
   align-items: center;
@@ -909,6 +918,7 @@ h4 {
 }
 
 .contact-form-actions .button-primary { border: 0; cursor: pointer; white-space: nowrap; }
+.contact-form-actions .button-primary:disabled { cursor: wait; opacity: .65; }
 .contact-form-note,
 .contact-form-status { margin: 0; color: var(--text); font-size: 13px; }
 .contact-form-status { color: #23613c; }
