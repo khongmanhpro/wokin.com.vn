@@ -57,14 +57,16 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-09-15 bởi Codex (đã kiểm tra, commit và push checkpoint `12baf0f`)_
+_Cập nhật: 2026-09-16 bởi Codex (triển khai và nghiệm thu local admin)_
 
-- **Nhánh `main`:** Phase 0–11 và C1.3 tới hiện tại đã commit/push. C1.3.2 cùng các lô tiếp 775/523/508 key nằm trong `12baf0f`; untracked `.claude/`, `.hermes/`, `reports/` giữ nguyên ngoài commit.
-- **Gate sau phiên tiếp tục C1.3 (2026-09-15):** typecheck PASS, **82/82 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS, `git diff --check` PASS; npm audit 0 vulnerabilities.
-- **Kết luận nghiệm thu:** **NO-GO production.** Các gate kỹ thuật hiện đạt; nội dung spec còn 1855 chuỗi thiếu và các quyết định giao diện vẫn chờ (xem mục 3).
-- **Payload CMS worktree:** 11 commit trên nhánh riêng + ~36 file sửa chưa commit. Admin UX **chưa được nghiệm thu**. Chưa merge vào `main`.
-- **Đã push main lên GitHub; chưa deploy live.** CI của `12baf0f`: run `34912149736`, queued lúc ghi nhận.
+- **Nhánh `main`:** Phase 0–11 và checkpoint C1.3 trước đó đã commit/push tại `12baf0f`; phiên này có thay đổi chưa commit ở từ điển spec, gate token, font heading và snapshot sinh tự động. Untracked `.claude/`, `.hermes/`, `reports/` giữ nguyên ngoài commit.
+- **Gate sau phiên tiếp tục C1.3 (2026-09-15):** typecheck PASS, **83/83 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS, `git diff --check` PASS; npm audit 0 vulnerabilities. Font heading đã chuyển từ Tomorrow sang Saira Semi Condensed với subset `vietnamese`.
+- **Kết luận nghiệm thu:** **NO-GO production.** Coverage tự động 0 thiếu không đồng nghĩa dịch đúng: audit lại phát hiện lỗi thuật ngữ, nhãn dính số và thông số nguồn cần xác minh. C1 mở lại để review ngữ nghĩa; liên hệ, giao diện và staging vẫn chờ (xem mục 3).
+- **Payload CMS worktree:** Admin vẫn ở nhánh riêng, chưa merge vào `main`. Audit 2026-09-15: typecheck và 122 tests PASS; audit phụ thuộc production 13 findings (1 Critical/11 Moderate/1 Low); môi trường lệnh thiếu DB/secret/storage, chưa nghiệm thu runtime hiện tại. Xem `docs/admin-readiness-audit-2026-09-15.md`.
+- **Admin đã triển khai/kiểm thử local 2026-09-16:** Next 16.3.5/Payload 3.89.0, upload local, phân trang, preview và Việt hóa đã được bổ sung tại worktree riêng. DB thử loopback `54349`: 13/13 xác thực/quyền và 18/18 workflow HTTP PASS; typecheck, 130/130 tests và build PASS. Audit còn 5 Moderate qua chuỗi Drizzle/esbuild, không còn Critical/High. Browser xác nhận dashboard/editor/preview/media Owner; pagination browser trang 2 và responsive hoàn chỉnh chưa có bằng chứng. **Chưa GO/live.** Xem báo cáo worktree.
+- **Đã push main lên GitHub; chưa deploy live.** CI của `12baf0f`: run `34912149736`, queued lúc ghi nhận. Thay đổi phiên này chưa push.
 - **Local dev `:3001`:** đã sửa lỗi chunk rồi dừng theo yêu cầu; phiên kiểm tra này không khởi động lại server dev.
+- **Audit deploy 2026-09-20:** trên working tree hiện tại (HEAD `8c88b6d`), `npm audit --audit-level=high`, typecheck, 83/83 tests, validate/check data, build 1452 trang và validate export (1447 route, 1357 Product JSON-LD, 11 smoke route HTTP 200 + 3 legacy HTTP 404) đều PASS. `npm run package:release` tạo 10.274 file; checksum 10.274/10.274 và static smoke trên package PASS. Chưa chạy `npm ci` clean-install trong lượt này; chưa có staging hostname để kiểm tra header/redirect; working tree vẫn dirty và chưa có approval `GO`, nên chưa được phép upload production.
 
 ---
 
@@ -72,14 +74,14 @@ _Cập nhật: 2026-09-15 bởi Codex (đã kiểm tra, commit và push checkpoi
 
 | ID | Việc | Trạng thái | Chờ ai | Ghi chú |
 |---|---|---|---|---|
-| C1 | **C1.3 đang tiếp tục**; coverage **3867 đã dịch / 1678 không cần dịch / 1855 còn thiếu trên 7400** (1657 dòng, 2 nhãn, 198 ô) | **Blocker**; nền `df991d3`; C1.3.2, lô 775 mục, lô 523 mục và lô **508 key mới** đều chưa commit. Lô mới thêm 3 nhãn + 505 dòng; coverage translated tăng 511 nhờ nhận diện đúng số liệu nguồn. | Codex (prompt v14) | English remainder 1800 chuỗi/1932 occurrences (dòng 1624/1626, ô 176/306); quality 0/0/0/0. Dictionary: 1703 dòng / 1078 nhãn / 74 ô = 2855 mục. Checksum `57040312e538c0313e6bbd2330cffdd82b95ae83bd0cdbc6d1e0b0def556e016`. Còn hai nhãn nguồn lỗi; sau nhóm nguồn mơ hồ, dòng kế tiếp: `> Chips: High-quality SMD LED.6500K`. |
+| C1 | Coverage **5690 đã dịch / 1710 không cần dịch / 0 thiếu trên 7400**; chưa đạt nghiệm thu ngữ nghĩa | **Mở lại — blocker nội dung** | Codex / chủ nội dung | Audit 2026-09-15 xác nhận: CHUCK CAPACITY → DUNG TÍCH ĐẦU KẸP; ống tưới → Độ dày tường (thinckness2); cầu nâng → tay dài 8: 45mm, tay ngắn 6: 00mm và Weight6: 10Kg; thang 3 steps → 3 cấp. Nguồn thang ghi 225 lbs/150kgs cần xác minh, không tự sửa số. Dictionary 3325 dòng / 1084 nhãn / 260 ô; checksum `b10c4b2b08956206ff885ba770f06e21ff13c2269881de060544b5bca54d683b`. |
 | D1 | Độ giống giao diện: header cam, hero ảnh lifestyle, trust banner cam, banner marketing | Chờ quyết định | Người dùng | `AGENTS.md` chỉ cho tải logo → cần WOKIN cấp ảnh marketing hoặc chấp nhận khác bản gốc |
 | D2 | Trang Liên hệ không có địa chỉ/điện thoại/email công ty; form đã tắt từ Phase 7 | Chờ quyết định | Người dùng | Cần thông tin liên hệ VN chính thức + backend form nếu bật lại |
 | D3 | Tương phản màu cam thương hiệu (#FE7700) không đạt WCAG AA | Chờ quyết định | Người dùng | Đề xuất chữ tối trên nút cam |
 | R1 | Kiểm `.htaccess` (headers, 301) và đo Lighthouse mobile trên staging Hostinger | Chưa làm | Cần staging | `RELEASE-CHECKLIST.md` mục 4 |
 | R2 | Push lên GitHub để CI chạy thật | Đã push 2026-09-15; chờ CI | GitHub Actions | Checkpoint `12baf0f`, run `34912149736` |
 | L1 | Đồng bộ lại bundle tạm `.next` của local dev `:3001` | Xong 2026-09-15 | — | Đã dừng đúng server `:3001`, xoá `.next`, chạy lại; trang chủ 200, hết lỗi chunk `124`. Server cổng 3000 không bị đụng. |
-| P1 | Payload admin UX roadmap (UX-0 → UX-9) | Đang dở | — | `.hermes/plans/2026-08-28_233449-admin-ux-codex-roadmap.md`; backlog go-live: `.hermes/worktrees/payload-r1/.hermes/plans/2026-08-29_184212-go-live-po-backlog.md` |
+| P1 | Payload admin UX roadmap (UX-0 → UX-9) | **Chưa đủ vận hành chính thức** | Codex / chủ sản phẩm | Đã thêm upload local, pagination query, preview và Việt hóa; Next Critical đã xử lý. Còn 5 Moderate dependency findings, S3/backup, xuất ảnh CMS vào public, đường tạo SP mới, pagination queue tải lớn, responsive/a11y/staging. Xem báo cáo 2026-09-16. |
 | P2 | Gộp nhánh Payload với `main` | Chưa làm | — | **Sẽ conflict**, xem mục 5 |
 
 ---
@@ -90,6 +92,8 @@ _Cập nhật: 2026-09-15 bởi Codex (đã kiểm tra, commit và push checkpoi
 |---|---|---|
 | `WORKLOG.md` | File này: trạng thái + nhật ký | Nguồn chính |
 | `docs/prompts/CODEX-CONTINUE.md` | Prompt tiếp nhận cho Codex: nạp ngữ cảnh, quy tắc, đặc tả chi tiết việc C1, việc ngoài phạm vi, cách báo cáo | Dùng lại nhiều phiên |
+| `docs/prompts/ADMIN-READINESS-HANDOFF.md` | Giao việc admin: bảo mật → nghiệm thu có DB → ảnh/phân trang/preview/tiếng Việt; tiêu chí và bằng chứng bàn giao | Đã giao subagent thực thi 2026-09-16 |
+| `.hermes/worktrees/payload-r1/docs/admin-readiness-implementation-2026-09-16.md` | Bản vá admin, nghiệm thu DB/browser local, residual risk và gate còn lại | Nguồn chính cho lượt triển khai 2026-09-16 |
 | `AGENTS.md` | Brief gốc cho agent: quy tắc clone, tiếng Việt, SEO chống duplicate | Quy tắc còn hiệu lực; phần G0–G5 là kế hoạch ban đầu (vd không dùng Tailwind, form liên hệ đã bỏ) |
 | `DESIGN.md` | Design tokens trích từ site gốc | Đúng, trừ `--text` đã thành `#767676` |
 | `PROMPT-CLONE-NEXTJS.md` | Kiến trúc, routes, schema ban đầu | Tham khảo |
@@ -117,6 +121,177 @@ _Cập nhật: 2026-09-15 bởi Codex (đã kiểm tra, commit và push checkpoi
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-09-20 — Codex — Rà lại bản sửa và chuẩn bị candidate commit
+**Yêu cầu:** Rà lại các bản sửa từ review và chuẩn bị commit.
+**Đã làm:**
+- Rà phạm vi working tree; chọn các thay đổi sản phẩm, dữ liệu sinh, test và tài liệu release để đưa vào candidate.
+- Giữ ngoài candidate các artefact máy cá nhân (`.claude/`, `reports/`, kế hoạch `.hermes/`) và tooling `.hermes/*.py` chưa được Git theo dõi.
+**Kiểm chứng:** `git diff --check` → PASS; `npm run verify` → PASS (typecheck, 85/85 tests, validate:data, build 1452 trang, validate:export 1447 route + static smoke 11 HTTP 200/3 legacy 404).
+**Commit:** candidate đã được commit trong phiên này với message `fix: close review findings and update contact details`; hash cuối được Git xác nhận sau bước cập nhật nhật ký.
+**Còn dở / rủi ro:** chưa push GitHub hoặc deploy; C1 vẫn cần nghiệm thu ngữ nghĩa nội dung theo mục 3.
+**Việc tiếp theo:** chờ quyết định push GitHub; chưa deploy production.
+
+### 2026-09-20 — Codex — Kiểm tra lại readiness trước commit GitHub
+**Yêu cầu:** Xác minh working tree đã deploy/commit GitHub được chưa.
+**Đã làm:** Kiểm tra branch, commit gần nhất và toàn bộ tracked/untracked thay đổi; chạy lại `npm run check:data` và `npm run validate:data` ở chế độ chỉ đọc.
+**Kiểm chứng:** Branch `main...origin/main`; HEAD vẫn `8c88b6d`; check data PASS; validate data PASS với 1357 sản phẩm, 30 danh mục, 1720 ảnh, coverage 5694 dịch + 1706 không cần dịch + 0 thiếu, English remainder 0.
+**Commit:** Chưa commit/push/deploy.
+**Còn dở / rủi ro:** Working tree còn nhiều thay đổi tracked và untracked (gồm `.claude/`, `.hermes/`, `reports/`, docs); chưa clean-install/staging/production smoke; blocker nội dung và approval GO vẫn mở. Không nên commit toàn bộ working tree hay deploy live ở trạng thái hiện tại.
+**Việc tiếp theo:** Chọn đúng file thuộc release candidate, review diff, rồi mới commit/push sau khi người dùng xác nhận.
+
+### 2026-09-20 — Codex — Sửa lỗi từ review Codex CLI
+**Yêu cầu:** Sửa các lỗi do review read-only phát hiện.
+**Đã làm:** Siết gate nhận diện token để không bỏ lọt `Weight6`/`2×8steps`; bỏ alias dịch mơ hồ theo nguyên tắc chỉ dùng alias khi mọi biến thể có cùng target; bổ sung test hồi quy. Dịch lại các chuỗi đó, sửa output `thinckness2` và các ghi chú “lỗi chính tả nguồn”. Sửa script materialize cache để báo lỗi nếu không thay được `<v>`, dùng đường dẫn theo project/CLI thay vì absolute path, và không nuốt lỗi cấu hình workbook. Cập nhật DESIGN.md khớp font đang dùng.
+**Kiểm chứng:** `npm test` → 85/85 PASS; `npm run typecheck` → PASS; `npm run check:data` → PASS; `npm run spec:inventory` → 0 thiếu/0 English remainder; `npm run validate:data` → PASS 1357 sản phẩm/30 danh mục/1720 ảnh; `npm run build` → PASS 1452 trang; `npm run validate:export` → PASS 1447 route/1357 Product JSON-LD; `git diff --check` → PASS; py_compile và chạy thử script cache trên workbook tạm → PASS, giá trị A7/E15 đọc được 0.9325.
+**Commit:** Chưa commit/push/deploy.
+**Còn dở / rủi ro:** `225 lbs/150kgs`, thuật ngữ `CHUCK CAPACITY` và một số số liệu nguồn mâu thuẫn vẫn cần chủ nội dung xác minh; working tree còn các thay đổi/untracked đã có từ trước, chưa được dọn hoặc commit.
+**Việc tiếp theo:** Review diff cuối, tách đúng file cần phát hành, chạy clean-install/staging và chỉ deploy sau approval GO.
+
+### 2026-09-20 — Codex — Dùng Codex CLI qua OCR Delegation Mode
+**Yêu cầu:** Xác minh có thể dùng Codex CLI cục bộ thay cho provider API của OpenCodeReview và chạy review trên working tree.
+**Đã làm:** Xác nhận binary Codex CLI cục bộ, lấy rule/file spec bằng `ocr delegate`, rồi pipe sang `codex exec` ở chế độ read-only để review correctness, security, maintainability, performance và test coverage. Luồng này không cần OCR API key/provider.
+**Kiểm chứng:** `/opt/homebrew/bin/codex` → `codex-cli 0.153.4`; `/opt/homebrew/bin/ocr` → `open-code-review v1.12.7`; delegation session hoàn tất 100% và không sửa file. `npm run check:data`, `npm run validate:data`, `npm run spec:inventory`, typecheck và `git diff --check` → PASS. Lượt `npm test` trong sandbox Codex bị `EPERM` khi tạo thư mục tạm; không dùng kết quả đó thay cho `npm test` trên host đã ghi nhận 84/84 PASS.
+**Commit:** Chưa commit/push/deploy.
+**Còn dở / rủi ro:** Managed mode `ocr review` vẫn cần provider API. Review read-only phát hiện gate dịch bỏ lọt `Weight6`/`2×8steps`, 116 alias dịch xung đột, script cache có thể báo thành công khi chưa thay `<v>`, và các blocker nội dung đã nêu ở mục 3. Kết luận production vẫn NO-GO.
+**Việc tiếp theo:** Sửa gate/token và alias, xác minh nội dung kỹ thuật với chủ nội dung, bổ sung test hồi quy; sau đó chạy lại toàn bộ gate host trước khi xin approval GO.
+
+### 2026-09-20 — Codex — Cài và review bằng OpenCodeReview
+**Yêu cầu:** Cài `@alibaba-group/open-code-review` toàn cục và dùng để review dự án.
+**Đã làm:** Cài `@alibaba-group/open-code-review@1.12.7`; chạy `ocr --version`; chạy `ocr review --preview`, `ocr delegate preview` và `ocr delegate rule` trên working tree trước khi ghi entry này. OCR xác định 28 file thay đổi, 16 file reviewable, tổng +7.821/-2.035 dòng (WORKLOG bị loại khỏi review); rà secret pattern trong các file reviewable không phát hiện secret.
+**Kiểm chứng:** `ocr --version` → `open-code-review v1.12.7 (darwin/arm64)`; `npm test` → 84/84 PASS; `npm run typecheck` → PASS; `git diff --check` → PASS. Review trực tiếp bằng LLM chưa chạy được vì máy chưa có `OCR_LLM_URL`/`OCR_LLM_TOKEN`/`OCR_LLM_MODEL` hoặc cấu hình Anthropic tương ứng; đã dùng chế độ delegate chính thức và review theo rule OCR.
+**Kết luận:** Chưa thể ghi GO production. Các blocker đã xác nhận vẫn là working tree dirty/untracked report tooling và review ngữ nghĩa nội dung chưa đóng; ví dụ `Weight6: 10Kg`, `Độ dày tường (thinckness2)`, `3 steps → 3 cấp`, và nguồn tải trọng `225 lbs/150kgs` cần chủ nội dung xác minh. Ba script `.hermes/*.py` chứa đường dẫn tuyệt đối `/Volumes/data AI/wokin.com.vn/reports/...`, nên không nên đưa vào release/deploy.
+**Commit:** Chưa commit/push/deploy.
+**Còn dở / rủi ro:** Muốn chạy review AI đầy đủ cần cấu hình một LLM provider cho OCR; không ghi token vào repository hoặc WORKLOG.
+**Việc tiếp theo:** Chốt danh sách file cần commit, xử lý review ngữ nghĩa và chạy clean-install/staging gates; nếu có provider hợp lệ thì chạy lại `ocr review --format json` trên đúng diff.
+
+### 2026-09-20 — Codex — Sửa URL preview Liên hệ
+**Yêu cầu:** Điều tra lỗi 404 khi mở preview trang Liên hệ.
+**Đã làm:** Xác nhận tab đang dùng URL `/lien-he/**`; Python static server chỉ có route `/lien-he/`. Mở lại tab bằng URL chuẩn `/lien-he/`.
+**Kiểm chứng:** `/lien-he/` → HTTP 200; `/lien-he/**` → HTTP 404 đúng nguyên nhân; accessibility snapshot hiển thị đầy đủ thông tin Workman và Footer mới.
+**Commit:** Chưa commit/push/deploy.
+**Còn dở / rủi ro:** Không có lỗi build; đây là lỗi URL preview có ký tự `**`, không phải thiếu file route.
+**Việc tiếp theo:** Dùng `http://localhost:4173/lien-he/` (không thêm `**`).
+
+### 2026-09-20 — Codex — Cập nhật thông tin liên hệ Workman
+**Yêu cầu:** Lấy thông tin liên hệ chính xác từ `https://www.workmanjsc.vn/` và đưa vào dự án WOKIN.
+**Đã làm:** Đối chiếu footer website nguồn; tạo source of truth `src/lib/contact.ts`; cập nhật trang `/lien-he/` và Footer với tên pháp lý, địa chỉ, hotline/Zalo, mã số thuế và liên kết Zalo; giữ form online ở trạng thái chưa kích hoạt, không thu thập PII.
+**Kiểm chứng:** Website nguồn hiển thị `CÔNG TY CỔ PHẦN THIẾT BỊ CÔNG NGHIỆP WORKMAN`, địa chỉ `T2/D3B/31, Đường Bình Chuẩn 62, khu phố Bình Thuận 2, Phường Thuận Giao, Thành Phố Hồ Chí Minh.`, hotline `0978.390.339`, mã số thuế `3702963744`, Zalo `https://zalo.me/0978390339`; `npm run typecheck` → PASS; `npm test` → 84/84 PASS; `npm run build` → PASS 1452 trang; `npm run validate:export` → PASS 1447 route/1357 Product JSON-LD; static preview `/lien-he/` → HTTP 200 và chứa đủ 5 dữ liệu đã xác minh.
+**Commit:** Chưa commit/push/deploy.
+**Còn dở / rủi ro:** Nội dung mới cần được chủ sở hữu xác nhận lần cuối trước production; thông tin từ website nguồn có thể thay đổi về sau.
+**Việc tiếp theo:** Review trang `/lien-he/` trên preview `http://localhost:4173/lien-he/`, sau đó commit cùng release candidate khi các blocker deploy khác được xử lý.
+
+### 2026-09-20 — Codex — Khởi động static preview
+**Yêu cầu:** Chạy bản preview static để người dùng xem tại port `4173`.
+**Đã làm:** Khởi động `python3 -m http.server 4173 --bind 127.0.0.1 --directory out` trong process giữ kết nối.
+**Kiểm chứng:** `http://127.0.0.1:4173/` → HTTP 200, `Content-Type: text/html`.
+**Commit:** Chưa commit/push/deploy.
+**Còn dở / rủi ro:** Đây là static preview local, không phải staging/production; `.htaccess` và redirect Apache chưa được áp dụng bởi Python server.
+**Việc tiếp theo:** Mở hoặc reload `http://localhost:4173/` trong trình duyệt.
+
+### 2026-09-20 — Codex — Audit readiness trước deploy
+**Yêu cầu:** Kiểm tra dự án `wokin.com.vn` đã sẵn sàng deploy chưa sau khi người dùng cung cấp đúng đường dẫn.
+**Đã làm:** Đọc `AGENTS.md`, mục trạng thái/việc mở và các entry mới nhất trong `WORKLOG.md`; kiểm tra branch/status; chạy các quality gate local; build static export; tạo và kiểm tra gói Hostinger; chạy static smoke trên chính package.
+**Kiểm chứng:** Node `v24.15.0`, npm `11.16.0`; `npm audit --audit-level=high` → 0 vulnerabilities; `npm run typecheck` → PASS; `npm test` → 83/83 PASS; `npm run validate:data` → 1357 sản phẩm/30 danh mục/1720 ảnh, coverage 5690 dịch + 1710 không cần dịch + 0 thiếu; `npm run check:data` → PASS; `npm run build` → PASS 1452 trang; `npm run validate:export` → PASS 1447 route/10273 file/1357 Product JSON-LD, 11 smoke 200 + 3 legacy 404; `npm run package:release` → 10274 file; `shasum -a 256 -c release/SHA256SUMS` → 10274/10274 OK; static smoke package → 7 route chính 200, 3 legacy 404.
+**Commit:** Chưa commit/push/deploy; chỉ ghi nhật ký theo quy định. Artifact `release/` là build output bị ignore.
+**Còn dở / rủi ro:** Working tree có thay đổi tracked và untracked ngoài release; chưa chạy `npm ci` từ clean checkout; chưa kiểm tra staging/production headers, HTTPS, redirect Apache/LiteSpeed và five-page browser smoke bằng hostname thật; các quyết định nội dung/giao diện D1–D3 và approval `GO` vẫn mở. Kết luận: **NO-GO production**.
+**Việc tiếp theo:** Chốt/review/commit đúng thay đổi release, chạy clean-install + CI trên đúng SHA, có staging hostname để chạy checklist HTTP/header/redirect, rồi reviewer kỹ thuật + chủ nội dung ghi approval `GO` trước upload.
+
+### 2026-09-17 — Codex + 2 reviewer — Đối chiếu FISS với SingleInterface Kingfoodmart
+**Yêu cầu:** Kiểm tra trang SingleInterface Kingfoodmart người dùng cung cấp để xác định bản FISS đã đủ thành phần tham khảo hay chưa.
+**Đã làm:** Mở và rà trực tiếp trang mẫu; lập đối chiếu với `fiss_SL` hiện tại theo nhóm khung B31, dữ liệu địa điểm, CTA, form, local SEO và các khối đặc thù siêu thị.
+**Kiểm chứng:** Trang mẫu hiển thị header/breadcrumb, identity + giờ, slider, danh mục, form, about, review/QR, giờ, directions, đỗ xe, thanh toán, social timeline, nearby locations, category/keyword/footer. FISS có đủ khung generic để SI dựng template, nhưng chỉ có dữ liệu mẫu/noindex và một detail page; 10 điểm khác là preview. Không sửa file FISS trong lượt đối chiếu này.
+**Commit:** Chưa commit/push/deploy. Không thay đổi mã hay trạng thái WOKIN.
+**Còn dở / rủi ro:** Chưa đủ dữ liệu thật để phát hành local SEO: NAP/giờ/toạ độ/ảnh, profile GBP, map/directions, form endpoint/consent và URL detail thật từng điểm.
+**Việc tiếp theo:** Nếu FISS xác nhận dữ liệu từng điểm, triển khai detail page thật theo checklist `fiss_SL/docs/SI-HANDOFF.md`; không sao chép khối khuyến mãi, review, QR, timeline hay keyword stuffing của siêu thị khi chưa có dữ liệu phù hợp.
+
+### 2026-09-17 — Codex + 2 reviewer — Thiết kế lại FISS cho bàn giao SingleInterface
+**Yêu cầu:** Tiếp tục thiết kế lại dự án OpenDesign `fiss_SL` vì giao diện cũ chưa phù hợp để SingleInterface dựng và chưa có cấu trúc Google/local SEO rõ ràng.
+**Đã làm:** Hoàn thiện trang điểm bán theo hierarchy Digi Bank B31 (identity + CTA, form, đúng 2 dịch vụ, thông tin địa điểm, FAQ) và thêm locator 11 điểm có tìm kiếm/lọc. Bỏ khối app/đối tác ngoài phạm vi; sửa form, dialog, menu, toast, skip link và bộ lọc. Viết lại README/brand spec/QA, thêm `SI-HANDOFF.md`, `seo-template.json`, ghi chú GBP và đánh dấu tài liệu cũ là lịch sử.
+**Kiểm chứng:** Node parse thành công 2 script inline; HTML parse 2 file; `seo-template.json` JSON hợp lệ; locator đủ 11 STORE ID. Browser local xác nhận Escape menu, dialog không thay consent, chặn số chứa chữ và `0000000000`, success local của số hợp lệ, CTA chọn thẻ, lọc Đồng Nai 2/11, tìm `Nhon Trach` 1/11, empty/reset; khung 390/768/1440 đã mở kiểm. `noindex,follow` có ở hai trang review và `index-v2.html` lịch sử.
+**Commit:** Chưa commit/push/deploy. Không thay đổi mã hay trạng thái WOKIN.
+**Còn dở / rủi ro:** FISS vẫn dùng dữ liệu mẫu; không có backend form, map/directions, 10 trang chi tiết còn lại, canonical/schema/sitemap hay dữ liệu Google Business Profile đã xác minh. Không được phát hành trước checklist `fiss_SL/docs/SI-HANDOFF.md`.
+**Việc tiếp theo:** FISS xác nhận dữ liệu từng điểm, phương án GBP và asset; SingleInterface dựng URL detail crawlable rồi kiểm staging/SEO trước go-live.
+
+### 2026-09-16 — Codex — Kiểm tra dự án fiss_SL trong OpenDesign
+**Yêu cầu:** Kiểm tra dự án `fiss_SL`; đây là dự án riêng ngoài WOKIN.
+**Đã làm:** Đọc metadata, danh sách 13 file, bundle `index.html`, brief hiện tại, brand spec và tài liệu bàn giao; mở bản xem trước và thử menu/form/chỉ đường. Không sửa dự án FISS.
+**Kiểm chứng:** Preview hiển thị trang FISS tại Xe máy Nam Tiến Nhà Bè, đúng hai nhóm sản phẩm. Menu mở/đóng; form trống báo ba lỗi và focus họ tên; form demo hiện thông báo chưa gửi hệ thống thật. Số thử `0000000000` vẫn được chấp nhận. Đóng menu bằng Esc để lại nhãn “Đóng menu” dù trạng thái collapsed. Nút chỉ đường hiện thông báo prototype. Bundle chỉ dùng HTML và logo; chưa có trang danh sách điểm bán, `assets/site-data.js` cũ không được nạp. README/QA/review notes mô tả phiên bản cũ, không đại diện bản hiện tại. Chưa nghiệm thu viewport 390/1440, console hoặc đối chiếu dữ liệu doanh nghiệp với nguồn ngoài.
+**Commit:** Chưa commit/push/deploy; chỉ cập nhật nhật ký WOKIN theo quy định workspace.
+**Còn dở / rủi ro:** FISS là bản thiết kế dữ liệu mẫu; ảnh, bản đồ, QR và liên kết tải ứng dụng/chính sách còn placeholder; form chưa có backend. Trạng thái và việc mở WOKIN không đổi.
+**Việc tiếp theo:** Nếu tiếp tục FISS, xử lý trang danh sách theo brief, đồng bộ tài liệu và nghiệm thu kích thước/luồng còn thiếu.
+
+### 2026-09-16 — Codex + subagent — Triển khai và nghiệm thu local cho Admin
+**Yêu cầu:** Tiếp tục giao subagent xử lý bảo mật, nghiệm thu DB thực tế và khả năng dùng admin.
+**Đã làm:** Nâng Next 16.3.5/Payload 3.89.0/DOMPurify 3.4.13; bổ sung upload ảnh local có kiểm tra, migration additive, phân trang media/review, preview dữ liệu đã lưu, Việt hóa và hồi quy workflow. Khắc phục hai lỗi runtime hydrate `resolvedBy`/`publishedAt` gây lỗi 500 khi kết thúc duyệt và phát hành; sửa client MediaLibrary lấy đúng quyền Owner từ auth context. Tạo PostgreSQL, storage và tài khoản thử tách biệt tại loopback; không dùng production.
+**Kiểm chứng:** `check:env` PASS trên môi trường thử; migration cũ + upload PASS. HTTP auth/RBAC 13/13 PASS; workflow DB 18/18 PASS; media pagination 26 bản ghi → trang 1:25, trang 2:1 không lặp. Typecheck PASS; 130/130 tests PASS; build admin PASS; `npm ls` PASS; audit high gate PASS với **5 Moderate / 0 Critical/High/Low**. Browser đã xác nhận dashboard/menu/editor/preview tiếng Việt và thao tác ảnh của Owner. Không có browser evidence trang 2 hoặc responsive 1440/1024/390.
+**Commit:** Chưa commit/push/merge/deploy. Giữ nguyên các thay đổi tồn tại từ trước worktree.
+**Còn dở / rủi ro:** 5 Moderate trong chuỗi Drizzle/esbuild; S3/backup/restore và đưa media CMS vào bản static public chưa có; tạo sản phẩm ngoài import còn bị legacy source required; pagination hàng chờ dữ liệu lớn, a11y keyboard/responsive/staging chưa nghiệm thu. Admin vẫn NO-GO production.
+**Việc tiếp theo:** Review report worktree, xử lý/duyệt rủi ro dependencies và những gate tồn đọng trước staging; chỉ commit sau khi người dùng yêu cầu.
+
+### 2026-09-16 — Codex — Giao subagent triển khai Admin và chuẩn bị môi trường thử
+**Yêu cầu:** Tạo subagent thực hiện brief; người dùng sau đó đồng ý tạo DB/storage/credentials/tài khoản local riêng và chạy migration/dữ liệu thử.
+**Đã làm:** Giao `admin_implementation` sở hữu mã admin và báo cáo worktree; agent chính kiểm tra môi trường/nghiệm thu và giữ nhật ký chính. Khởi động Docker, tạo container/volume riêng `wokin-admin-acceptance-20260916-rvdwzl`, PostgreSQL chỉ bind `127.0.0.1:54349`; kho ảnh và cấu hình thử nằm ngoài repository trong thư mục tạm riêng, secret không ghi vào Git/log.
+**Kiểm chứng:** Môi trường ban đầu `check:env` FAIL do thiếu ba biến; sau chuẩn bị, `pg_isready` báo accepting connections và `check:env` qua wrapper thử PASS. Subagent xác nhận audit mới vẫn 13 findings trước khi sửa.
+**Trạng thái:** Đang triển khai/kiểm chứng; chưa kết luận bảo mật, build, luồng lưu/duyệt hoặc giao diện đạt. Công cụ trình duyệt tích hợp không có trong phiên hiện tại; không đồng nhất kiểm thử HTTP với nghiệm thu bằng mắt.
+**Commit:** Chưa commit/push/merge/deploy. Không đụng production DB.
+**Việc tiếp theo:** Nhận bản vá và migration từ subagent, kiểm thử trên DB local riêng, ghi rõ kết quả và phần còn thiếu.
+
+### 2026-09-15 — Codex — Tạo file giao việc hoàn thiện Admin
+**Yêu cầu:** Chuẩn bị file Markdown giao việc cho ba vấn đề: bảo mật, nghiệm thu thực tế và khả năng sử dụng admin.
+**Đã làm:** Tạo `docs/prompts/ADMIN-READINESS-HANDOFF.md` với phạm vi đúng worktree, baseline lịch sử, ba nhóm A/B/C, tiêu chí nghiệm thu, giới hạn quyền và mẫu giao việc. Thêm vào bản đồ tài liệu.
+**Kiểm chứng:** Đối chiếu báo cáo audit 2026-09-15, `admin/package.json`, hướng dẫn admin và trạng thái Git. Đây là phiên tài liệu; không chạy lại audit/tests/build/browser và không thay đổi cấu hình, mã hay DB admin.
+**Commit:** Chưa commit/push/deploy.
+**Còn dở / rủi ro:** Các blocker P1 vẫn mở; 13 findings/122 tests là baseline cũ, bên thực thi phải đo lại.
+**Việc tiếp theo:** Giao brief cho bên thực thi; xác nhận môi trường DB/storage test trước các thao tác cần quyền mới.
+
+### 2026-09-15 — Codex — Audit chức năng và mức sẵn sàng Admin
+**Yêu cầu:** Kiểm tra admin đã tốt và đủ chức năng chưa.
+**Đã làm:** Đối chiếu roadmap/backlog với mã hiện tại của Products, Media, ReviewQueue, CategoryTree, ReleaseCenter, Pages, preview, navigation và quyền. Ghi báo cáo `docs/admin-readiness-audit-2026-09-15.md`; không sửa code hay dữ liệu admin.
+**Kiểm chứng:** Admin typecheck PASS; 122 tests PASS; audit `--omit=dev` báo 13 package findings (1 Critical, 11 Moderate, 1 Low). `check:env` thiếu DATABASE_URL/PAYLOAD_SECRET/STORAGE_ADAPTER; chưa build/browser có DB trong lượt này. Xác nhận server cổng 3000 thuộc `/Users/khongmanh/projects/wokin-next`, không dùng làm bằng chứng cho Admin đang audit. Critical Next.js và Payload advisory đã đối chiếu GitHub Advisory Database.
+**Kết luận:** Admin chưa đủ vận hành production. Đã có nền tảng chức năng nhưng thiếu upload ảnh, phân trang custom library/queue, preview sát public và nghiệm thu đủ role. Các lỗi sidebar/document-control cũ đã có sửa mã, không khẳng định còn tái hiện khi chưa chạy browser.
+**Commit:** Chưa commit/push/deploy trong lượt audit.
+**Việc tiếp theo:** Xử lý phụ thuộc, cấu hình local DB tách biệt và nghiệm thu luồng biên tập trước khi hoàn thiện các chức năng còn thiếu.
+
+### 2026-09-15 — Codex — Audit lại khả năng lên live sau khi ổ kết nối lại
+**Yêu cầu:** Kiểm tra lại dự án đã có thể live chưa.
+**Đã làm:** Đọc checklist release, cấu hình robots/font/Hostinger, trang Liên hệ; đối chiếu nguồn và snapshot của cầu nâng ID 9651, ống tưới 6294, đầu kẹp 6265, thang 6444, kìm hàn 5969. Mở lại C1 vì coverage không kiểm tra độ đúng ngữ nghĩa. Không sửa code/bản dịch trong lượt audit.
+**Kiểm chứng:** `check:data`, `validate:data`, typecheck PASS; `node --test --test-reporter=dot tests/*.test.mjs` PASS (83 dấu); audit 0 vulnerabilities; build PASS 1452 trang; validate:export PASS 1447 route/10273 artifact/1357 Product JSON-LD; HTTP smoke 11×200 + 3×404; diff whitespace PASS. SHA local `8c88b6d` với 11 file tracked thay đổi; snapshot checksum giữ nguyên `b10c4b2b08956206ff885ba770f06e21ff13c2269881de060544b5bca54d683b`. Đọc GitHub Actions qua `gh run list` trả HTTP 404, chưa xác nhận CI hiện tại.
+**Kết luận:** **NO-GO production; có thể chuẩn bị bản thử nghiệm để review.** Có lỗi dịch thực tế dù bộ kiểm tra báo English remainder 0: `CHUCK CAPACITY` dịch sai ngữ cảnh; `Wall thinckness2` dịch thành độ dày tường; nhãn cầu nâng dính số; `3 steps` ở thang dịch thành 3 cấp. Nguồn thang chứa cặp tải trọng 225 lbs/150kgs không tương đương. Liên hệ chưa có đầu mối Việt Nam; staging Hostinger/header/redirect/mobile chưa kiểm trong lượt này. Font được cấu hình Saira Semi Condensed với subset vietnamese; chưa kiểm lại bằng trình duyệt trong lượt này.
+**Commit:** Không commit/push/deploy trong lượt kiểm tra.
+**Việc tiếp theo:** Sửa và duyệt ngữ nghĩa theo ngữ cảnh sản phẩm, xác minh các thông số nguồn mơ hồ, bổ sung thông tin liên hệ, chạy nghiệm thu trên staging rồi chốt GO/NO-GO.
+
+### 2026-09-15 — Codex — Kiểm tra và làm lại toàn bộ bản dịch spec
+**Yêu cầu:** Kiểm tra lại dự án và tiếp tục xử lý các chuỗi cần dịch.
+**Đã làm:**
+- Hoàn thiện các mục từ điển spec còn thiếu (dòng, nhãn và ô bảng), bao phủ cả biến thể marker `>`/không marker, mã kích thước-màu và các nhãn đóng gói; giữ nguyên số liệu, đơn vị và mã kỹ thuật.
+- Siết parser/gate token cho ghi chú trong ngoặc, mã kích thước có hậu tố màu, phân số đơn vị và chuyển `pcs` sang từ đếm tiếng Việt; thêm test hồi quy.
+- Sinh lại snapshot catalog và ảnh responsive; không đụng các file cá nhân `.claude/`, `.hermes/`, `reports/`.
+**Kiểm chứng:** `npm run build:data` → 1.357 sản phẩm, 30 danh mục, checksum `b10c4b2b08956206ff885ba770f06e21ff13c2269881de060544b5bca54d683b`; inventory → **5690 đã dịch / 1710 không cần dịch / 0 còn thiếu**, English remainder 0, quality 0/0/0/0; `npm audit --audit-level=high` → 0 vulnerabilities; `npm run typecheck` PASS; `npm test` → **83/83 PASS**; `npm run validate:data`, `npm run check:data` PASS; `npm run build` → **1452 trang**; `npm run validate:export` → **1447 route / 10273 artifact / 1357 Product JSON-LD**, smoke 11×200 + 3×404; `git diff --check` PASS.
+**Commit:** chưa commit/push; thay đổi đang chờ người dùng yêu cầu checkpoint.
+**Còn dở / rủi ro:** Production vẫn NO-GO cho tới khi chốt D1–D3 và kiểm tra staging Hostinger (R1); chưa deploy live.
+**Việc tiếp theo:** nghiệm thu giao diện trên staging, sau đó nếu được duyệt thì tạo commit và push checkpoint.
+
+### 2026-09-15 — Codex — Tiếp tục dịch batch P–S
+**Yêu cầu:** Tiếp tục các chuỗi spec còn thiếu.
+**Đã làm:**
+- Thêm 478 dòng dịch thuộc nhóm P–S: thông số đóng gói, vật liệu, cơ cấu, an toàn, lưỡi cắt và phụ kiện; giữ nguyên số, mã model, chuẩn và đơn vị.
+- Bổ sung các ngoại lệ token kỹ thuật đã kiểm chứng (`w/2-way`, kích thước T-, SDS, RPM) và test hồi quy tương ứng; không nới gate để che câu tiếng Anh.
+**Kiểm chứng:** `npm audit --audit-level=high` → 0 vulnerabilities; `npm run typecheck`; `npm test` → **82/82 PASS**; `npm run validate:data`, `npm run check:data`; `npm run build` → **1452 trang**; `npm run validate:export` → **1447 route / 10273 artifact / 1357 Product JSON-LD**, smoke 11×200 + 3×404; `git diff --check` PASS. Inventory: **4898 đã dịch / 1703 không cần dịch / 799 còn thiếu**, gồm 608 dòng, 4 nhãn, 191 ô; English remainder 764 chuỗi / 890 occurrences, quality 0/0/0/0. Checksum `9b648082b4d1544b98307d4747b725d1803e695fc1a2efe57f3316e494b833bd`.
+**Commit:** chưa commit/push; thay đổi đang chờ checkpoint.
+**Còn dở / rủi ro:** C1.3 vẫn NO-GO production vì còn 799 chuỗi thiếu; bốn nhãn và ba dòng đầu inventory vẫn cần xác minh nguồn.
+**Việc tiếp theo:** tiếp tục từ `> Stainless steel blades with soft grip handles and locking latch`, sau đó xử lý nhóm ô bảng còn thiếu.
+
+### 2026-09-15 — Codex — Tiếp tục dịch spec và thay font heading tiếng Việt
+**Yêu cầu:** Tiếp tục xử lý 1.855 chuỗi cần dịch và sửa vấn đề font Tomorrow hiển thị tiếng Việt bị vỡ.
+**Đã làm:**
+- Thêm 563 key từ điển spec (chủ yếu dòng F–M), giữ nguyên số lượng, mã model, tiêu chuẩn và đơn vị kỹ thuật; các nhãn và dòng nguồn mơ hồ đầu inventory vẫn để thiếu để không đoán sai.
+- Thu hẹp nhận diện mã dạng `steel/1.2mm`, bổ sung test hồi quy cho token kỹ thuật thập phân; quality gate không mở rộng theo kiểu bỏ qua câu tiếng Anh.
+- Thay Tomorrow bằng Saira Semi Condensed cho heading/menu, nạp đủ subset `latin`, `latin-ext`, `vietnamese`; giữ Be Vietnam Pro cho nội dung.
+**Kiểm chứng:** `npm run build:data`, `npm run check:data`, `npm test` → **82/82 PASS**; `npm run typecheck`; `npm run validate:data`; `npm run build` → **1452 trang**; `npm run validate:export` → **1447 route / 10273 artifact / 1357 Product JSON-LD**, smoke PASS; `npm audit --audit-level=high` → 0 vulnerabilities; `git diff --check` PASS. Inventory: **4424 đã dịch / 1696 không cần dịch / 1280 còn thiếu**, English remainder 1230 chuỗi / 1356 occurrences, quality 0/0/0/0. CSS build xác nhận Saira có dải glyph `U+1EA0–U+1EF9`.
+**Commit:** chưa commit/push; thay đổi đang chờ checkpoint tiếp theo.
+**Còn dở / rủi ro:** C1.3 vẫn NO-GO production vì còn 1280 chuỗi thiếu (1088 dòng, 4 nhãn, 192 ô); chưa khởi động lại dev server `:3001`.
+**Việc tiếp theo:** tiếp tục batch kế tiếp từ `> Mechanical feed system...`, sau đó chạy lại inventory và các gate trước khi tạo checkpoint.
 
 ### 2026-09-15 — Codex — Xác nhận push GitHub
 **Yêu cầu:** Kiểm tra, commit và đưa dự án lên GitHub.

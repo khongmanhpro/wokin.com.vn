@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { glossary } from "@/lib/catalog";
+import { companyContact } from "@/lib/contact";
 
 export function Footer() {
   return <footer className="footer">
@@ -8,6 +9,12 @@ export function Footer() {
       <div>
         <Image src="/images/logo.png" alt="WOKIN TOOLS" width={301} height={52} />
         <p>Dụng cụ chuẩn chỉ cho công việc chuyên nghiệp.</p>
+        <div className="footer-contact">
+          <strong>{companyContact.legalName}</strong>
+          <span>{companyContact.address}</span>
+          <a href={companyContact.hotlineHref}>Hotline/Zalo: {companyContact.hotline}</a>
+          <span>Mã số thuế: {companyContact.taxCode}</span>
+        </div>
       </div>
       <div className="footer-links">
         <Link href="/san-pham">{glossary.ui.Products}</Link>

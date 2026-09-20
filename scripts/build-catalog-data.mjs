@@ -113,6 +113,30 @@ export function normalizedSpecText(value) {
   return decodeHtmlEntities(value).replace(/\s+/g, " ").trim();
 }
 
+export function buildSpecTranslationMap(entries = {}) {
+  const exact = new Map();
+  const aliases = new Map();
+  for (const [source, target] of Object.entries(entries)) {
+    const normalizedSource = normalizedSpecText(source);
+    const normalizedTarget = normalizedSpecText(target);
+    exact.set(normalizedSource, normalizedTarget);
+    const body = normalizedSource.replace(/^>\s*/u, "");
+    for (const alias of [body, `> ${body}`, `>${body}`]) {
+      const targets = aliases.get(alias) ?? new Set();
+      targets.add(normalizedTarget);
+      aliases.set(alias, targets);
+    }
+  }
+  const result = new Map(exact);
+  // Only synthesize a marker/spacing alias when every explicit variant agrees.
+  // Ambiguous aliases must fall back to the source instead of depending on
+  // JSON insertion order and silently choosing the wrong translation.
+  for (const [alias, targets] of aliases) {
+    if (!result.has(alias) && targets.size === 1) result.set(alias, targets.values().next().value);
+  }
+  return result;
+}
+
 function tagEnd(html, start) {
   let quote = "";
   for (let index = start + 1; index < html.length; index += 1) {
@@ -268,7 +292,7 @@ export function createTranslator(glossary, specTranslations = {}) {
   const specLabels = Object.entries(glossary.spec_labels)
     .filter(([source]) => !/^pcs?$/i.test(source))
     .sort((left, right) => right[0].length - left[0].length);
-  const lineTranslations = new Map(Object.entries(specTranslations.lines ?? {}).map(([source, target]) => [normalizedSpecText(source), normalizedSpecText(target)]));
+  const lineTranslations = buildSpecTranslationMap(specTranslations.lines ?? {});
   const cellTranslations = new Map(Object.entries(specTranslations.cells ?? {}).map(([source, target]) => [normalizedSpecText(source), normalizedSpecText(target)]));
   const labelTranslations = new Map([
     ...Object.entries(glossary.spec_labels ?? {}),

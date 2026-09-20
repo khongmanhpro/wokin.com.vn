@@ -5,7 +5,7 @@
   --dark: #212121;
   --darker: #111111;
   --line: rgba(0, 0, 0, 0.105);
-  --font-heading: var(--font-tomorrow), Arial, Helvetica, sans-serif;
+  --font-heading: var(--font-saira), Arial, Helvetica, sans-serif;
   --font-body: var(--font-be-vietnam), Arial, Helvetica, sans-serif;
 }
 
@@ -275,6 +275,19 @@ h4 {
   width: 150px;
   height: auto;
 }
+
+.footer-contact {
+  display: grid;
+  max-width: 560px;
+  gap: 4px;
+  margin-top: 14px;
+  color: rgb(255 255 255 / 72%);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.footer-contact strong { color: #fff; }
+.footer-contact a { color: inherit; }
 
 .footer-links {
   display: flex;
@@ -782,6 +795,15 @@ h4 {
 .contact-list {
   color: var(--text);
 }
+
+.contact-details {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.contact-details p { margin: 0; }
+.contact-details a { color: var(--title); text-decoration: underline; text-underline-offset: 3px; }
 
 .distributor-grid {
   display: grid;

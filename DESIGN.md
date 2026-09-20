@@ -17,7 +17,7 @@
 ## 2. Typography
 - **Heading font**: `"Tomorrow"`, fallback Arial, Helvetica, sans-serif — weight **700**, không uppercase mặc định (nội dung tự viết HOA)
 - ⚠️ **Bản clone chạy tiếng Việt**: Tomorrow KHÔNG có đầy đủ glyph tiếng Việt (thiếu ữ, ệ, ơ, đ ở một số weight) → cấu hình next/font/google:
-  - `Tomorrow({ subsets: ['latin', 'latin-ext'], weight: ['600','700'] })` cho heading (đủ chữ cái cơ bản có dấu)
+  - `Saira_Semi_Condensed({ subsets: ['latin', 'latin-ext', 'vietnamese'], weight: ['600','700'] })` cho heading (đủ chữ cái tiếng Việt và khớp implementation)
   - Body dùng **Be Vietnam Pro** (`subsets: ['vietnamese']`) hoặc Arial stack hệ thống
   - Kiểm tra bắt buộc: render chuỗi "Dụng cụ cơ khí ữ ệ ơ đ" trên heading + body trước khi duyệt layout
 - **Body font gốc site: Arial/Helvetica/sans-serif** — clone giữ Arial stack cho giống y

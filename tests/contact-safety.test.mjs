@@ -5,6 +5,7 @@ import test from "node:test";
 
 const projectRoot = path.resolve(import.meta.dirname, "..");
 const contactPage = readFileSync(path.join(projectRoot, "src/app/lien-he/page.tsx"), "utf8");
+const contactData = readFileSync(path.join(projectRoot, "src/lib/contact.ts"), "utf8");
 
 test("contact page does not collect or submit personal data without an approved backend", () => {
   assert.doesNotMatch(contactPage, /<(?:form|input|select|textarea|button)\b/i);
@@ -23,6 +24,15 @@ test("contact page uses honest inactive-flow copy and safe internal CTAs", () =>
     contactPage,
     /\b(?:success|submitted)\b|(?:gửi|đã gửi)\s+thành công|yêu cầu\s+đã\s+(?:được\s+)?gửi/iu,
   );
+});
+
+test("contact page uses the verified Workman contact details", () => {
+  assert.match(contactPage, /companyContact/);
+  assert.match(contactData, /CÔNG TY CỔ PHẦN THIẾT BỊ CÔNG NGHIỆP WORKMAN/);
+  assert.match(contactData, /T2\/D3B\/31, Đường Bình Chuẩn 62/);
+  assert.match(contactData, /0978\.390\.339/);
+  assert.match(contactData, /3702963744/);
+  assert.match(contactData, /zalo\.me\/0978390339/);
 });
 
 test("contact page keeps its Vietnamese canonical metadata", () => {

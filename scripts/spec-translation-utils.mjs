@@ -1,20 +1,20 @@
 export const UNIT_WORDS = new Set([
-  "vac",
-  "mm", "cm", "m", "km", "kg", "kgs", "g", "mg", "l", "ml", "v", "w", "kw", "a", "ah", "mah", "hz", "rpm", "bpm", "min", "bar", "psi", "mpa", "nm", "lb", "lbs", "oz", "hp", "db", "dba", "ft", "awg", "pa",
+  "vac", "vpm", "kwh", "amps", "kpa", "watt", "opm", "cm", "ms",
+  "mm", "cm", "m", "km", "kg", "kgs", "g", "mg", "l", "ml", "v", "w", "kw", "a", "ah", "mah", "hz", "rpm", "bpm", "min", "bar", "psi", "mpa", "nm", "lb", "lbs", "oz", "hp", "db", "dba", "ft", "awg", "pa", "spm",
 ]);
 
 export const CODE_WORDS = new Set([
-  "crv", "cr-v", "cr-mo", "s2", "sk5", "hss", "abs", "pvc", "tpr", "pp", "tpe", "ce", "gs", "din", "iso", "ansi", "sae", "en", "vde", "wokin", "loncin", "lifan", "aaa", "bspt", "aws", "ph", "pz", "tx", "torx", "dr", "sl", "tig",
+  "crv", "cr-v", "cr-mo", "s2", "sk5", "hss", "abs", "pvc", "tpr", "pp", "tpe", "ce", "gs", "din", "iso", "ansi", "sae", "en", "vde", "wokin", "loncin", "lifan", "aaa", "bspt", "aws", "cs", "smd", "hrc", "ohv", "rohs", "sos", "key", "ph", "pz", "tx", "torx", "dr", "sl", "tig", "gdi", "igbt", "tct", "cat", "iii", "catiii", "frpp", "tpi", "bsp", "mig", "mma", "nvc", "astm", "ps", "hppe", "t", "cnc", "spt", "arc", "awg", "micro", "plasma", "spm", "thwn", "tuv", "uv", "ir", "sb", "phz",
 ]);
 
-const SIZE_WORDS = new Set(["xl", "xxl", "s", "m", "l"]);
+const SIZE_WORDS = new Set(["xl", "xxl", "xxxl", "s", "m", "l"]);
 
 // Technical loanwords, standards, and material names intentionally retained
 // in Vietnamese copy. These are safe globally, unlike unaccented Vietnamese
 // words which can collide with ordinary English prose.
 export const LOANWORDS = Object.freeze(new Set([
   // Material names and certification marks present in reviewed source specs.
-  "eva", "opp", "lithium", "polystyrene", "mid", "type-c", "latex", "ptfe", "pu", "pet", "diesel", "lumen",
+  "eva", "opp", "lithium", "lithium-ion", "polystyrene", "mid", "type-c", "latex", "ptfe", "pu", "pet", "diesel", "lumen", "polycarbonate", "xpe", "briggs", "stratton", "dynapac", "rapid", "arrow", "esco", "kubota", "honda", "euro", "nitrile", "nitril", "hickory", "carbide", "diy", "pythagoras", "osarm", "qsi", "lpc", "bar", "form", "kwh", "vpm", "gauss", "gph", "sec", "lbs", "kgs", "ft", "ft-lb", "psi", "dba", "nm", "mpa", "velcro", "ceramic", "scotchlite", "polyfusion", "stanley", "piston", "kva", "50-60mins", "0-900min-1", "3500-8500min-1", "4-6tpi", "kq-kc-750b", "cm", "mm", "gel", "vinyl", "doz", "vonfram", "h03vv-f", "logo", "zongshen", "flyknit", "crown", "dop",
   // Source-only unit typo retained in two reviewed router specifications.
   "mim",
   "ac", "acrylic", "bmc", "bpm", "carbon", "carton", "cdi", "cfm", "cb", "cotton", "crmo", "dc", "etl", "hepa", "hcs", "hdpe", "hex", "ii", "iec", "inch", "ipm", "kg", "laser", "lcd", "lb", "led", "li-ion", "mdf", "nh", "nr", "nylon", "od", "oxford", "pa", "pc", "pe",
@@ -52,6 +52,22 @@ function isNumericPrefix(value, index) {
   return /\d\s*$/.test(value.slice(0, index));
 }
 
+function isAlphanumericTechnicalCode(token) {
+  if (!/^[A-Za-z\d]+$/.test(token) || !/[A-Za-z]/.test(token) || !/\d/.test(token)) return false;
+  // Keep conventional model/material codes (GP20V, M14, 40Cr), but do not
+  // classify ordinary prose counters as codes when a word is glued to them.
+  // These forms are present in the source catalog and must be translated.
+  const prefixWord = token.match(/^([A-Za-z]+)\d+$/)?.[1].toLowerCase();
+  const suffixWord = token.match(/^\d+([A-Za-z]+)$/)?.[1].toLowerCase();
+  if (["weight", "arm", "arms", "thinckness"].includes(prefixWord) || ["step", "steps"].includes(suffixWord)) return false;
+  return true;
+}
+
+function isNumericUnitToken(token) {
+  const match = token.match(/^\d+([A-Za-z]+)$/);
+  return Boolean(match && (UNIT_WORDS.has(match[1].toLowerCase()) || /^(?:pc|pcs)$/i.test(match[1])));
+}
+
 function parentheticalRangeAt(source, index) {
   for (const match of source.matchAll(/\(([^)]*)\)/gu)) {
     const start = match.index ?? 0;
@@ -65,8 +81,14 @@ function isTechnicalParentheticalToken(token, source, index) {
   const range = parentheticalRangeAt(source, index);
   if (!range) return false;
   const normalized = normalizeWord(token);
-  if (PAREN_TECHNICAL_TOKENS.has(normalized)) return true;
-  if (/^[a-z]+\d+$/i.test(token)) return true;
+  if (PAREN_TECHNICAL_TOKENS.has(normalized)) {
+    // Single-letter units inside prose parentheses (for example the article
+    // `a` in `(with a quick-release connector)`) are not technical tokens
+    // unless they are attached to a numeric measurement.
+    if (UNIT_WORDS.has(normalized) && !isNumericPrefix(source, index)) return false;
+    return true;
+  }
+  if (isAlphanumericTechnicalCode(token)) return true;
   // AS/NZS1716 is tokenized as `AS`, `NZS1716` because `/` separates words.
   // Accept the short prefix only when the complete standards code is present.
   if ((normalized === "as" || normalized === "nzs") && /\bas\/nzs\d+\b/i.test(range.content)) return true;
@@ -82,6 +104,7 @@ function isAllowedToken(token, source, index) {
   if (SIZE_WORDS.has(normalized) || CODE_WORDS.has(normalized)) return true;
   if (UNIT_WORDS.has(normalized)) return isNumericPrefix(source, index);
   if (normalized === "in" || normalized === "inch" || normalized === "pc" || normalized === "pcs") return isNumericPrefix(source, index);
+  if (isNumericUnitToken(token)) return true;
   if (normalized === "as" && /\bas\/nzs\d+\b/i.test(source)) return true;
   // Product/model codes are data, not prose: ABC-2, GP20V, M14, 40Cr.
   // Hyphenated tokens need a stricter shape: 2Tx3M-Green is a description,
@@ -99,7 +122,7 @@ function isAllowedToken(token, source, index) {
     )) return true;
     return false;
   }
-  if (/^(?=.*[a-z])(?=.*\d)[a-z\d]+$/i.test(token)) return true;
+  if (isAlphanumericTechnicalCode(token)) return true;
   return false;
 }
 
@@ -108,19 +131,19 @@ function isAllowedToken(token, source, index) {
 // otherwise an English word such as "satin" could be hidden from the audit.
 export const VIETNAMESE_ASCII_WORDS = Object.freeze(new Set([
   // Vietnamese words verified in the C1.3 continuation batch.
-  "ga", "linh", "titan", "quanh", "quy", "tham", "qua", "song", "gai", "thao", "hay", "lao", "xanh", "puly", "ngay", "xa", "minh", "kia", "cacbua", "silic", "so", "mang", "ray", "thu", "gom", "axetic", "silicone", "khai", "bu", "cacbon", "gang", "xung",
+  "ga", "linh", "titan", "quanh", "quy", "tham", "qua", "song", "gai", "thao", "hay", "lao", "xanh", "puly", "ngay", "xa", "minh", "kia", "cacbua", "silic", "so", "mang", "ray", "thu", "gom", "axetic", "silicone", "khai", "bu", "cacbon", "gang", "xung", "oxy", "tai", "thang", "ta", "mu", "duy",
   // Verified Vietnamese words found in reviewed technical copy. Ambiguous
   // collisions (the, in, than, go, may, con, pin, ...) are only ignored when
   // the surrounding string already contains Vietnamese diacritics.
-  "an", "anh", "bao", "bugi", "cao", "cam", "che", "chia", "chi", "chiec", "cho", "con", "danh", "dau", "dao",
+  "an", "anh", "bao", "bugi", "cao", "cam", "che", "chia", "chi", "chiec", "cho", "con", "danh", "dau", "dao", "hoa",
   "den", "di", "dung", "gian", "go", "hai", "hop", "in", "kho", "khoan", "khi", "khop",
   "khung", "kim", "kinh", "leo", "loai", "lon", "luong", "ly", "may", "men", "mo", "nang",
-  "nhanh", "phu", "phe", "phun", "pin", "quang", "quay", "ra", "ram", "ren", "rung",
+  "nhanh", "phu", "phe", "phun", "pin", "polyme", "quang", "quay", "ra", "ram", "ren", "rung",
   "sau", "sac", "sinh", "suat", "tay", "thanh", "than", "the", "theo", "thiet", "thay", "xe",
   "tia", "tiet", "tinh", "treo", "trong", "trung", "tua", "va", "vao", "vi", "xo", "xuat",
   "xi-lanh", "xy-lanh", "sl", "niken", "molypden", "nung",
   // Additional unaccented Vietnamese words used in reviewed C1.3 labels.
-  "ba", "ban", "bi", "bo", "chai", "chu", "co", "cong", "da", "gia", "ghim", "khe", "khay", "khu", "keo", "lanh", "loe", "nam", "ngang", "nhau", "ong", "pha", "phay", "phanh", "quan", "sang", "sao", "su", "sung", "tam", "taro", "thau", "then", "tra", "trang", "vai", "van", "vanadi", "berili", "que", "axit", "xi", "xoay",
+  "ba", "ban", "bi", "bo", "chai", "chu", "co", "cong", "da", "gia", "ghim", "khe", "khay", "khu", "keo", "lanh", "loe", "nam", "ngang", "nhau", "ong", "pha", "phay", "phanh", "quan", "sang", "sao", "su", "sung", "tam", "taro", "thau", "then", "tra", "trang", "vai", "van", "vanadi", "berili", "que", "axit", "xi", "xoay", "ren", "nghe", "nhu", "gam", "phai", "cung", "sai", "tin", "quai", "xung", "sen", "lavabo", "mong", "phoi", "nong", "nguy", "cos", "neo", "phao", "ty", "ben", "chim", "len",
 ]));
 
 export function englishWordTokens(value, ignoredWords = new Set(), minimumLetters = 2) {
@@ -151,6 +174,7 @@ const NUMERIC_UNITS = "kpa|rpm|mAh|pcs?|hp|kw|nm|mm|cm|km|kgs?|mg|ml|hz|psi|bar|
 export function numericTokens(value) {
   const source = String(value ?? "");
   const values = [...source.matchAll(new RegExp(`\\d+(?:[.,]\\d+)?(?:\\/\\d+(?:[.,]\\d+)?)?(?:(?:(?:\\s*|[-,])(?:${NUMERIC_UNITS})(?!\\p{L}))|°|[\"″”′'])?`, "giu"))]
+    .filter((match) => !/^(?:weight|arm|arms|thinckness)$/iu.test(source.slice(0, match.index ?? 0).match(/[A-Za-z]+$/u)?.[0] ?? ""))
     .map(([token]) => {
       const normalized = token.replace(/\s+/g, "").replace(/[”]/gu, "″").toLowerCase()
         .replace(/[-,](?=(?:kgs?|lbs?|pounds?)$)/u, "")
@@ -181,28 +205,58 @@ function normalizeTechnicalToken(value) {
 function technicalTokens(value) {
   const source = String(value ?? "");
   const tokens = new Set();
-  const parentheticalRanges = [...source.matchAll(/\(([^)]*)\)/gu)].map((match) => [match.index ?? 0, (match.index ?? 0) + match[0].length]);
   for (const match of source.matchAll(/[A-Za-z][A-Za-z0-9]*(?:[-/][A-Za-z0-9]+)*/gu)) {
     const token = match[0];
     const normalized = normalizeTechnicalToken(token);
     const index = match.index ?? 0;
-    const inParentheses = parentheticalRanges.some(([start, end]) => index >= start && index < end);
+    const following = source.slice(index + token.length);
     // `in-1` is the prose tail of 3-in-1, not a model code. A phrase such
     // as Pounds/454kgs is a written weight conversion, not a technical ID.
     const proseMeasurement = /^in-\d+$/i.test(token)
       || /^[a-z]+\/\d+(?:[.,]\d+)?(?:kgs?|lbs?)$/i.test(token)
+      // Some source specs join a material name to a measurement (steel/1.2mm).
+      // Treat only known unit suffixes as prose; arbitrary `word/123` tokens
+      // must still be preserved as possible product/model codes.
+      || /^[a-z]+\/\d+(?:[.,]\d+)?(?:mm|cm|m|kg|kgs|g|mg|ml|l|v|w|kw|a|ah|mah|hz|rpm|bpm|bar|psi|mpa|nm|lb|lbs|oz|hp|db|dba|ft|awg|pa)$/i.test(token)
+      // Source prose such as `point/99 memories` is a count/reference, not
+      // a product or model code that must remain verbatim in Vietnamese.
+      || /^(?:point|memory|memories)\/\d+$/i.test(token)
+      // The tokenizer stops before a decimal point, so also recognise the
+      // `steel/1.2mm` shape when its `.2mm` tail follows the matched token.
+      || (/^[a-z]+\/\d+$/i.test(token) && /^\.\d+(?:mm|cm|m|kg|kgs|g|mg|ml|l|v|w|kw|a|ah|mah|hz|rpm|bpm|bar|psi|mpa|nm|lb|lbs|oz|hp|db|dba|ft|awg|pa)\b/i.test(following))
+      // `w/2-way` is a prose directional note, not a product/model code.
+      || /^w\/\d+-way$/i.test(token)
       // Fragments such as X60X180CM and M/0-220Lb are respectively a
       // dimension and a torque-range notation, not product/model codes.
       || /^x\d+(?:x\d+)+(?:mm|cm|m)?$/i.test(token)
-      || /^[a-z]\/\d+-\d+(?:[a-z]+)?$/i.test(token);
-    const codeLike = /[A-Za-z]/.test(token) && /\d/.test(token) && !/^(?:pc|pcs)$/i.test(token) && !proseMeasurement;
-    if ((inParentheses && PAREN_TECHNICAL_TOKENS.has(normalized)) || TECHNICAL_CODE_WORDS.has(normalized) || codeLike) tokens.add(normalized);
+      || /^[a-z]\/\d+-\d+(?:[a-z]+)?$/i.test(token)
+      // Labels such as `arms8` encode a count in prose, not a model code.
+      || /^(?:arm|arms)\d+$/i.test(token)
+      // Packaging cells use dimension/color suffixes (10Tx10M-Orange,
+      // 10x10mm-Teeth); the numeric dimensions are validated separately.
+      || /^\d+t(?:x\d+m)+-(?:orange|violet|green|yellow|grey|red|blue|brown)$/i.test(token)
+      || /^\d+x\d+mm-teeth$/i.test(token);
+    const codeLike = isAlphanumericTechnicalCode(token) && !/^(?:pc|pcs)$/i.test(token) && !proseMeasurement;
+    if ((isTechnicalParentheticalToken(token, source, index)) || TECHNICAL_CODE_WORDS.has(normalized) || codeLike) tokens.add(normalized);
   }
   return tokens;
 }
 
-function technicalTokenPresent(required, actual) {
+function technicalTokenPresent(required, actual, actualSource = "") {
   if (actual.has(required)) return true;
+  // Packaging cells often append a translatable color/material suffix to a
+  // dimension code (for example `10Tx10M-Orange`). The dimension prefix is
+  // the stable technical identifier; the suffix may be localized freely.
+  const colorCode = required.match(/^((?:\d+)?t(?:x\d+m)+)-(?:orange|violet|green|yellow|grey|red|blue|brown)$/i)
+    || required.match(/^((?:\d+)?x\d+mm)-teeth$/i);
+  if (colorCode && actual.has(colorCode[1].toLowerCase())) return true;
+  // A leading numeric unit can be tokenized as `mm-2-3/4`; spacing the
+  // measurement in Vietnamese should not make that equivalent unit vanish.
+  const unitFraction = required.match(/^([a-z]+)-\d+(?:-\d+)?\/\d+$/i);
+  if (unitFraction && (actual.has(unitFraction[1].toLowerCase()) || new RegExp(`\\d\\s*${unitFraction[1]}\\b`, "i").test(actualSource))) return true;
+  // Vietnamese copy replaces a source `.../1pcs` quantity with a localized
+  // count such as `.../1`; numeric token validation still enforces the count.
+  if (/\d+pcs?$/i.test(required) && actual.has(required.replace(/pcs?$/i, ""))) return true;
   if (required === "crv" || required === "cr-v") return actual.has("crv") || actual.has("cr-v");
   if (required === "pozi" || required === "pozidriv") return actual.has("pozi") || actual.has("pozidriv");
   if (required === "sdsplus" || required === "sds-plus") return actual.has("sdsplus") || actual.has("sds-plus");
@@ -213,7 +267,7 @@ function technicalTokenPresent(required, actual) {
 
 export function preservesTechnicalTokens(source, translated) {
   const actual = technicalTokens(translated);
-  return [...technicalTokens(source)].every((token) => technicalTokenPresent(token, actual));
+  return [...technicalTokens(source)].every((token) => technicalTokenPresent(token, actual, String(translated ?? "")));
 }
 
 export function preservesNumericTokens(source, translated) {

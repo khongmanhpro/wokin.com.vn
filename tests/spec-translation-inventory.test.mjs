@@ -56,7 +56,7 @@ test("inventory exposes parser errors with product context", async () => {
 });
 
 test("needsTranslation ignores measurements, units, and model codes but keeps real words", async () => {
-  const { needsTranslation } = await import(`${utilsUrl.href}?test=${Date.now()}-allowlist`);
+  const { needsTranslation, numericTokens } = await import(`${utilsUrl.href}?test=${Date.now()}-allowlist`);
   assert.equal(needsTranslation("115×22.2mm"), false);
   assert.equal(needsTranslation("100pcs"), false);
   assert.equal(needsTranslation("ABC-2"), false);
@@ -64,6 +64,10 @@ test("needsTranslation ignores measurements, units, and model codes but keeps re
   assert.equal(needsTranslation("M14"), false);
   assert.equal(needsTranslation("ABC-2"), false);
   assert.equal(needsTranslation("40Cr"), false);
+  assert.equal(needsTranslation("Weight6"), true);
+  assert.equal(needsTranslation("2×8steps"), true);
+  assert.equal(needsTranslation("8steps"), true);
+  assert.deepEqual(numericTokens("Weight6: 10Kg"), numericTokens("Weight: 10Kg"));
   assert.equal(needsTranslation("Cr-V"), false);
   assert.equal(needsTranslation("M-L-XL-XXL"), false);
   assert.equal(needsTranslation("2Tx3M-Green"), true);

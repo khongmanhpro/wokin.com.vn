@@ -348,6 +348,31 @@ test("untranslated spec fallback keeps source instead of creating a hybrid sente
   }
 });
 
+test("reviewed line translations cover legacy greater-than marker variants", async () => {
+  const { createTranslator } = await loadBuilder();
+  const translator = createTranslator({ terms: [], spec_labels: {}, ui: {} }, {
+    lines: { ">Dual density pu sole": "> Đế PU hai tỷ trọng" },
+    cells: {},
+  });
+  assert.equal(translator.translateSpecLine(">Dual density pu sole"), "> Đế PU hai tỷ trọng");
+  assert.equal(translator.translateSpecLine("> Dual density pu sole"), "> Đế PU hai tỷ trọng");
+  assert.equal(translator.translateSpecLine("Dual density pu sole"), "> Đế PU hai tỷ trọng");
+});
+
+test("ambiguous marker aliases do not depend on dictionary insertion order", async () => {
+  const { createTranslator } = await loadBuilder();
+  const translator = createTranslator({ terms: [], spec_labels: {}, ui: {} }, {
+    lines: {
+      "Ambiguous source": "> Bản dịch A",
+      "> Ambiguous source": "> Bản dịch B",
+    },
+    cells: {},
+  });
+  assert.equal(translator.translateSpecLine("Ambiguous source"), "> Bản dịch A");
+  assert.equal(translator.translateSpecLine("> Ambiguous source"), "> Bản dịch B");
+  assert.equal(translator.translateSpecLine(">Ambiguous source"), "> Ambiguous source");
+});
+
 test("spec fallback does not emit hybrid tokens for real catalog sources", async () => {
   const { createTranslator, parseLegacySpec } = await loadBuilder();
   const { needsTranslation, hasHybridToken } = await import(new URL("../scripts/spec-translation-utils.mjs", import.meta.url));
@@ -439,6 +464,36 @@ test("C1.3.2 treats curly inch quotes as numeric tokens", async () => {
   );
   assert.equal(
     preservesTechnicalTokens("0-300N.M/0-220Lb•ft", "Dải mô-men xoắn: 0-300 N·m/0-220 lb-ft"),
+    true,
+  );
+  assert.equal(
+    preservesTechnicalTokens("Cutting capacity: 1.0mm steel/1.2mm", "Khả năng cắt: thép 1.0mm/1.2mm"),
+    true,
+  );
+  assert.equal(
+    preservesTechnicalTokens("Sprinkler w/2-way Plastic Spike", "Đầu tưới kèm cọc nhựa 2 chiều"),
+    true,
+  );
+  assert.equal(
+    preservesTechnicalTokens(
+      "1pc ø16.8*172mm aluminum extension rod (with a quick-release connector);",
+      "1 thanh nối dài nhôm ø16.8*172mm (kèm đầu nối tháo nhanh);",
+    ),
+    true,
+  );
+  assert.equal(
+    preservesTechnicalTokens("10Tx10M-Orange", "10Tx10M – màu cam"),
+    true,
+  );
+  assert.equal(
+    preservesTechnicalTokens("70mm-2-3/4″", "Kích thước 70mm - 2-3/4″"),
+    true,
+  );
+  assert.equal(
+    preservesTechnicalTokens(
+      "Total cutting length: 6000m/1pcs wheel blade",
+      "Tổng chiều dài cắt: 6000m/1 lưỡi cắt dạng bánh xe",
+    ),
     true,
   );
   const fixture = makeFixture();

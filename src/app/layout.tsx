@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Be_Vietnam_Pro, Tomorrow } from "next/font/google";
+import { Be_Vietnam_Pro, Saira_Semi_Condensed } from "next/font/google";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { JsonLd } from "@/components/JsonLd";
 import { absoluteUrl, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
-const tomorrow = Tomorrow({ subsets: ["latin", "latin-ext"], weight: ["600", "700"], variable: "--font-tomorrow", display: "swap" });
+const saira = Saira_Semi_Condensed({ subsets: ["latin", "latin-ext", "vietnamese"], weight: ["600", "700"], variable: "--font-saira", display: "swap" });
 const beVietnam = Be_Vietnam_Pro({ subsets: ["vietnamese"], weight: ["400", "500", "600", "700"], variable: "--font-be-vietnam", display: "swap" });
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="vi" className={`${tomorrow.variable} ${beVietnam.variable}`}>
+    <html lang="vi" className={`${saira.variable} ${beVietnam.variable}`}>
       <body>
         <JsonLd data={[
           { "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: SITE_URL, logo: absoluteUrl("/images/logo.png") },

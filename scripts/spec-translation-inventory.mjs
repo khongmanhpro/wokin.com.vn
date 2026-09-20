@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { normalizedSpecText, parseLegacySpec } from "./build-catalog-data.mjs";
+import { buildSpecTranslationMap, normalizedSpecText, parseLegacySpec } from "./build-catalog-data.mjs";
 import {
   hasHybridToken,
   hasVietnameseText,
@@ -61,7 +61,7 @@ function sortEntries(entries) {
 function translationMap(translations, kind) {
   const values = translations?.[kind];
   if (!values || typeof values !== "object" || Array.isArray(values)) return new Map();
-  return new Map(Object.entries(values).map(([source, target]) => [normalizedSpecText(source), target]));
+  return buildSpecTranslationMap(values);
 }
 
 function labelMap(translations, glossary) {
