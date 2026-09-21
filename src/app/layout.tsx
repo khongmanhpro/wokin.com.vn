@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     url: "/",
     images: [{ url: "/images/logo.png", alt: "WOKIN TOOLS" }],
   },
-  icons: { icon: "/images/logo.png", shortcut: "/images/logo.png", apple: "/images/logo.png" },
+  icons: { icon: "/images/favicon-w.svg", shortcut: "/images/favicon-w.svg", apple: "/images/favicon-w.svg" },
 };
 
 export default function RootLayout({

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 53 52" role="img" aria-labelledby="title">
+  <title>WOKIN</title>
+  <defs>
+    <clipPath id="w-mark">
+      <rect width="53" height="52" />
+    </clipPath>
+  </defs>
+  <image href="/images/logo.png" width="301" height="52" preserveAspectRatio="none" clip-path="url(#w-mark)" />
+</svg>
