@@ -3,7 +3,7 @@ import { Be_Vietnam_Pro, Saira_Semi_Condensed } from "next/font/google";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { JsonLd } from "@/components/JsonLd";
-import { absoluteUrl, SITE_NAME, SITE_URL } from "@/lib/site";
+import { absoluteUrl, HOME_DESCRIPTION, HOME_TITLE, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const saira = Saira_Semi_Condensed({ subsets: ["latin", "latin-ext", "vietnamese"], weight: ["600", "700"], variable: "--font-saira", display: "swap" });
@@ -12,18 +12,17 @@ const beVietnam = Be_Vietnam_Pro({ subsets: ["vietnamese"], weight: ["400", "500
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "WOKIN TOOLS - Dụng cụ chuyên nghiệp",
+    default: HOME_TITLE,
     template: "%s | WOKIN TOOLS",
   },
-  description:
-    "Catalog dụng cụ WOKIN tiếng Việt với hơn 1.300 sản phẩm chuyên nghiệp.",
+  description: HOME_DESCRIPTION,
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "vi_VN",
     siteName: SITE_NAME,
-    title: "WOKIN TOOLS - Dụng cụ chuyên nghiệp",
-    description: "Catalog dụng cụ WOKIN tiếng Việt với hơn 1.300 sản phẩm chuyên nghiệp.",
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
     url: "/",
     images: [{ url: "/images/logo.png", alt: "WOKIN TOOLS" }],
   },

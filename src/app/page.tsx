@@ -4,8 +4,25 @@ import { CategoryCard } from "@/components/CatalogCards";
 import { HeroSlider } from "@/components/HeroSlider";
 import { ResponsiveBackground } from "@/components/ResponsiveBackground";
 import { categories, getProductsByCategory, glossary } from "@/lib/catalog";
+import { HOME_DESCRIPTION, HOME_TITLE } from "@/lib/site";
 
-export const metadata: Metadata = { title: "WOKIN TOOLS - Dụng cụ chuyên nghiệp", description: "Khám phá hơn 1.300 sản phẩm WOKIN bằng tiếng Việt: dụng cụ cầm tay, máy dụng cụ điện, thiết bị công trường và hệ pin GP20V.", alternates: { canonical: "/" } };
+export const metadata: Metadata = {
+  title: { absolute: HOME_TITLE },
+  description: HOME_DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    url: "/",
+    images: [{ url: "/images/logo.png", alt: "WOKIN TOOLS Việt Nam" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    images: ["/images/logo.png"],
+  },
+};
 
 function Banner({ image, eyebrow, title, text, href, label, className = "" }: { image: string; eyebrow?: string; title: string; text: string; href: string; label: string; className?: string }) {
   return <section className={`banner ${className}`}>
