@@ -9,6 +9,7 @@ import * as migration_20260916_000001_media_local_upload from './20260916_000001
 import * as migration_20260920_000001_contact_submissions from './20260920_000001_contact_submissions';
 import * as migration_20261011_000001_contact_submissions_locked_documents from './20261011_000001_contact_submissions_locked_documents';
 import * as migration_20261011_081958_wordpress_parity from './20261011_081958_wordpress_parity';
+import * as migration_20261011_085955_payload_3_90_auth_reset_throttle from './20261011_085955_payload_3_90_auth_reset_throttle';
 
 export const migrations = [
   {
@@ -64,6 +65,11 @@ export const migrations = [
   {
     up: migration_20261011_081958_wordpress_parity.up,
     down: migration_20261011_081958_wordpress_parity.down,
-    name: '20261011_081958_wordpress_parity'
+    name: '20261011_081958_wordpress_parity',
+  },
+  {
+    up: migration_20261011_085955_payload_3_90_auth_reset_throttle.up,
+    down: migration_20261011_085955_payload_3_90_auth_reset_throttle.down,
+    name: '20261011_085955_payload_3_90_auth_reset_throttle'
   },
 ];

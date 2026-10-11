@@ -14,7 +14,7 @@ Người dùng quen admin WordPress (workmanjsc.vn). Đã thử dựng giao di�
 | Lưu nháp, tự lưu, Xuất bản | Trang: `drafts.autosave` mỗi 60 giây. Sản phẩm giữ quy trình duyệt riêng (không bật drafts của Payload) |
 | Thùng rác | `trash: true` cho Sản phẩm, Danh mục, Trang, Media |
 | Thư viện media | `folders: true`, cột ảnh thu nhỏ (`MediaThumbnailCell`) cho Media và Sản phẩm |
-| Gutenberg | `@payloadcms/richtext-lexical@3.89.0` cho thân Trang |
+| Gutenberg | `@payloadcms/richtext-lexical` (cùng phiên bản Payload, hiện 3.90.2) cho thân Trang |
 | Customizer / Menu | Global `site-settings` (công ty, liên hệ, mạng xã hội, SEO mặc định) và `navigation` (menu đầu trang 2 cấp, chân trang) |
 | Thêm sản phẩm mới | Hook `assignManualProductIdentity`: tự cấp `legacySourceId` từ 900000, `sourceMetadata.sourceType = 'manual'`; form tạo mới ẩn các trường nguồn gốc |
 | Bảng tin | Lời chào, số liệu, thao tác nhanh theo quyền, liên hệ cần xử lý, hoạt động gần đây |
@@ -39,6 +39,8 @@ Lệnh export từ chối ghi nếu thiếu thông tin bắt buộc hoặc có l
   - Ghép tay từ diff Payload sinh ra, vì bản sinh tự động chạy lại các migration viết tay và sai thứ tự ở `pages`.
   - Dừng nếu bảng `pages` đã có dữ liệu.
   - Đã chạy up, down, up trên DB dev; `migrate:create` sau đó báo "No schema changes".
+- `20261011_085955_payload_3_90_auth_reset_throttle`: thêm cột `admins.reset_password_requested_at` mà Payload 3.90 cần để giới hạn yêu cầu quên mật khẩu.
+  - Từ bản này, `migrate:create` còn sinh `DROP NOT NULL` cho các cột nguồn của `products`/`_products_v` (do `admin.condition` thêm ở nhánh này; drizzle bỏ NOT NULL cho trường có điều kiện hiển thị). Cố ý không đưa vào: DB giữ NOT NULL, hook `assignManualProductIdentity` luôn điền giá trị. Cần quyết định riêng.
 
 ## Chạy local
 
@@ -70,7 +72,7 @@ npm run dev -- -p 3020                      # http://localhost:3020/admin
 ## Lỗi có sẵn, rủi ro, việc còn lại
 
 - `admin/tests/p0-5-pilot-subset.test.ts` import file untracked `admin/.hermes/evidence/p0-5/pilot-subset.ts`, nên checkout sạch sẽ fail typecheck và build.
-- `npm audit` còn 2 critical / 7 high ở next/payload/sharp (có từ trước). Bản vá có trong Payload 3.90.2, Next 16.4, sharp 0.35.5.
+- Đã vá lỗ hổng: Payload 3.90.2, Next 16.3.8, sharp 0.35.5, override `undici` 7.29.1 và `chokidar` 4.0.3 (trong `sass`). `npm audit` còn 5 moderate (esbuild cũ trong `drizzle-kit`, chưa có bản vá).
 - Sản phẩm import nằm trong thùng rác sẽ làm lần import catalog sau lỗi trùng `legacySourceId`: phải khôi phục hoặc xoá hẳn trước.
 - Sản phẩm đã import chưa có lịch sử phiên bản; lịch sử bắt đầu từ lần lưu đầu tiên.
 - Chưa dùng plugin SEO hay form-builder của Payload (đã có SEO và form liên hệ tự làm).

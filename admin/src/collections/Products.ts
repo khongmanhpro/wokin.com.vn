@@ -58,7 +58,7 @@ export const Products: CollectionConfig = {
           fields: [
             {
               name: 'legacySourceId', type: 'number', required: true, unique: true, index: true, label: 'Mã nguồn (bất biến)', validate: requiredAfterCreate,
-              admin: { description: 'Khóa định danh nguồn, bất biến sau khi tạo. Sản phẩm tạo mới được cấp tự động từ 900000.', readOnly: true, condition: (data) => Boolean(data?.id) },
+              admin: { description: 'Khóa định danh nguồn, bất biến sau khi tạo. Sản phẩm tạo mới để trống, hệ thống tự cấp từ 900000 khi lưu.', readOnly: true },
             },
             {
               name: 'sku', type: 'text', required: false, index: true, label: 'SKU',
@@ -147,7 +147,7 @@ export const Products: CollectionConfig = {
           label: 'Nguồn gốc',
           fields: [{
             name: 'sourceMetadata', type: 'group', required: true, label: 'Dữ liệu nguồn (chỉ đọc)', access: { update: () => false },
-            admin: { readOnly: true, description: 'Dữ liệu nhập nguồn được bảo toàn để đối chiếu.', condition: (data) => Boolean(data?.id) },
+            admin: { readOnly: true, description: 'Dữ liệu nhập nguồn được bảo toàn để đối chiếu. Sản phẩm tạo tay được hệ thống tự điền khi lưu.' },
             fields: [
               { name: 'sourceType', type: 'text', required: true, validate: requiredAfterCreate },
               { name: 'legacySlug', type: 'text', required: true, index: true, validate: requiredAfterCreate },
