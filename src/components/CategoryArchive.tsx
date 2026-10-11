@@ -3,7 +3,7 @@ import { CategoryBrowser } from "@/components/CategoryBrowser";
 import { PageBand } from "@/components/PageBand";
 import { Pagination } from "@/components/Pagination";
 import { ProductGrid } from "@/components/CatalogCards";
-import { getCategoryBySlug, getNewProducts, getProductsByCategory, glossary } from "@/lib/catalog";
+import { categoryHref, getCategoryBySlug, getNewProducts, getProductsByCategory, glossary } from "@/lib/catalog";
 
 export const PRODUCTS_PER_PAGE = 20;
 
@@ -21,7 +21,7 @@ export function CategoryArchive({ slug, page = 1 }: { slug: string; page?: numbe
     <div className="container-wokin">
       <CategoryBrowser slug={slug} total={allProducts.length} skuLabel={glossary.ui.SKU}>
         <ProductGrid products={visible} newIds={newIds} />
-        <Pagination current={currentPage} total={totalPages} hrefFor={(number) => number === 1 ? `/danh-muc/${slug}` : `/danh-muc/${slug}/trang/${number}`} />
+        <Pagination current={currentPage} total={totalPages} hrefFor={(number) => categoryHref(slug, number)} />
       </CategoryBrowser>
       <p className="archive-intro archive-intro-after">Khám phá {category.nameVi.toLocaleLowerCase("vi")} WOKIN dành cho công việc chuyên nghiệp. Danh mục cung cấp thông số rõ ràng, hình ảnh thực tế và nhiều lựa chọn phù hợp cho xưởng, công trường và đội ngũ kỹ thuật.</p>
     </div>

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
+import { pageMetadata, storeJsonLd } from "@/lib/seo";
 import Link from "next/link";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ContactForm } from "@/components/ContactForm";
@@ -10,16 +12,13 @@ const title = "Liên hệ";
 const description = "Thông tin liên hệ chính thức của Công ty Cổ phần Thiết bị Công nghiệp Workman tại Việt Nam.";
 const canonical = "/lien-he/";
 
-export const metadata: Metadata = {
-  title,
-  description,
-  alternates: { canonical },
-  openGraph: { title, description, url: canonical },
-};
+export const metadata: Metadata = pageMetadata({ title: "Liên hệ WOKIN Việt Nam – tư vấn, báo giá", description, path: canonical });
 
 export default function ContactPage() {
   const hero = getProductsByCategory("mechanics-tools")[0]?.images[0]?.src ?? "/images/logo.png";
+  const store = storeJsonLd();
   return <main>
+    {store && <JsonLd data={store} />}
     <StaticHero title="LIÊN HỆ WOKIN" image={hero} eyebrow="THÔNG TIN KÊNH HỖ TRỢ" />
     <Breadcrumb items={[{ label: "Liên hệ" }]} />
     <section className="section container-wokin contact-layout">

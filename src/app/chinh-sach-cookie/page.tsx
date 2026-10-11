@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { companyContact } from "@/lib/contact";
@@ -7,12 +8,7 @@ const title = "Chính sách cookie";
 const description = "Website WOKIN TOOLS Việt Nam không dùng cookie quảng cáo hay cookie theo dõi.";
 const canonical = "/chinh-sach-cookie/";
 
-export const metadata: Metadata = {
-  title,
-  description,
-  alternates: { canonical },
-  openGraph: { title, description, url: canonical },
-};
+export const metadata: Metadata = pageMetadata({ title: title, description, path: canonical });
 
 export default function CookiePolicyPage() {
   return <main className="page-shell">

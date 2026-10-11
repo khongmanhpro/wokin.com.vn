@@ -4,6 +4,7 @@ import { FloatingActions } from "@/components/FloatingActions";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { JsonLd } from "@/components/JsonLd";
+import { organizationJsonLd } from "@/lib/seo";
 import { absoluteUrl, HOME_DESCRIPTION, HOME_TITLE, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -17,14 +18,12 @@ export const metadata: Metadata = {
     template: "%s | WOKIN TOOLS",
   },
   description: HOME_DESCRIPTION,
-  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "vi_VN",
     siteName: SITE_NAME,
     title: HOME_TITLE,
     description: HOME_DESCRIPTION,
-    url: "/",
     images: [{ url: "/images/logo.png", alt: "WOKIN TOOLS" }],
   },
   // Raster W mark cut from the logo: SVG favicons cannot load an external <image>, so the old one rendered blank.
@@ -41,10 +40,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${saira.variable} ${beVietnam.variable}`}>
       <body>
-        <JsonLd data={[
-          { "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: SITE_URL, logo: absoluteUrl("/images/logo.png") },
-          { "@context": "https://schema.org", "@type": "WebSite", name: SITE_NAME, url: SITE_URL, inLanguage: "vi-VN" },
-        ]} />
+        <JsonLd data={organizationJsonLd()} />
         <Header />
         {children}
         <Footer />

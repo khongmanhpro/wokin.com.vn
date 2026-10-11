@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageBand } from "@/components/PageBand";
 import { CategoryCard } from "@/components/CatalogCards";
 import { categories } from "@/lib/catalog";
 
-export const metadata: Metadata = { title: "Sản phẩm", description: "Khám phá 30 danh mục dụng cụ WOKIN chuyên nghiệp tại Việt Nam.", alternates: { canonical: "/san-pham" } };
+export const metadata: Metadata = pageMetadata({ title: "Dụng cụ cầm tay, máy dụng cụ chính hãng", description: "30 danh mục dụng cụ WOKIN chính hãng tại Việt Nam: dụng cụ cầm tay, máy dụng cụ điện và dùng pin, dụng cụ cách điện, chống tia lửa, bảo hộ lao động.", path: "/san-pham" });
 
 export default function ProductsPage() {
   return <main className="page-shell"><PageBand title="DANH MỤC SẢN PHẨM" />

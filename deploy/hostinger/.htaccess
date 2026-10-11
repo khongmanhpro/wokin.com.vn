@@ -3,11 +3,41 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
+  # One canonical host for SEO: https://wokin.vn (no www). The X-Forwarded-Proto check keeps this
+  # from looping behind a TLS-terminating proxy/CDN. Comment out on a staging host without SSL.
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L,NE]
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L,NE]
+
   # Exact legacy-page redirects. The default Apache behavior preserves the
   # original query string; anchored sources prevent prefix matches and loops.
   RewriteRule ^about/?$ /gioi-thieu/ [R=301,L,NE]
   RewriteRule ^contact/?$ /lien-he/ [R=301,L,NE]
   RewriteRule ^distributors/?$ /nha-phan-phoi/ [R=301,L,NE]
+</IfModule>
+
+# Vietnamese 404 page from the static export (otherwise the host shows its own English page).
+ErrorDocument 404 /404.html
+
+# Compression for text assets (LiteSpeed also honours mod_deflate directives).
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml application/xml application/javascript application/json image/svg+xml
+</IfModule>
+
+# Caching: every CSS/JS file is a content-hashed /_next/static asset, so a year is safe;
+# images change rarely; HTML must revalidate so new deploys show up immediately.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType image/x-icon "access plus 30 days"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
 
 <IfModule mod_headers.c>

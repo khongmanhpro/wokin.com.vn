@@ -5,8 +5,7 @@ export function StaticHero({ title, image, eyebrow }: { title: string; image: st
     <ResponsiveBackground src={image} priority />
     <div className="static-hero-overlay" />
     <div className="container-wokin static-hero-content">
-      {eyebrow && <span className="eyebrow">{eyebrow}</span>}
-      <h1>{title}</h1>
+      <h1>{eyebrow && <><span className="eyebrow">{eyebrow}</span>{" "}</>}<span className="static-hero-title">{title}</span></h1>
     </div>
   </section>;
 }

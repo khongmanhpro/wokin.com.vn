@@ -5,10 +5,13 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from "react";
 import categoriesJson from "@/data/categories.json";
+import categoryPathsJson from "@/data/category-paths.json";
 import glossaryJson from "@/data/vi-glossary.json";
 import { siteSettings, type NavLink } from "@/lib/site-settings";
 
 const categories = categoriesJson as { id: number; slug: string }[];
+const categoryPaths = categoryPathsJson as Record<string, string>;
+const categoryHref = (slug: string) => `/danh-muc/${categoryPaths[slug] ?? slug}`;
 type SearchProduct = { id: number; sku: string; name: string; slug: string; categories: string[]; image: string | null };
 const glossary = glossaryJson as unknown as { categories: Record<string, string>; ui: Record<string, string>; marketing: Record<string, string> };
 const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -238,7 +241,7 @@ export function Header() {
             const entries = links.map((link) => <li key={`${index}-${link.url}`}><NavAnchor item={link} onClick={closeDrawer} /></li>);
             // Category shortcuts follow the products entry, as before the menu became editable.
             return index === 0
-              ? [...entries, ...categories.map((category) => <li key={category.id}><Link href={`/danh-muc/${category.slug}`} onClick={closeDrawer}>{glossary.categories[category.slug] ?? category.slug}</Link></li>)]
+              ? [...entries, ...categories.map((category) => <li key={category.id}><Link href={categoryHref(category.slug)} onClick={closeDrawer}>{glossary.categories[category.slug] ?? category.slug}</Link></li>)]
               : entries;
           })}
         </ul>

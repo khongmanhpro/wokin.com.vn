@@ -95,7 +95,7 @@ test("global interaction styles provide visible focus, touch targets, and reduce
 
 test("home hero exposes a single h1 and packaging tables expose column headers", () => {
   const hero = readSource("src/components/HeroSlider.tsx");
-  assert.match(hero, /index === 0 \? <h1 className="hero-title">/, "only the first hero slide may render an h1");
+  assert.match(hero, /index === 0\s*\? <h1 className="hero-heading">/, "only the first hero slide may render an h1");
   assert.equal(hero.match(/<h1\b/g)?.length, 1);
 
   const productPage = readSource("src/app/san-pham/[slug_vi]/page.tsx");

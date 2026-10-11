@@ -60,7 +60,7 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 _Cập nhật: 2026-10-11 (phiên tối) bởi Claude. Phiên mới: đọc mục này và mục 3 trước, rồi `git fetch && gh pr list`._
 
 ### Tóm tắt một dòng
-Website (Next.js static) và admin (Payload CMS) đã làm xong, chạy được local. **PR #6 đã merge vào `main`; còn PR #7 chờ người dùng merge**; chưa deploy.
+Website (Next.js static) và admin (Payload CMS) đã làm xong, chạy được local. **PR #6 và #7 đã merge vào `main`; PR SEO đợt 1 (`feat/seo-wave1`) chờ merge**; chưa deploy.
 
 ### PR đang mở (github.com/khongmanhpro/wokin.com.vn) và thứ tự merge
 PR #1 (vá dependency website) **đã merge** vào `main`. Lệnh merge của agent bị chế độ tự động chặn ("merge chưa review"), nên **người dùng phải tự bấm merge**.
@@ -89,11 +89,12 @@ Chỉ còn merge #7 rồi đóng #2, #5.
 - Website static đọc `src/data/site-settings.json`; admin ghi file này bằng `npm run site-settings:export`.
 
 ### Việc tiếp theo (theo ưu tiên)
-1. Người dùng merge #7, đóng #2 và #5.
+1. Người dùng merge PR SEO đợt 1, đóng #2 và #5 (#7 đã merge `1e6aeb5`).
 2. Chọn hosting cho admin (VPS Node/Docker + PostgreSQL + HTTPS). Xem `DEPLOYMENT.md` mục Admin và A6.
 3. Deploy website tĩnh lên Hostinger staging, kiểm tra `.htaccess` và Lighthouse (R1).
-4. Chờ WOKIN cấp ảnh lifestyle, video Racing, ảnh GP20V (D1); bộ phận pháp lý duyệt trang chính sách.
-5. Tuỳ chọn: đổ bóng đồng bộ cho thẻ sản phẩm và băng chuyền; lấy thứ tự SP gốc (cần quyết định vì quy tắc không crawl).
+4. Cung cấp dữ liệu SEO đợt 2 (S1): tên SP trùng, "(Công nghiệp)", dữ kiện Giới thiệu, email, danh sách SP chủ lực.
+5. Chờ WOKIN cấp ảnh lifestyle, video Racing, ảnh GP20V (D1); bộ phận pháp lý duyệt trang chính sách.
+6. Tuỳ chọn: đổ bóng đồng bộ cho thẻ sản phẩm và băng chuyền; lấy thứ tự SP gốc (cần quyết định vì quy tắc không crawl).
 
 ### Ghi chú người dùng
 Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơn giản, ít thuật ngữ, nói rõ "đã làm gì, còn gì, bạn cần làm gì".
@@ -134,6 +135,7 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 | A5 | Website đọc Cài đặt/Menu từ `src/data/site-settings.json` | **Xong** (PR #3 merge, vào `main` qua #6) | — | Admin ghi file bằng `npm run site-settings:export` |
 | A2 | Migration `20261011_000001_contact_submissions_locked_documents` | Có trên nhánh admin-ui | Vận hành | Bắt buộc chạy ở mọi DB đã chạy migration 20260920, nếu không mọi thao tác update đều lỗi SQL |
 | A3 | CI admin đỏ từ 92c6f93 | **Đã sửa** (PR #2: `38d7852`, `2b531a8`) | — | Commit file evidence, port glossary builder, CI import catalog đầy đủ 2 lần + kiểm tra lặp lại, thêm `CONTACT_ALLOWED_ORIGINS` |
+| S1 | Review SEO (cấu trúc, AI, từ khoá): `docs/seo-audit-2026-10-11.md` | **Đợt 1 xong trên `feat/seo-wave1`, chờ merge PR**; đợt 2 chờ người dùng/WOKIN | Người dùng | Lỗi chính: URL danh mục tiếng Anh (cần đồng ý đổi), thẻ chia sẻ sai ở danh mục/`/san-pham`/GP20V, H1 trang chủ không có từ khoá, SP mỏng (~150 chữ) + 293 SP trùng tên, schema doanh nghiệp sơ sài, `.htaccess` thiếu HTTPS/www/nén/cache/404 |
 | A4 | Vá bảo mật admin | **Đã vào `main` qua PR #6**; PR #5 chờ người dùng đóng | Người dùng | Payload 3.90.2, Next 16.3.8, sharp 0.35.5, override undici/chokidar; audit high/critical 0 (còn 5 moderate esbuild trong drizzle-kit, chưa có bản vá upstream); migration `20261011_085955_payload_3_90_auth_reset_throttle` |
 
 ---
@@ -152,6 +154,7 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 | `CODEX-HANDOFF.md` | Chi tiết nghiệm thu từng phase 0–11 | Đúng (lịch sử chi tiết) |
 | `docs/phase-11-acceptance.md` | Biên bản nghiệm thu cuối: Lighthouse, blocker, so sánh giao diện | Đúng tại 2026-09-14 |
 | `docs/data-model.md`, `src/data/README.md` | Schema dữ liệu catalog | |
+| `docs/seo-audit-2026-10-11.md` | Review SEO kỹ thuật + AI + từ khoá, lộ trình 3 đợt | Đúng tại 2026-10-11 |
 | `DEPLOYMENT.md`, `RELEASE-CHECKLIST.md` | Quy trình đóng gói, staging, GO/NO-GO, rollback | |
 | `BAO-CAO-NGHIEN-CUU.md` | Nghiên cứu site gốc | Lịch sử |
 | `.hermes/plans/*` | Roadmap Payload CMS / admin UX | |
@@ -173,6 +176,29 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-10-11 — Claude — SEO đợt 1: URL danh mục tiếng Việt, metadata, schema, .htaccess, llms.txt
+**Yêu cầu:** người dùng đồng ý đổi URL danh mục sang tiếng Việt và làm đợt 1 của review SEO.
+**Đã làm (nhánh `feat/seo-wave1` từ `main` sau khi #7 merge):**
+- URL danh mục: `src/data/category-paths.json` (slug EN → đường dẫn VI, ví dụ `ppe` → `bao-ho-lao-dong`). Slug EN vẫn là khoá nội bộ (dữ liệu, glossary, search index, admin không đổi). `catalog.ts` thêm `Category.path`, `categoryHref()`, `getCategoryByPath()`; route, sitemap, header, thẻ danh mục, breadcrumb, validator và smoke đọc bảng này.
+- `src/lib/seo.ts`: `pageMetadata()` cho mọi trang (og:url/type/siteName/locale đúng từng trang), `categoryMetadata()` (title "… chính hãng", mô tả kèm hotline), `organizationJsonLd()` (địa chỉ, hotline, MST, sameAs từ `site-settings.json`), `storeJsonLd()` cho Liên hệ, `specProperties()` → `additionalProperty` + `mpn` trong Product.
+- Tiêu đề/H1: H1 trang chủ = "Dụng cụ cầm tay & máy dụng cụ WOKIN" + khẩu hiệu; GP20V, `/san-pham`, Giới thiệu, Liên hệ, Tuyển đại lý có title chứa từ khoá; tên SP > 46 ký tự bỏ hậu tố thương hiệu.
+- Alt ảnh thẻ danh mục, banner, hero, trang đại lý. `not-found.tsx` tiếng Việt (noindex). Route `/llms.txt`.
+- `.htaccess`: www → không www, HTTP → HTTPS, `ErrorDocument 404`, nén, cache. Cập nhật `DEPLOYMENT.md`, `AGENTS.md`.
+- Test mới `tests/seo-structure.test.mjs`; sửa 2 test cũ theo cấu trúc mới; validator chấp nhận title không hậu tố.
+**Kiểm chứng:** gate đầy đủ PASS (audit 0, typecheck, 100/100 test, validate/check data, build 1455 trang, validate:export 1449 route + smoke). Script audit trên `out/`: og:url đúng từng trang, 0 ảnh nội dung thiếu alt ở trang chủ/`/san-pham`, 1.298/1.357 Product có `additionalProperty`. Browser: trang chủ, GP20V, `/san-pham` → `/danh-muc/bao-ho-lao-dong/` (phân trang `/trang/2/`), `404.html` hiển thị đúng.
+**Commit:** xem PR `feat/seo-wave1`
+**Còn dở / rủi ro:** `.htaccess` (redirect, nén, cache, 404) chỉ kiểm được trên Hostinger. Admin `full-normalizer.ts` vẫn gán `seo.canonicalPath` mặc định `/danh-muc/<slug EN>` cho bản nháp danh mục (website không đọc trường này). Đợt 2 (tên trùng, "(Công nghiệp)", mô tả SP, dữ kiện Giới thiệu) chờ người dùng/WOKIN.
+**Việc tiếp theo:** người dùng merge PR; đo lại tốc độ trên staging.
+
+### 2026-10-11 — Claude — Review SEO cấu trúc, SEO cho AI, SEO từ khoá
+**Yêu cầu:** review SEO thật gắt theo chuẩn SEO AI và SEO từ khoá, chỉ ra cách lên top.
+**Đã làm:** dùng script đọc HTML trong `out/` (title, meta, OG, H1–H3, JSON-LD, alt, liên kết nội bộ, số chữ), đọc robots, sitemap, `.htaccess`, số đo Lighthouse cũ; tìm thử thương hiệu WOKIN trên web. Viết `docs/seo-audit-2026-10-11.md`.
+**Phát hiện chính:** og:url/og:title của trang chủ lọt sang danh mục, `/san-pham`, `/san-pham-moi`, `/gp20v` (do `openGraph` trong layout); 30 slug danh mục tiếng Anh; H1 trang chủ và GP20V là khẩu hiệu; trung vị ~150 chữ/trang SP, 293 SP trùng tên chỉ khác SKU, 488 SP trong 193 nhóm chỉ khác số; 228 title > 60 ký tự; Organization schema không có địa chỉ/hotline/sameAs dù `site-settings.json` có sẵn; Product schema không có `offers`/`additionalProperty`; `.htaccess` chưa có HTTPS/www/nén/cache/ErrorDocument, 404 tiêu đề tiếng Anh; alt rỗng 34/36 ảnh trang chủ. Tốt: HTML tĩnh, 0 SP mồ côi, canonical đúng, 0 title/description trùng.
+**Kiểm chứng:** script Python trên `out/` (kết quả ghi trong báo cáo). Không đo được lượng tìm kiếm VN (công cụ cần Search Console đã xác minh).
+**Commit:** chưa commit
+**Còn dở / rủi ro:** chưa sửa gì trong code.
+**Việc tiếp theo:** người dùng duyệt đợt 1 (đặc biệt đổi URL danh mục sang tiếng Việt) → Claude sửa.
 
 ### 2026-10-11 — Claude — Kiểm tra sau khi PR #6 được merge
 **Yêu cầu:** đọc WORKLOG và tiếp tục.

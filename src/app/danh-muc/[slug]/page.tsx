@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CategoryArchive } from "@/components/CategoryArchive";
-import { categories, getCategoryBySlug } from "@/lib/catalog";
+import { categories, getCategoryByPath } from "@/lib/catalog";
+import { categoryMetadata } from "@/lib/seo";
 
 export const dynamicParams = false;
-export function generateStaticParams() { return categories.map((category) => ({ slug: category.slug })); }
+// The route segment is the Vietnamese category path (see src/data/category-paths.json).
+export function generateStaticParams() { return categories.map((category) => ({ slug: category.path })); }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const category = getCategoryBySlug(slug);
-  if (!category) return {};
-  return { title: category.nameVi, description: `Danh mục ${category.nameVi} WOKIN: ${category.count} sản phẩm chuyên nghiệp, thông số rõ ràng và hình ảnh chi tiết.`, alternates: { canonical: `/danh-muc/${slug}` } };
+  const category = getCategoryByPath(slug);
+  return category ? categoryMetadata(category) : {};
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (!getCategoryBySlug(slug)) notFound();
-  return <CategoryArchive slug={slug} />;
+  const category = getCategoryByPath(slug);
+  if (!category) notFound();
+  return <CategoryArchive slug={category.slug} />;
 }
