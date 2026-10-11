@@ -35,7 +35,7 @@
 
 ### 1.5 Chuẩn tiếng Việt chuyên ngành (bắt buộc)
 - Tên SP: lấy **`name_vi`** từ `data/products_vi.json` (map qua `id`). KHÔNG dùng name_en ở bất kỳ chỗ nào hiển thị.
-- URL sản phẩm: `/san-pham/{slug_vi}` · danh mục: `/danh-muc/{slug-en-của-category}` (slug category giữ tiếng Anh để ổn định, tên hiển thị VI theo glossary "categories").
+- URL sản phẩm: `/san-pham/{slug_vi}` · danh mục: `/danh-muc/{đường dẫn VI}` lấy từ `src/data/category-paths.json` (từ 2026-10-11; slug tiếng Anh chỉ còn là khoá nội bộ). Đổi đường dẫn sau khi site chạy thì phải thêm redirect 301.
 - Mọi label UI, menu, nút bấm: tra `vi-glossary.json > ui`. Copy marketing: mục `marketing`. Thuật ngữ trong spec/descriptions khi cần hiển thị thêm: mục `terms`, `spec_labels`.
 - `<html lang="vi">`. Font Tomorrow không đủ glyph tiếng Việt đầy đủ → load kèm font fallback có dấu (VD: Be Vietnam Pro cho body, Tomorrow chỉ cho heading số/la-tinh; kiểm tra glyph 'ữ ệ ơ' render đúng).
 

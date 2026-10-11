@@ -1,4 +1,5 @@
 import catalogJson from "@/data/catalog.generated.json";
+import categoryPathsJson from "@/data/category-paths.json";
 import glossaryJson from "@/data/vi-glossary.json";
 import { assertCatalogSnapshot, type CatalogSnapshot } from "@/lib/catalog-schema";
 import { responsiveImageMetadata, type ResponsiveImageVariant } from "@/lib/responsive-images";
@@ -43,9 +44,13 @@ export interface Category {
   name: string;
   nameVi: string;
   slug: string;
+  /** Vietnamese URL segment after /danh-muc/; `slug` stays the internal key. */
+  path: string;
   count: number;
   parent: number;
   image: string;
+  /** Name of the representative product shown on the category card. */
+  imageAlt: string;
 }
 
 interface Glossary {
@@ -62,6 +67,16 @@ export interface ProductSpec {
 }
 
 export const glossary = glossaryJson as unknown as Glossary;
+
+const categoryPaths = categoryPathsJson as Record<string, string>;
+
+export function categoryPath(slug: string): string {
+  return categoryPaths[slug] ?? slug;
+}
+
+export function categoryHref(slug: string, page = 1): string {
+  return page > 1 ? `/danh-muc/${categoryPath(slug)}/trang/${page}` : `/danh-muc/${categoryPath(slug)}`;
+}
 assertCatalogSnapshot(catalogJson);
 const catalogSnapshot: CatalogSnapshot = catalogJson;
 
@@ -117,15 +132,20 @@ export const categories: Category[] = catalogSnapshot.categories.map((category) 
     count: category.count,
     id: category.legacySourceId,
     image: representative?.images[0]?.src ?? "/images/logo.png",
+    imageAlt: representative ? `${representative.name} – ${category.translation.name} WOKIN` : "WOKIN TOOLS",
     name: category.sourceName,
     nameVi: category.translation.name,
     parent: category.parentInternalId ? Number(category.parentInternalId.slice("category:".length)) : 0,
+    path: categoryPath(category.slug),
     slug: category.slug,
   };
 });
 
 if (products.length !== 1357) throw new Error(`Sai số lượng sản phẩm: ${products.length}`);
 if (categories.length !== 30) throw new Error(`Sai số lượng danh mục: ${categories.length}`);
+if (new Set(categories.map((category) => category.path)).size !== categories.length) {
+  throw new Error("Đường dẫn danh mục không duy nhất");
+}
 if (new Set(products.map((product) => product.slugVi)).size !== products.length) {
   throw new Error("slug_vi sản phẩm không duy nhất");
 }
@@ -146,6 +166,10 @@ export function getProductsByCategory(slug: string): Product[] {
 
 export function getCategoryBySlug(slug: string): Category | undefined {
   return categories.find((category) => category.slug === slug);
+}
+
+export function getCategoryByPath(path: string): Category | undefined {
+  return categories.find((category) => category.path === path);
 }
 
 export function getNewProducts(n = 24): Product[] {

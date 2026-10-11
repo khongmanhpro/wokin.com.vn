@@ -1,37 +1,22 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { CategoryCard } from "@/components/CatalogCards";
 import { CategoryCarousel } from "@/components/CategoryCarousel";
 import { HeroSlider } from "@/components/HeroSlider";
 import { DistributorCta } from "@/components/DistributorCta";
 import { ResponsiveProductImage } from "@/components/ResponsiveProductImage";
-import { categories, getProductsByCategory, glossary, type ProductImage } from "@/lib/catalog";
+import { categories, categoryHref, getProductsByCategory, glossary, type ProductImage } from "@/lib/catalog";
 import { HOME_DESCRIPTION, HOME_TITLE } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: { absolute: HOME_TITLE },
-  description: HOME_DESCRIPTION,
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: HOME_TITLE,
-    description: HOME_DESCRIPTION,
-    url: "/",
-    images: [{ url: "/images/logo.png", alt: "WOKIN TOOLS Việt Nam" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: HOME_TITLE,
-    description: HOME_DESCRIPTION,
-    images: ["/images/logo.png"],
-  },
-};
+export const metadata: Metadata = pageMetadata({ title: HOME_TITLE, description: HOME_DESCRIPTION, path: "/", absoluteTitle: true, imageAlt: "WOKIN TOOLS Việt Nam" });
 
 // Image beside copy on a dark band, like the Racing and GP20V sections of wokintools.com.
 function SplitBanner({ image, eyebrow, title, text, href, label, reverse = false, light = false }: { image: ProductImage; eyebrow?: string; title: string; text: string; href: string; label: string; reverse?: boolean; light?: boolean }) {
   return <section className={`split-banner${reverse ? " split-banner-reverse" : ""}${light ? " split-banner-light" : ""}`}>
     <div className="container-wokin split-banner-inner">
       <div className="split-banner-media">
-        <ResponsiveProductImage image={image} alt="" fallbackWidth={800} fallbackHeight={800} sizes="(max-width: 767px) 100vw, 560px" />
+        <ResponsiveProductImage image={image} alt={image.alt} fallbackWidth={800} fallbackHeight={800} sizes="(max-width: 767px) 100vw, 560px" />
       </div>
       <div className="split-banner-copy">
         {eyebrow && <span className="eyebrow">{eyebrow}</span>}
@@ -59,7 +44,7 @@ export default function HomePage() {
       </div>
       <CategoryCarousel label="Danh mục sản phẩm">{categories.map((category) => <CategoryCard category={category} key={category.id} />)}</CategoryCarousel>
     </section>
-    <SplitBanner image={racing.images[0] ?? fallbackImage} eyebrow="WOKIN RACING" title={glossary.marketing["EMBRACE THE SPIRIT OF RACING GREATNESS!"]} text={glossary.marketing["Choose WOKIN for their consistent performance, allowing you to focus on your racing goals with peace of mind. Let’s explore reliable automotive repair tools."]} href="/danh-muc/automotive-tools" label={glossary.ui.EXPLORE} />
+    <SplitBanner image={racing.images[0] ?? fallbackImage} eyebrow="WOKIN RACING" title={glossary.marketing["EMBRACE THE SPIRIT OF RACING GREATNESS!"]} text={glossary.marketing["Choose WOKIN for their consistent performance, allowing you to focus on your racing goals with peace of mind. Let’s explore reliable automotive repair tools."]} href={categoryHref("automotive-tools")} label={glossary.ui.EXPLORE} />
     <SplitBanner image={gp20v.images[0] ?? fallbackImage} eyebrow="GP20V" title={glossary.marketing["ONE BATTERY, ENDLESS\nPOSSIBILITY."]} text={glossary.marketing["Experience the freedom of choice as our Lithium Battery Tool Series, offering an ever-growing range of high-performance tools to meet your evolving needs. From drills to saws, and from trimmers to blowers, our collection is designed to empower you with the right tool for every task."]} href="/gp20v" label={glossary.ui["EXPLORE GP20V"]} reverse light />
     <DistributorCta text={glossary.marketing["Join our brand as a valued agent, representing our exceptional range of 3000+ products worldwide, and unlock your true potential."]} />
   </main>;

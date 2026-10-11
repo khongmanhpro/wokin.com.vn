@@ -26,6 +26,10 @@ CI chạy cùng các gate trên `ubuntu-latest` và chỉ upload hai nhóm build
 
 Quy trình release, staging verification, rollback và approval gate đầy đủ nằm trong `RELEASE-CHECKLIST.md`.
 
+## Host chuẩn, nén, cache, 404
+
+`.htaccess` chuyển `www.` → không `www` và `http` → `https` (301), trả `404.html` tiếng Việt cho URL không tồn tại, bật nén gzip và cache: CSS/JS/font trong `/_next/static/` 1 năm (tên file có hash), ảnh 30 ngày, HTML luôn kiểm tra lại. Trên staging chưa có SSL thì comment hai dòng ép HTTPS. Kiểm tra sau upload: `curl -I http://www.<domain>/` phải ra một 301 tới `https://<domain>/`; `curl -I https://<domain>/khong-co/` phải ra 404 với trang tiếng Việt.
+
 ## Redirect URL legacy
 
 `.htaccess` chuyển hướng 301 trực tiếp `/about/` sang `/gioi-thieu/`, `/contact/` sang `/lien-he/` và `/distributors/` sang `/nha-phan-phoi/`. Rule được neo toàn bộ path nên không bắt nhầm URL con hoặc tạo loop. Apache giữ query string theo mặc định, ví dụ `/contact/?utm_source=legacy` chuyển một bước đến `/lien-he/?utm_source=legacy`.

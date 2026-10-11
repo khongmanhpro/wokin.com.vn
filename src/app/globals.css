@@ -1252,3 +1252,11 @@ button.page-link.active { background: var(--primary); }
   box-shadow: 0 10px 26px rgb(0 0 0 / 14%), 0 3px 8px rgb(0 0 0 / 8%);
   transform: translateY(-3px);
 }
+
+/* H1 = keyword eyebrow + slogan, so search engines read the topic while the visual stays the same. */
+.hero-heading { margin: 0; font: inherit; }
+.hero-heading > span { display: block; }
+.static-hero h1:has(.eyebrow) { margin-top: 0; }
+.static-hero h1 .eyebrow { display: block; margin-bottom: 10px; }
+.static-hero h1 .static-hero-title { display: block; }
+.archive-intro a { color: #c25b00; text-decoration: underline; }

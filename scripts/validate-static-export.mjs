@@ -53,6 +53,8 @@ function expectedRoutes(dataDir) {
     }))
     : readJson(path.join(dataDir, "products_vi.json"));
   const categories = snapshot?.categories ?? readJson(path.join(dataDir, "categories.json"));
+  const pathsFile = path.join(dataDir, "category-paths.json");
+  const categoryPaths = existsSync(pathsFile) ? readJson(pathsFile) : {};
   const slugsById = new Map(translations.map((translation) => [translation.id, translation.slug_vi]));
   const routes = new Set(STATIC_ROUTES);
   for (const product of products) {
@@ -63,8 +65,9 @@ function expectedRoutes(dataDir) {
   for (const category of categories) {
     const count = products.filter((product) => product.categories?.some((reference) => reference.slug === category.slug)).length;
     const pages = Math.max(1, Math.ceil(count / PRODUCTS_PER_PAGE));
-    routes.add(`/danh-muc/${category.slug}/`);
-    for (let page = 2; page <= pages; page += 1) routes.add(`/danh-muc/${category.slug}/trang/${page}/`);
+    const segment = categoryPaths[category.slug] ?? category.slug;
+    routes.add(`/danh-muc/${segment}/`);
+    for (let page = 2; page <= pages; page += 1) routes.add(`/danh-muc/${segment}/trang/${page}/`);
   }
   return { routes, products, translations };
 }
@@ -178,7 +181,8 @@ export function validateStaticExport(options) {
       if (h1s.length !== 1 || !h1s[0]) errors.push(`Product H1 không hợp lệ cho ${route}: found ${h1s.length}.`);
       else {
         productH1s.set(route, h1s[0]);
-        if (title !== `${h1s[0]} | WOKIN TOOLS`) errors.push(`Product title không khớp H1 cho ${route}: ${title}.`);
+        // Long names drop the brand suffix (src/lib/seo.ts) so Google does not truncate them.
+        if (title !== `${h1s[0]} | WOKIN TOOLS` && title !== h1s[0]) errors.push(`Product title không khớp H1 cho ${route}: ${title}.`);
       }
 
       const jsonLd = jsonLdFromHtml(html, route, errors);

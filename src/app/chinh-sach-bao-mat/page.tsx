@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { companyContact } from "@/lib/contact";
 
@@ -6,12 +7,7 @@ const title = "Chính sách bảo mật";
 const description = "Cách Workman thu thập, sử dụng và bảo vệ thông tin bạn gửi qua website WOKIN TOOLS Việt Nam.";
 const canonical = "/chinh-sach-bao-mat/";
 
-export const metadata: Metadata = {
-  title,
-  description,
-  alternates: { canonical },
-  openGraph: { title, description, url: canonical },
-};
+export const metadata: Metadata = pageMetadata({ title: title, description, path: canonical });
 
 // Describes only what the site actually does today: the contact form, anti-spam checks and no tracking.
 export default function PrivacyPage() {

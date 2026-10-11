@@ -45,6 +45,6 @@ test("contact page uses the verified Workman contact details", () => {
 
 test("contact page keeps its Vietnamese canonical metadata", () => {
   assert.match(contactPage, /const canonical = "\/lien-he\/"/);
-  assert.match(contactPage, /alternates:\s*\{ canonical \}/);
-  assert.match(contactPage, /openGraph:\s*\{ title, description, url: canonical \}/);
+  // canonical + openGraph url come from the shared pageMetadata() builder.
+  assert.match(contactPage, /pageMetadata\(\{[^}]*path: canonical/);
 });

@@ -41,10 +41,12 @@ export async function smokeStaticServer(options) {
   if (!existsSync(options.outDir)) throw new Error(`Export directory không tồn tại: ${options.outDir}.`);
   const translations = JSON.parse(readFileSync(path.join(options.dataDir, "products_vi.json"), "utf8"));
   const categories = JSON.parse(readFileSync(path.join(options.dataDir, "categories.json"), "utf8"));
+  const pathsFile = path.join(options.dataDir, "category-paths.json");
+  const categoryPaths = existsSync(pathsFile) ? JSON.parse(readFileSync(pathsFile, "utf8")) : {};
   if (!translations[0]?.slug_vi || !categories[0]?.slug) throw new Error("Không suy ra được representative catalog routes.");
   const routes = [
     "/", "/san-pham/", "/san-pham-moi/", "/gp20v/", "/gioi-thieu/", "/lien-he/", "/nha-phan-phoi/", "/chinh-sach-bao-mat/", "/chinh-sach-cookie/",
-    `/danh-muc/${categories[0].slug}/`, `/san-pham/${translations[0].slug_vi}/`, "/sitemap.xml", "/robots.txt",
+    `/danh-muc/${categoryPaths[categories[0].slug] ?? categories[0].slug}/`, `/san-pham/${translations[0].slug_vi}/`, "/sitemap.xml", "/robots.txt",
   ];
   const legacyRoutes = ["/about/", "/contact/", "/distributors/"];
   const server = createServer((request, response) => {

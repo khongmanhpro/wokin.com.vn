@@ -15,7 +15,7 @@ export function HeroSlider({ products }: { products: HeroProduct[] }) {
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const slides = [
-    { product: products[0], eyebrow: glossary.marketing["Crafted for Precision."], title: glossary.marketing["Trusted by Professionals."] },
+    { product: products[0], eyebrow: "Dụng cụ cầm tay & máy dụng cụ WOKIN", title: glossary.marketing["Trusted by Professionals."] },
     { product: products[1] ?? products[0], eyebrow: "WOKIN TOOLS", title: glossary.marketing["The Respect of Professionals"] },
   ];
 
@@ -63,11 +63,13 @@ export function HeroSlider({ products }: { products: HeroProduct[] }) {
   return <section className="hero" role="region" aria-roledescription="carousel" aria-label="Sản phẩm WOKIN nổi bật" tabIndex={0} onKeyDown={handleKeyDown}>
     <p className="sr-only" aria-live={paused || reducedMotion ? "polite" : "off"} aria-atomic="true">Slide {active + 1} / {slides.length}: {slides[active].title}</p>
     {slides.map((slide, index) => <div className={`hero-slide${index === active ? " active" : ""}`} role="group" aria-roledescription="slide" aria-label={`${index + 1} / ${slides.length}: ${slide.title}`} aria-hidden={index !== active} inert={index !== active} key={slide.product.id}>
-      <ResponsiveProductImage image={slide.product.images[0] ?? heroFallbackImage} alt="" fill sizes="100vw" priority={index === 0} />
+      <ResponsiveProductImage image={slide.product.images[0] ?? heroFallbackImage} alt={slide.product.images[0]?.alt ?? ""} fill sizes="100vw" priority={index === 0} />
       <div className="hero-content container-wokin">
         <div className="hero-copy">
-          <span className="eyebrow">{slide.eyebrow}</span>
-          {index === 0 ? <h1 className="hero-title">{slide.title}</h1> : <p className="hero-title">{slide.title}</p>}
+          {/* The first slide carries the page H1: keyword eyebrow + slogan in one heading. */}
+          {index === 0
+            ? <h1 className="hero-heading"><span className="eyebrow">{slide.eyebrow}</span>{" "}<span className="hero-title">{slide.title}</span></h1>
+            : <><span className="eyebrow">{slide.eyebrow}</span><p className="hero-title">{slide.title}</p></>}
           <Link className="button-primary" href={`/san-pham/${slide.product.slugVi}`}>{glossary.ui.EXPLORE}</Link>
         </div>
       </div>

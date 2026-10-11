@@ -26,8 +26,8 @@ export function ProductGrid({ products, newIds }: { products: Product[]; newIds?
 
 export function CategoryCard({ category }: { category: Category }) {
   return <article className="category-card">
-    <Link href={`/danh-muc/${category.slug}`}>
-      <div className="category-media"><ResponsiveProductImage image={{ src: category.image, alt: "", ...responsiveImageMetadata(category.image) }} alt="" fallbackWidth={500} fallbackHeight={500} sizes={cardSizes} /></div>
+    <Link href={`/danh-muc/${category.path}`}>
+      <div className="category-media"><ResponsiveProductImage image={{ src: category.image, alt: category.imageAlt, ...responsiveImageMetadata(category.image) }} alt={category.imageAlt} fallbackWidth={500} fallbackHeight={500} sizes={cardSizes} /></div>
       <span className="category-name">{category.nameVi}</span>
     </Link>
   </article>;

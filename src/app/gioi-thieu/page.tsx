@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { DistributorCta } from "@/components/DistributorCta";
 import { StaticHero } from "@/components/StaticHero";
@@ -8,12 +9,7 @@ const title = "Giới thiệu";
 const description = "Tìm hiểu WOKIN TOOLS, thương hiệu dụng cụ chuyên nghiệp được tin dùng tại hơn 100 quốc gia.";
 const canonical = "/gioi-thieu/";
 
-export const metadata: Metadata = {
-  title,
-  description,
-  alternates: { canonical },
-  openGraph: { title, description, url: canonical },
-};
+export const metadata: Metadata = pageMetadata({ title: "Giới thiệu WOKIN – thương hiệu dụng cụ chuyên nghiệp", description, path: canonical });
 
 export default function AboutPage() {
   const hero = getProductsByCategory("power-tools")[0]?.images[0]?.src ?? "/images/logo.png";
