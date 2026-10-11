@@ -5,10 +5,10 @@ Một lệnh chạy cả 3 phần:
 | Container | Việc | Cổng trên VPS |
 |---|---|---|
 | `db` | Cơ sở dữ liệu PostgreSQL | không mở ra ngoài |
-| `admin` | Trang quản trị `admin.wokin.vn` + nút **Xuất bản website** | `127.0.0.1:3000` |
-| `web` | Website `wokin.vn` (nginx, file tĩnh do nút Xuất bản tạo) | `127.0.0.1:8080` |
+| `admin` | Trang quản trị `admin.wokin.vn` + nút **Xuất bản website** | `127.0.0.1:47310` |
+| `web` | Website `wokin.vn` (nginx, file tĩnh do nút Xuất bản tạo) | `127.0.0.1:47311` |
 
-nginx sẵn có trên VPS giữ HTTPS và chuyển tiếp vào 2 cổng trên.
+nginx sẵn có trên VPS giữ HTTPS và chuyển tiếp vào 2 cổng trên. Hai cổng này cố ý chọn số lạ để không trùng app khác (3000/8080 hay bị dùng); muốn đổi thì sửa `ADMIN_PORT`/`WEB_PORT` trong `.env` và `proxy_pass` trong cấu hình nginx.
 
 ## 0. Yêu cầu
 

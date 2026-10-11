@@ -180,6 +180,12 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-11 — Claude — Đổi cổng Docker mặc định; prompt cài đặt cho Claude trên VPS
+**Yêu cầu:** viết prompt để Claude trên VPS tự clone và cài; đổi cổng vì VPS có thể đang dùng 3000.
+**Đã làm:** cổng mặc định trên VPS: admin `127.0.0.1:47310`, web `127.0.0.1:47311` (compose, `.env.docker.example`, mẫu nginx, `DEPLOY-DOCKER.md`); container admin vẫn nghe 3000 bên trong. Prompt `docs/prompts/VPS-DOCKER-INSTALL.md`: khảo sát chỉ-đọc trước, sao lưu nginx/DB/ảnh, hỏi trước mọi bước khó hoàn tác, chuyển admin trước rồi website, kiểm tra bằng curl, báo cáo tiếng Việt. PR #9 đã được người dùng merge (`c645f2b`).
+**Kiểm chứng:** `docker compose config` hiển thị cổng 47310 (admin) và 47311 (web).
+**Commit:** nhánh `chore/docker-ports`
+
 ### 2026-10-11 — Claude — Bộ Docker chuẩn cho VPS
 **Yêu cầu:** tạm giữ trang sửa SP như hiện tại; dựng Docker chuẩn rồi đẩy GitHub để người dùng clone về VPS.
 **Đã làm:**
