@@ -216,7 +216,7 @@ export interface Media {
   path: string;
   storageKey: string;
   /**
-   * Mô tả ngắn nội dung ảnh để hỗ trợ người dùng trình đọc màn hình.
+   * Mô tả ngắn nội dung ảnh (tốt cho Google), ví dụ "Cờ lè vạn năng 9-32mm".
    */
   alt: string;
   metadata:

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import type { Endpoint } from 'payload'
 
 import { isActiveAdmin } from '../access/hasCapability'
+import { mediaUploadDirectory } from './mediaUpload'
 
 const publicRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public')
 
@@ -15,9 +16,13 @@ export const mediaPreviewEndpoint: Endpoint = {
     try {
       const doc = await req.payload.findByID({ collection: 'media', id: String(req.routeParams?.id || ''), overrideAccess: false, req })
       const relativePath = doc.path.replace(/^\//, '')
-      if (!relativePath.startsWith('images/') || relativePath.includes('..') || relativePath.includes('\\')) return new Response(null, { status: 404 })
-      const filePath = await realpath(path.resolve(publicRoot, relativePath))
-      const root = await realpath(publicRoot)
+      if (relativePath.includes('..') || relativePath.includes('\\')) return new Response(null, { status: 404 })
+      // Catalog images live in the website's public/images; admin uploads (media/uploads/<file>) in MEDIA_UPLOAD_DIR.
+      const isUpload = relativePath.startsWith('media/uploads/')
+      if (!isUpload && !relativePath.startsWith('images/')) return new Response(null, { status: 404 })
+      const baseDir = isUpload ? mediaUploadDirectory : publicRoot
+      const filePath = await realpath(path.resolve(baseDir, isUpload ? relativePath.slice('media/uploads/'.length) : relativePath))
+      const root = await realpath(baseDir)
       if (!filePath.startsWith(`${root}${path.sep}`)) return new Response(null, { status: 404 })
       const mime = ({ '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' } as Record<string, string>)[path.extname(filePath).toLowerCase()]
       if (!mime) return new Response(null, { status: 404 })

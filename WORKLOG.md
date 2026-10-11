@@ -180,6 +180,14 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-11 — Claude — Sửa lỗi tải ảnh từ máy lên sản phẩm
+**Yêu cầu:** người dùng tải ảnh từ máy vào sản phẩm thì báo lỗi, không đăng được.
+**Nguyên nhân (từ log dev server):** (1) `PATCH /api/media/:id` 400: form admin gửi lại các trường tệp (url/thumbnailURL tính toán) → hook `deriveMediaMetadata` coi là sửa trái phép, chặn cả việc sửa mô tả/quyền ảnh; (2) `/api/media/preview/:id` 404 với ảnh tải lên (chỉ đọc `public/images`); (3) ô quan hệ hiện `media/uploads/<uuid>` vì `useAsTitle: storageKey`.
+**Đã sửa:** giữ nguyên trường tệp từ bản lưu thay vì báo lỗi; preview đọc `MEDIA_UPLOAD_DIR` cho `media/uploads/`; Media `useAsTitle: 'alt'`; mô tả ảnh trống khi tải lên tự lấy từ tên tệp. Test mới `tests/media-upload-edit.test.ts`.
+**Kiểm chứng:** admin typecheck + test PASS; trên admin local: PATCH ảnh 200, preview 200 image/jpeg; bấm Xuất bản → trang `co-le-van-nang` trong bản mới dùng `images/products/uploads/<file>` + ảnh webp responsive; checkout website sạch.
+**Commit:** nhánh local `fix/admin-qa` (chưa push)
+**Còn dở:** lần POST ảnh đầu tiên của người dùng trả 400 chưa xác định được lý do (log không ghi nội dung lỗi); trang sửa SP kiểu WooCommerce đang chờ người dùng duyệt bản phác.
+
 ### 2026-10-11 — Claude — Nút "Xuất bản website" trong admin (local)
 **Yêu cầu:** người dùng chọn: admin quản lý toàn bộ website + nút Xuất bản; chủ tài khoản đăng thẳng, không cần người duyệt.
 **Đã làm (nhánh local `fix/admin-qa`, commit `207f76b` + commit này; chưa push):**
