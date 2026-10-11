@@ -180,6 +180,18 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-11 — Claude — Thêm nút Đăng xuất cho admin
+**Yêu cầu:** giao diện admin không có chỗ đăng xuất.
+**Nguyên nhân:** `WokinNav` thay menu mặc định của Payload và bỏ sót nút logout. **Đã làm:** link "Đăng xuất" (`/admin/logout`) cạnh "Tài khoản" và nút ở cuối menu, có style.
+**Kiểm chứng:** admin local: bấm Đăng xuất → về `/admin/login`, `/api/admins/me` trả `user: null`; đăng nhập lại OK. Admin test PASS.
+**Ghi chú phiên:** kiểm tra từ ngoài lúc ~23:00: `https://wokin.vn` trả chứng chỉ tự ký "CN=default" (tạo 15:34 UTC) rồi 404, `http://wokin.vn` 404, `admin.wokin.vn` 404 → VPS đang dở bước chuyển nginx; đã gửi người dùng prompt khắc phục cho Claude trên VPS. Đánh giá lại tiến độ thực tế ≈ 94% (file báo cáo đang 97%), chờ người dùng chọn.
+
+### 2026-10-11 — Claude — Cập nhật chỉ số file báo cáo tiến độ
+**Yêu cầu:** cập nhật `~/Downloads/Bao_cao_tien_do_du_an_WOKIN_01-10-2026.xlsx`, chỉ đổi chỉ số đã làm.
+**Đã làm:** sửa trực tiếp XML (openpyxl sẽ làm mất biểu đồ): Admin CMS 95→96%, Production implementation 98→99%, QA/Security/Ops 88→92%, Deploy/Handover 75→80%, Sẵn sàng production 85→90%; tổng 96,4%→97,4%; bảng "Tổng quan" và cache biểu đồ khớp; bật `fullCalcOnLoad`. Không đổi ô chữ/ngày. Bản cũ giữ tại `… (ban truoc cap nhat).xlsx`.
+**Kiểm chứng:** đọc lại bằng openpyxl: công thức nguyên, 0 ô chữ thay đổi, XML hợp lệ, đủ 16 phần (có biểu đồ). Không có LibreOffice để recalc; giá trị cache tính tay khớp công thức.
+**Bổ sung (theo yêu cầu "update chuẩn"):** lưu thành file mới `~/Downloads/Bao_cao_tien_do_du_an_WOKIN_11-10-2026.xlsx` (file 01-10 trả về nguyên bản). Số trong ô chữ: "đạt 97%", ngày 30/08–11/10/2026 và Cập nhật 11/10/2026, sitemap 1.449 URL, 1.455 trang static, 12 migrations, package release 10.288 file (chạy lại `package-release` vào thư mục tạm, checksum khớp), test public 104/104 + admin 147/147, sửa chữ "Moderat" → "Moderate".
+
 ### 2026-10-11 — Claude — Đổi cổng Docker mặc định; prompt cài đặt cho Claude trên VPS
 **Yêu cầu:** viết prompt để Claude trên VPS tự clone và cài; đổi cổng vì VPS có thể đang dùng 3000.
 **Đã làm:** cổng mặc định trên VPS: admin `127.0.0.1:47310`, web `127.0.0.1:47311` (compose, `.env.docker.example`, mẫu nginx, `DEPLOY-DOCKER.md`); container admin vẫn nghe 3000 bên trong. Prompt `docs/prompts/VPS-DOCKER-INSTALL.md`: khảo sát chỉ-đọc trước, sao lưu nginx/DB/ảnh, hỏi trước mọi bước khó hoàn tác, chuyển admin trước rồi website, kiểm tra bằng curl, báo cáo tiếng Việt. PR #9 đã được người dùng merge (`c645f2b`).
