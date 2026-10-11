@@ -1,7 +1,9 @@
-export const SITE_NAME = "WOKIN TOOLS Việt Nam";
+import { siteSettings } from "@/lib/site-settings";
+
+export const SITE_NAME = siteSettings.site.siteName;
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://wokin.vn";
-export const HOME_TITLE = "WOKIN TOOLS Việt Nam | Dụng cụ cầm tay & công nghiệp";
-export const HOME_DESCRIPTION = "WOKIN TOOLS Việt Nam cung cấp dụng cụ cầm tay, máy dụng cụ, thiết bị công nghiệp và hệ pin GP20V cho xưởng, công trường và đội ngũ kỹ thuật.";
+export const HOME_TITLE = siteSettings.site.defaultTitle;
+export const HOME_DESCRIPTION = siteSettings.site.defaultDescription;
 
 export const staticPages = [
   "",
