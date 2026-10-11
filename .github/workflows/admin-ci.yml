@@ -54,6 +54,8 @@ jobs:
       DATABASE_URL: postgresql://wokin_payload:ci-local-only-password@127.0.0.1:5432/wokin_ci
       PAYLOAD_SECRET: ci-build-only-secret-000000000000000000000000
       PAYLOAD_PUBLIC_SERVER_URL: https://admin-ci.invalid
+      # Required by production env validation (import scripts run with NODE_ENV=production).
+      CONTACT_ALLOWED_ORIGINS: https://wokin-ci.invalid
       STORAGE_ADAPTER: local
     steps:
       - uses: actions/checkout@v4
