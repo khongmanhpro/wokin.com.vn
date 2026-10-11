@@ -37,3 +37,16 @@ test("product pages switch to two columns from tablet width and offer sharing", 
   assert.match(css, /@media \(max-width: 767px\) \{\s*\.product-layout \{ grid-template-columns: 1fr; \}/);
   assert.match(read("src/components/ShareButtons.tsx"), /facebook\.com\/sharer\/sharer\.php\?u=\$\{encodeURIComponent\(url\)\}/);
 });
+
+test("favicons are self-contained raster W marks for the site and the admin", () => {
+  const layout = read("src/app/layout.tsx");
+  assert.match(layout, /url: "\/favicon\.ico"/);
+  assert.doesNotMatch(layout, /favicon-w\.svg/);
+  for (const file of ["public/favicon.ico", "admin/public/favicon.ico"]) {
+    const bytes = readFileSync(path.join(projectRoot, file));
+    assert.equal(bytes.readUInt16LE(2), 1, `${file} must be an ICO file`);
+    assert.ok(bytes.length > 500, `${file} must contain image data`);
+  }
+  assert.match(read("admin/src/payload.config.ts"), /rel: 'icon', url: '\/favicon\.ico'/);
+  assert.match(read("admin/Dockerfile"), /COPY --from=builder --chown=nextjs:nodejs \/app\/public \.\/public/);
+});

@@ -27,7 +27,12 @@ export const metadata: Metadata = {
     url: "/",
     images: [{ url: "/images/logo.png", alt: "WOKIN TOOLS" }],
   },
-  icons: { icon: "/images/favicon-w.svg", shortcut: "/images/favicon-w.svg", apple: "/images/favicon-w.svg" },
+  // Raster W mark cut from the logo: SVG favicons cannot load an external <image>, so the old one rendered blank.
+  icons: {
+    icon: [{ url: "/favicon.ico", sizes: "32x32 48x48" }, { url: "/images/icon-192.png", type: "image/png", sizes: "192x192" }],
+    shortcut: "/favicon.ico",
+    apple: { url: "/images/apple-touch-icon.png", sizes: "180x180" },
+  },
 };
 
 export default function RootLayout({

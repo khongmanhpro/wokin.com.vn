@@ -133,6 +133,15 @@ _Cập nhật: 2026-10-11 bởi Claude (gộp admin vào dòng main, vá bảo m
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-11 — Claude — Favicon chữ W cho website và admin
+**Yêu cầu:** tab trình duyệt của site gốc có icon chữ W, bản mới chỉ có chữ.
+**Đã làm:**
+- Tìm ra nguyên nhân: `favicon-w.svg` chỉ nhúng `logo.png` từ bên ngoài, mà trình duyệt chặn tải ảnh ngoài trong favicon SVG nên tab hiện trống; `/favicon.ico` cũng trả 404.
+- Cắt chữ W từ `logo.png` thành `public/favicon.ico` (32/48), `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`; xoá file SVG.
+- Admin: `admin/public/favicon.ico` + `apple-touch-icon.png`, khai báo `admin.meta.icons`. Dockerfile chép thêm `public/`, vì bản build standalone không tự kèm thư mục này.
+**Kiểm chứng:** website `/favicon.ico` 200 `image/x-icon` và các thẻ link icon đúng; admin `next start` trả favicon 200 và trang login khai báo đúng icon; gate website PASS (97 test), admin 135/135.
+**Commit:** xem nhánh `feat/ui-parity` (PR #7)
+
 ### 2026-10-11 — Claude — Chỉnh giao diện giống wokintools.com (nhóm 2)
 **Yêu cầu:** "giờ chỉnh sửa giao diện đi".
 **Đã làm (nhánh `feat/ui-parity`, tách từ PR #6):**
