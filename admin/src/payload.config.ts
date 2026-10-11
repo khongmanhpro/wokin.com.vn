@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { vi } from '@payloadcms/translations/languages/vi'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -15,6 +16,8 @@ import { Products } from './collections/Products'
 import { Redirects } from './collections/Redirects'
 import { Releases } from './collections/Releases'
 import { ReviewRequests } from './collections/ReviewRequests'
+import { Navigation } from './globals/Navigation'
+import { SiteSettings } from './globals/SiteSettings'
 import { MAX_IMAGE_BYTES } from './lib/mediaUpload'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -54,6 +57,8 @@ export default buildConfig({
     },
   },
   collections: [Admins, Categories, Media, Products, ReviewRequests, Pages, Redirects, CatalogSnapshots, Releases, AuditEvents, ContactSubmissions],
+  globals: [SiteSettings, Navigation],
+  editor: lexicalEditor(),
   cors: corsOrigins,
   csrf: corsOrigins,
   db: postgresAdapter({

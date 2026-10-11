@@ -21,7 +21,7 @@ export const Media: CollectionConfig = {
   },
   access: { create: canUploadMedia, delete: canUpdateMedia, read: activeAuthenticated, update: canUpdateMedia },
   admin: {
-    defaultColumns: ['storageKey', 'path', 'width', 'height', 'rightsStatus'],
+    defaultColumns: ['thumbnail', 'storageKey', 'path', 'width', 'height', 'rightsStatus'],
     description: 'Quản lý tệp đa phương tiện, đường dẫn lưu trữ và tình trạng quyền sử dụng.',
     group: 'Nội dung',
     listSearchableFields: ['path', 'storageKey', 'contentSha256'],
@@ -29,8 +29,11 @@ export const Media: CollectionConfig = {
     useAsTitle: 'storageKey',
   },
   labels: { singular: 'Tệp đa phương tiện', plural: 'Tệp đa phương tiện' },
+  trash: true,
+  folders: true,
   hooks: { afterChange: audit.afterChange, afterDelete: audit.afterDelete, beforeOperation: [prepareMediaUpload], beforeValidate: [deriveMediaMetadata] },
   fields: [
+    { name: 'thumbnail', label: 'Ảnh', type: 'ui', admin: { components: { Cell: '/components/MediaThumbnailCell#MediaThumbnailCell', Field: false } } },
     { name: 'path', label: 'Đường dẫn tệp', type: 'text', required: true, unique: true, index: true, admin: { readOnly: true } },
     { name: 'storageKey', label: 'Mã lưu trữ', type: 'text', required: true, unique: true, index: true, admin: { readOnly: true } },
     { name: 'alt', label: 'Mô tả ảnh', type: 'text', required: true, admin: { description: 'Mô tả ngắn nội dung ảnh để hỗ trợ người dùng trình đọc màn hình.' } },

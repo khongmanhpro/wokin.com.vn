@@ -69,7 +69,6 @@ export interface Config {
   collections: {
     admins: Admin;
     categories: Category;
-    'contact-submissions': ContactSubmission;
     media: Media;
     products: Product;
     'review-requests': ReviewRequest;
@@ -78,16 +77,21 @@ export interface Config {
     'catalog-snapshots': CatalogSnapshot;
     releases: Release;
     'audit-events': AuditEvent;
+    'contact-submissions': ContactSubmission;
     'payload-kv': PayloadKv;
+    'payload-folders': FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    'payload-folders': {
+      documentsAndFolders: 'payload-folders' | 'media';
+    };
+  };
   collectionsSelect: {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
-    'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'review-requests': ReviewRequestsSelect<false> | ReviewRequestsSelect<true>;
@@ -96,7 +100,9 @@ export interface Config {
     'catalog-snapshots': CatalogSnapshotsSelect<false> | CatalogSnapshotsSelect<true>;
     releases: ReleasesSelect<false> | ReleasesSelect<true>;
     'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>;
+    'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -105,8 +111,14 @@ export interface Config {
     defaultIDType: string;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'site-settings': SiteSetting;
+    navigation: Navigation;
+  };
+  globalsSelect: {
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    navigation: NavigationSelect<false> | NavigationSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -190,27 +202,7 @@ export interface Category {
   };
   updatedAt: string;
   createdAt: string;
-}
-/**
- * Các yêu cầu liên hệ gửi từ website; chỉ quản trị viên được phân quyền mới xem được thông tin khách hàng.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "contact-submissions".
- */
-export interface ContactSubmission {
-  id: string;
-  fullName: string;
-  phone: string;
-  email?: string | null;
-  subject: 'product' | 'quote' | 'distribution' | 'other';
-  message: string;
-  consent: boolean;
-  status: 'new' | 'in_progress' | 'resolved' | 'spam';
-  notes?: string | null;
-  sourceUrl?: string | null;
-  submittedAt: string;
-  updatedAt: string;
-  createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * Quản lý tệp đa phương tiện, đường dẫn lưu trữ và tình trạng quyền sử dụng.
@@ -247,8 +239,10 @@ export interface Media {
         id?: string | null;
       }[]
     | null;
+  folder?: (string | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
   url?: string | null;
   thumbnailURL?: string | null;
   filename?: string | null;
@@ -256,6 +250,32 @@ export interface Media {
   filesize?: number | null;
   width: number;
   height: number;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders".
+ */
+export interface FolderInterface {
+  id: string;
+  name: string;
+  folder?: (string | null) | FolderInterface;
+  documentsAndFolders?: {
+    docs?: (
+      | {
+          relationTo?: 'payload-folders';
+          value: string | FolderInterface;
+        }
+      | {
+          relationTo?: 'media';
+          value: string | Media;
+        }
+    )[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  folderType?: 'media'[] | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Quản lý nội dung, trạng thái biên tập, hình ảnh và SEO của sản phẩm.
@@ -266,9 +286,9 @@ export interface Media {
 export interface Product {
   id: string;
   /**
-   * Khóa định danh nguồn, bất biến sau khi tạo.
+   * Khóa định danh nguồn, bất biến sau khi tạo. Sản phẩm tạo mới được cấp tự động từ 900000.
    */
-  legacySourceId: number;
+  legacySourceId?: number | null;
   /**
    * Có thể trống hoặc trùng; tuyệt đối không dùng làm định danh.
    */
@@ -316,7 +336,7 @@ export interface Product {
   /**
    * Dữ liệu nhập nguồn được bảo toàn để đối chiếu.
    */
-  sourceMetadata: {
+  sourceMetadata?: {
     sourceType: string;
     legacySlug: string;
     sourceName: string;
@@ -337,6 +357,7 @@ export interface Product {
   };
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * Theo dõi các yêu cầu rà soát và trạng thái xử lý dữ liệu danh mục.
@@ -358,7 +379,7 @@ export interface ReviewRequest {
   createdAt: string;
 }
 /**
- * Quản lý nội dung và trạng thái xuất bản của các trang tĩnh.
+ * Trang nội dung (Giới thiệu, Chính sách…): soạn thảo, lưu nháp, xem lại lịch sử và xuất bản.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
@@ -366,20 +387,46 @@ export interface ReviewRequest {
 export interface Page {
   id: string;
   titleVi: string;
-  slug: string;
-  status: 'draft' | 'published' | 'archived';
-  bodyVi?: string | null;
-  seo?:
-    | {
+  /**
+   * Một đến hai câu, dùng cho thẻ chia sẻ và danh sách.
+   */
+  excerptVi?: string | null;
+  bodyVi?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
         [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  seo?: {
+    /**
+     * Nên dưới 60 ký tự.
+     */
+    title?: string | null;
+    /**
+     * Nên dưới 160 ký tự.
+     */
+    description?: string | null;
+    canonicalPath?: string | null;
+    noIndex?: boolean | null;
+  };
+  /**
+   * Chữ thường không dấu, ví dụ: gioi-thieu
+   */
+  slug: string;
+  heroImage?: (string | null) | Media;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * Quản lý các đường dẫn chuyển hướng và trạng thái kích hoạt của chúng.
@@ -492,6 +539,27 @@ export interface AuditEvent {
   createdAt: string;
 }
 /**
+ * Các yêu cầu liên hệ gửi từ website; chỉ quản trị viên được phân quyền mới xem được thông tin khách hàng.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-submissions".
+ */
+export interface ContactSubmission {
+  id: string;
+  fullName: string;
+  phone: string;
+  email?: string | null;
+  subject: 'product' | 'quote' | 'distribution' | 'other';
+  message: string;
+  consent: boolean;
+  status: 'new' | 'in_progress' | 'resolved' | 'spam';
+  notes?: string | null;
+  sourceUrl?: string | null;
+  submittedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -524,10 +592,6 @@ export interface PayloadLockedDocument {
         value: string | Category;
       } | null)
     | ({
-        relationTo: 'contact-submissions';
-        value: string | ContactSubmission;
-      } | null)
-    | ({
         relationTo: 'media';
         value: string | Media;
       } | null)
@@ -558,6 +622,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'audit-events';
         value: string | AuditEvent;
+      } | null)
+    | ({
+        relationTo: 'contact-submissions';
+        value: string | ContactSubmission;
+      } | null)
+    | ({
+        relationTo: 'payload-folders';
+        value: string | FolderInterface;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -647,24 +719,7 @@ export interface CategoriesSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "contact-submissions_select".
- */
-export interface ContactSubmissionsSelect<T extends boolean = true> {
-  fullName?: T;
-  phone?: T;
-  email?: T;
-  subject?: T;
-  message?: T;
-  consent?: T;
-  status?: T;
-  notes?: T;
-  sourceUrl?: T;
-  submittedAt?: T;
-  updatedAt?: T;
-  createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -687,8 +742,10 @@ export interface MediaSelect<T extends boolean = true> {
         contentSha256?: T;
         id?: T;
       };
+  folder?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
   url?: T;
   thumbnailURL?: T;
   filename?: T;
@@ -767,6 +824,7 @@ export interface ProductsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -790,12 +848,22 @@ export interface ReviewRequestsSelect<T extends boolean = true> {
  */
 export interface PagesSelect<T extends boolean = true> {
   titleVi?: T;
-  slug?: T;
-  status?: T;
+  excerptVi?: T;
   bodyVi?: T;
-  seo?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        canonicalPath?: T;
+        noIndex?: T;
+      };
+  slug?: T;
+  heroImage?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -857,11 +925,41 @@ export interface AuditEventsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-submissions_select".
+ */
+export interface ContactSubmissionsSelect<T extends boolean = true> {
+  fullName?: T;
+  phone?: T;
+  email?: T;
+  subject?: T;
+  message?: T;
+  consent?: T;
+  status?: T;
+  notes?: T;
+  sourceUrl?: T;
+  submittedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T;
   data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders_select".
+ */
+export interface PayloadFoldersSelect<T extends boolean = true> {
+  name?: T;
+  folder?: T;
+  documentsAndFolders?: T;
+  folderType?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -894,6 +992,135 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Thông tin công ty, kênh liên hệ và SEO mặc định của website.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: string;
+  siteName: string;
+  legalName: string;
+  taxCode?: string | null;
+  address?: string | null;
+  hotline?: string | null;
+  email?: string | null;
+  zaloUrl?: string | null;
+  social?: {
+    facebook?: string | null;
+    youtube?: string | null;
+    tiktok?: string | null;
+  };
+  defaultTitle?: string | null;
+  defaultDescription?: string | null;
+  ogImage?: (string | null) | Media;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Menu đầu trang và liên kết chân trang của website (kéo thả để sắp xếp).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation".
+ */
+export interface Navigation {
+  id: string;
+  header?:
+    | {
+        label: string;
+        /**
+         * Ví dụ: /san-pham/ hoặc https://…
+         */
+        url: string;
+        newTab?: boolean | null;
+        children?:
+          | {
+              label: string;
+              /**
+               * Ví dụ: /san-pham/ hoặc https://…
+               */
+              url: string;
+              newTab?: boolean | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  footer?:
+    | {
+        label: string;
+        /**
+         * Ví dụ: /san-pham/ hoặc https://…
+         */
+        url: string;
+        newTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  siteName?: T;
+  legalName?: T;
+  taxCode?: T;
+  address?: T;
+  hotline?: T;
+  email?: T;
+  zaloUrl?: T;
+  social?:
+    | T
+    | {
+        facebook?: T;
+        youtube?: T;
+        tiktok?: T;
+      };
+  defaultTitle?: T;
+  defaultDescription?: T;
+  ogImage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation_select".
+ */
+export interface NavigationSelect<T extends boolean = true> {
+  header?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        newTab?: T;
+        children?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              newTab?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  footer?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        newTab?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

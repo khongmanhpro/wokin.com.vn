@@ -17,6 +17,8 @@ export const Categories: CollectionConfig = {
     useAsTitle: 'nameVi',
   },
   labels: { singular: 'Danh mục', plural: 'Danh mục' },
+  versions: { maxPerDoc: 20 },
+  trash: true,
   hooks: {
     afterChange: audit.afterChange,
     afterDelete: audit.afterDelete,

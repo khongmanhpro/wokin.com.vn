@@ -21,11 +21,14 @@
     "typecheck": "tsc --noEmit",
     "validate:snapshot": "tsx src/catalog/validate-cli.ts",
     "validate:release": "tsx src/catalog/validate-cli.ts --release --snapshot",
-    "verify": "npm run typecheck && npm test && npm run build"
+    "verify": "npm run typecheck && npm test && npm run build",
+    "site-settings:export": "npm run check:env && tsx src/catalog/site-settings-cli.ts export",
+    "site-settings:import": "npm run check:env && tsx src/catalog/site-settings-cli.ts import"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.89.0",
     "@payloadcms/next": "3.89.0",
+    "@payloadcms/richtext-lexical": "3.89.0",
     "@payloadcms/translations": "3.89.0",
     "@payloadcms/ui": "3.89.0",
     "cross-env": "7.0.3",

@@ -5,6 +5,7 @@ import { activeAuthenticated, canCreateProduct, canDeleteProduct, canUpdateProdu
 import { canChangeProductContent, canChangeProductSEO, canChangeProductStatus } from '../access/fieldAccess'
 import { enforceProductMutationPolicy } from '../access/productPolicy'
 import { enforcePublishReadiness } from '../access/publishReadiness'
+import { assignManualProductIdentity, requiredAfterCreate } from '../lib/manualProductIdentity'
 import { productStatusLabel } from '../lib/productOperations'
 
 const productStatuses = ['draft', 'in_review', 'changes_requested', 'approved', 'published', 'archived'] as const
@@ -14,7 +15,7 @@ export const Products: CollectionConfig = {
   slug: 'products',
   access: { create: canCreateProduct, delete: canDeleteProduct, read: activeAuthenticated, update: canUpdateProduct },
   admin: {
-    defaultColumns: ['nameVi', 'sku', 'status', 'categories', 'legacySourceId', 'slugVi'],
+    defaultColumns: ['thumbnail', 'nameVi', 'sku', 'status', 'categories', 'legacySourceId', 'slugVi'],
     description: 'Quản lý nội dung, trạng thái biên tập, hình ảnh và SEO của sản phẩm.',
     group: 'Danh mục sản phẩm',
     listSearchableFields: ['nameVi', 'sku', 'legacySourceId'],
@@ -33,9 +34,13 @@ export const Products: CollectionConfig = {
     },
   },
   labels: { singular: 'Sản phẩm', plural: 'Sản phẩm' },
+  // Revision history and trash like WordPress. No Payload drafts: the editorial status workflow owns publishing.
+  versions: { maxPerDoc: 30 },
+  trash: true,
   hooks: {
     afterChange: audit.afterChange,
     afterDelete: audit.afterDelete,
+    beforeValidate: [assignManualProductIdentity],
     beforeChange: [enforceProductMutationPolicy, enforcePublishReadiness, ({ data, originalDoc }) => {
       if (originalDoc?.legacySourceId !== undefined && data.legacySourceId !== undefined && data.legacySourceId !== originalDoc.legacySourceId) {
         throw new Error('legacySourceId is immutable')
@@ -44,6 +49,7 @@ export const Products: CollectionConfig = {
     }],
   },
   fields: [
+    { name: 'thumbnail', label: 'Ảnh', type: 'ui', admin: { components: { Cell: '/components/MediaThumbnailCell#ProductThumbnailCell', Field: false } } },
     {
       type: 'tabs',
       tabs: [
@@ -51,8 +57,8 @@ export const Products: CollectionConfig = {
           label: 'Định danh',
           fields: [
             {
-              name: 'legacySourceId', type: 'number', required: true, unique: true, index: true, label: 'Mã nguồn (bất biến)',
-              admin: { description: 'Khóa định danh nguồn, bất biến sau khi tạo.', readOnly: true },
+              name: 'legacySourceId', type: 'number', required: true, unique: true, index: true, label: 'Mã nguồn (bất biến)', validate: requiredAfterCreate,
+              admin: { description: 'Khóa định danh nguồn, bất biến sau khi tạo. Sản phẩm tạo mới được cấp tự động từ 900000.', readOnly: true, condition: (data) => Boolean(data?.id) },
             },
             {
               name: 'sku', type: 'text', required: false, index: true, label: 'SKU',
@@ -87,7 +93,7 @@ export const Products: CollectionConfig = {
           label: 'Đóng gói & thuộc tính',
           fields: [
             {
-              name: 'packaging', type: 'array', required: true, minRows: 1, label: 'Đóng gói', access: { create: canChangeProductContent, update: canChangeProductContent },
+              name: 'packaging', type: 'array', required: true, minRows: 1, label: 'Đóng gói', defaultValue: [{ cells: [{ value: '' }] }], access: { create: canChangeProductContent, update: canChangeProductContent },
               fields: [{
                 name: 'cells', label: 'Các ô trong hàng', type: 'array', required: true, minRows: 1,
                 fields: [{ name: 'value', label: 'Nội dung ô', type: 'text', required: false }],
@@ -141,16 +147,16 @@ export const Products: CollectionConfig = {
           label: 'Nguồn gốc',
           fields: [{
             name: 'sourceMetadata', type: 'group', required: true, label: 'Dữ liệu nguồn (chỉ đọc)', access: { update: () => false },
-            admin: { readOnly: true, description: 'Dữ liệu nhập nguồn được bảo toàn để đối chiếu.' },
+            admin: { readOnly: true, description: 'Dữ liệu nhập nguồn được bảo toàn để đối chiếu.', condition: (data) => Boolean(data?.id) },
             fields: [
-              { name: 'sourceType', type: 'text', required: true },
-              { name: 'legacySlug', type: 'text', required: true, index: true },
-              { name: 'sourceName', type: 'text', required: true },
+              { name: 'sourceType', type: 'text', required: true, validate: requiredAfterCreate },
+              { name: 'legacySlug', type: 'text', required: true, index: true, validate: requiredAfterCreate },
+              { name: 'sourceName', type: 'text', required: true, validate: requiredAfterCreate },
               { name: 'legacyDescription', type: 'textarea' },
-              { name: 'sourceChecksum', type: 'text', required: true },
-              { name: 'canonicalSlugSha256', type: 'text', required: true },
+              { name: 'sourceChecksum', type: 'text', required: true, validate: requiredAfterCreate },
+              { name: 'canonicalSlugSha256', type: 'text', required: true, validate: requiredAfterCreate },
               { name: 'searchIndex', type: 'json' },
-              { name: 'importedAt', type: 'date', required: true },
+              { name: 'importedAt', type: 'date', required: true, validate: requiredAfterCreate },
               { name: 'legacyPublishedAt', type: 'text' },
             ],
           }],
