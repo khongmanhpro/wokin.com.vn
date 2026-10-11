@@ -57,10 +57,10 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-10-11 (phiên tối) bởi Claude. Phiên mới: đọc mục này và mục 3 trước, rồi `git fetch && gh pr list`._
+_Cập nhật: 2026-10-11 (đêm) bởi Claude. Phiên mới: đọc mục này và mục 3 trước, rồi `git fetch && gh pr list`._
 
 ### Tóm tắt một dòng
-Website (Next.js static) và admin (Payload CMS) đã làm xong, chạy được local. **PR #6 và #7 đã merge vào `main`; PR SEO đợt 1 (`feat/seo-wave1`) chờ merge**; chưa deploy.
+Website (Next.js static) và admin (Payload CMS) đã làm xong, chạy được local. **PR #6, #7, #8 (SEO đợt 1) đã merge vào `main` (`cde9ad3`)**; chưa deploy.
 
 ### PR đang mở (github.com/khongmanhpro/wokin.com.vn) và thứ tự merge
 PR #1 (vá dependency website) **đã merge** vào `main`. Lệnh merge của agent bị chế độ tự động chặn ("merge chưa review"), nên **người dùng phải tự bấm merge**.
@@ -89,7 +89,7 @@ Chỉ còn merge #7 rồi đóng #2, #5.
 - Website static đọc `src/data/site-settings.json`; admin ghi file này bằng `npm run site-settings:export`.
 
 ### Việc tiếp theo (theo ưu tiên)
-1. Người dùng merge PR SEO đợt 1, đóng #2 và #5 (#7 đã merge `1e6aeb5`).
+1. Tất cả PR đã xử lý. #2 và #5 được merge vào nhánh cũ `payload-r1` (không phải `main`, 2026-10-11): vô hại, nội dung đã có trong `main` qua #6; worktree Codex dùng `checkpoint/payload-r1-r4-1` nên không bị ảnh hưởng.
 2. Chọn hosting cho admin (VPS Node/Docker + PostgreSQL + HTTPS). Xem `DEPLOYMENT.md` mục Admin và A6.
 3. Deploy website tĩnh lên Hostinger staging, kiểm tra `.htaccess` và Lighthouse (R1).
 4. Cung cấp dữ liệu SEO đợt 2 (S1): tên SP trùng, "(Công nghiệp)", dữ kiện Giới thiệu, email, danh sách SP chủ lực.
@@ -135,7 +135,10 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 | A5 | Website đọc Cài đặt/Menu từ `src/data/site-settings.json` | **Xong** (PR #3 merge, vào `main` qua #6) | — | Admin ghi file bằng `npm run site-settings:export` |
 | A2 | Migration `20261011_000001_contact_submissions_locked_documents` | Có trên nhánh admin-ui | Vận hành | Bắt buộc chạy ở mọi DB đã chạy migration 20260920, nếu không mọi thao tác update đều lỗi SQL |
 | A3 | CI admin đỏ từ 92c6f93 | **Đã sửa** (PR #2: `38d7852`, `2b531a8`) | — | Commit file evidence, port glossary builder, CI import catalog đầy đủ 2 lần + kiểm tra lặp lại, thêm `CONTACT_ALLOWED_ORIGINS` |
-| S1 | Review SEO (cấu trúc, AI, từ khoá): `docs/seo-audit-2026-10-11.md` | **Đợt 1 xong trên `feat/seo-wave1`, chờ merge PR**; đợt 2 chờ người dùng/WOKIN | Người dùng | Lỗi chính: URL danh mục tiếng Anh (cần đồng ý đổi), thẻ chia sẻ sai ở danh mục/`/san-pham`/GP20V, H1 trang chủ không có từ khoá, SP mỏng (~150 chữ) + 293 SP trùng tên, schema doanh nghiệp sơ sài, `.htaccess` thiếu HTTPS/www/nén/cache/404 |
+| S1 | Review SEO (cấu trúc, AI, từ khoá): `docs/seo-audit-2026-10-11.md` | **Đợt 1 đã merge (PR #8, `cde9ad3`)**; đợt 2 chờ người dùng/WOKIN | Người dùng | Lỗi chính: URL danh mục tiếng Anh (cần đồng ý đổi), thẻ chia sẻ sai ở danh mục/`/san-pham`/GP20V, H1 trang chủ không có từ khoá, SP mỏng (~150 chữ) + 293 SP trùng tên, schema doanh nghiệp sơ sài, `.htaccess` thiếu HTTPS/www/nén/cache/404 |
+| Q1 | ~~Admin: sửa SP trong admin **không ra được website**~~ → **Đã làm nút "Xuất bản website"** (local, nhánh `fix/admin-qa`, chưa push); còn triển khai lên VPS. Mô tả cũ: (release chỉ lấy SP `published`, 1.356/1.357 đang nháp; Trung tâm phát hành BLOCKED; website build đòi đúng 1.357 SP/30 DM; Trang/Chuyển hướng trong admin website không đọc) | **Xong local, chờ VPS** | Claude + người dùng (SSH) | Người dùng chọn: admin quản lý toàn bộ + nút Xuất bản; chủ tài khoản đăng thẳng không cần duyệt. Xem entry "Nút Xuất bản website". Cài đặt/Menu thì ra được website qua `npm run site-settings:export` + build |
+| Q2 | Dữ liệu SP trong DB admin cũ: 837 SP thông số giả "Đặc tính kỹ thuật", 225 SP còn "blister" | **Sửa xong ở DB local** (`import:catalog -- --published`); VPS chưa | Claude (khi có SSH) | `npm run import:catalog` sửa được nhưng **ghi đè toàn bộ** status/SEO/chỉnh sửa trong admin; trên VPS phải backup DB và xác nhận chưa ai sửa SP |
+| Q3 | Admin chưa có email adapter → quên mật khẩu không gửi được mail | Chưa làm | Cần SMTP | |
 | A4 | Vá bảo mật admin | **Đã vào `main` qua PR #6**; PR #5 chờ người dùng đóng | Người dùng | Payload 3.90.2, Next 16.3.8, sharp 0.35.5, override undici/chokidar; audit high/critical 0 (còn 5 moderate esbuild trong drizzle-kit, chưa có bản vá upstream); migration `20261011_085955_payload_3_90_auth_reset_throttle` |
 
 ---
@@ -177,6 +180,78 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-11 — Claude — Bộ Docker chuẩn cho VPS
+**Yêu cầu:** tạm giữ trang sửa SP như hiện tại; dựng Docker chuẩn rồi đẩy GitHub để người dùng clone về VPS.
+**Đã làm:**
+- `Dockerfile` (gốc repo, node:22.19.0-alpine3.22 + rsync + tini, user `node`): cài deps website + admin, build admin, chạy `deploy/docker/admin-entrypoint.sh` (migrate rồi `next start`). Biến mặc định `WEBSITE_DIR=/app`, `MEDIA_UPLOAD_DIR=/data/media`, `WEBSITE_PUBLISH_DIR=/srv/site`. Bỏ `admin/Dockerfile` và `output: 'standalone'`; ảnh xem trước đọc `WEBSITE_DIR/public`.
+- `docker-compose.yml`: `db` (postgres 16.6), `admin` (127.0.0.1:3000), `web` (nginx 1.27, 127.0.0.1:8080, đọc volume `site` = `releases/<id>` + `current`). `.env.docker.example`, `.dockerignore`, `deploy/docker/nginx-site.conf` (header bảo mật như `.htaccess`, cache, gzip, 404, redirect WordPress cũ), `deploy/docker/host-nginx.example.conf` (HTTPS, www → non-www, proxy). Hướng dẫn `DEPLOY-DOCKER.md`.
+- Sửa: volume cache ảnh responsive gây `EBUSY` (script thay cả thư mục) → bỏ volume, ảnh tạo lại ở lần xuất bản đầu sau mỗi lần build.
+**Kiểm chứng (cụm thử `-p wokintest`, cổng 3091/8091, đã `down -v`):** image build OK (~650 MB); 12 migration chạy khi khởi động; check-env production PASS; `import:catalog -- --published` trong container: 30 DM/1.717 ảnh/1.357 SP trong 16 giây; tạo owner + đăng nhập; Xuất bản trong container thành công ~75 giây; web: `/`, `/san-pham/`, `/danh-muc/bao-ho-lao-dong/` (+`trang/2/`), trang SP, `llms.txt`, sitemap, ảnh webp → 200; 404 tiếng Việt; `/about/` → 301 `/gioi-thieu/`; CSP/X-Frame/cache/gzip đúng.
+**Commit:** xem PR nhánh `fix/admin-qa`
+**Còn dở:** chạy trên VPS thật (người dùng tự clone theo `DEPLOY-DOCKER.md`); trang sửa SP kiểu WooCommerce để sau.
+
+### 2026-10-11 — Claude — Tắt "sửa hàng loạt" gây nhầm ở danh sách SP/ảnh
+**Yêu cầu:** chọn SP rồi bấm "Chỉnh sửa" không ra form đầy đủ mà bắt chọn từng trường.
+**Nguyên nhân:** đó là bulk edit của Payload (nhãn trùng "Chỉnh sửa"). **Đã làm:** `disableBulkEdit: true` cho Products và Media; sửa một SP = bấm tên/ảnh (link đã có từ `1359da4`). Xoá hàng loạt vẫn giữ.
+**Kiểm chứng:** tab riêng trên admin local: chọn 1 dòng → chỉ còn "Chọn tất cả | Xóa"; admin test PASS. Ghi nhận: SP "Cờ lè vạn năng" (5562) vừa bị người dùng chuyển vào Thùng rác lúc 15:29 UTC (khôi phục được).
+**Commit:** nhánh local `fix/admin-qa` (chưa push)
+
+### 2026-10-11 — Claude — Sửa lỗi "Something went wrong" khi tạo sản phẩm mới
+**Yêu cầu:** người dùng lưu sản phẩm mới thì admin báo "Something went wrong".
+**Nguyên nhân (log dev server):** form tạo mới gửi `publishedAt: null` → `enforceProductMutationPolicy` coi null ≠ undefined là sửa ngày xuất bản → `Error` thường → Payload trả 500 với câu tiếng Anh chung chung. Thêm: tạo mới bắt buộc tự gõ đường dẫn; "Lưu và xuất bản" khi tạo mới bị luật "SP mới phải là nháp" chặn; ô Đóng gói bắt buộc; website cần ≥1 dòng thông số hoặc đóng gói nên SP thiếu cả hai sẽ làm hỏng bước xuất bản.
+**Đã sửa:** coi null/'' là chưa đặt ngày; lỗi luật/điều kiện xuất bản thành `APIError` 400 tiếng Việt (hiện đúng nội dung trên màn hình); đường dẫn để trống tự tạo từ tên (bỏ dấu, đ→d, tránh trùng), có kiểm tra định dạng; người có quyền xuất bản được tạo mới ở trạng thái đã xuất bản; Đóng gói không bắt buộc, bỏ dòng trống khi xuất; điều kiện xuất bản thêm "≥1 dòng thông số hoặc đóng gói".
+**Kiểm chứng:** admin typecheck + 147/147 test. Trên admin local: tạo SP thiếu thông số → 400 "Cần ít nhất một dòng thông số…"; tạo SP đủ thông tin, để trống đường dẫn → 201, slug `san-pham-thu-tao-moi`, mã 900001, đã xuất bản; tạo nháp → 201. Bấm Xuất bản → 1.358 SP, trang SP mới có trong bản website và sitemap, nháp không lên. Đã xoá 2 SP thử.
+**Commit:** nhánh local `fix/admin-qa` (chưa push)
+
+### 2026-10-11 — Claude — Sửa lỗi tải ảnh từ máy lên sản phẩm
+**Yêu cầu:** người dùng tải ảnh từ máy vào sản phẩm thì báo lỗi, không đăng được.
+**Nguyên nhân (từ log dev server):** (1) `PATCH /api/media/:id` 400: form admin gửi lại các trường tệp (url/thumbnailURL tính toán) → hook `deriveMediaMetadata` coi là sửa trái phép, chặn cả việc sửa mô tả/quyền ảnh; (2) `/api/media/preview/:id` 404 với ảnh tải lên (chỉ đọc `public/images`); (3) ô quan hệ hiện `media/uploads/<uuid>` vì `useAsTitle: storageKey`.
+**Đã sửa:** giữ nguyên trường tệp từ bản lưu thay vì báo lỗi; preview đọc `MEDIA_UPLOAD_DIR` cho `media/uploads/`; Media `useAsTitle: 'alt'`; mô tả ảnh trống khi tải lên tự lấy từ tên tệp. Test mới `tests/media-upload-edit.test.ts`.
+**Kiểm chứng:** admin typecheck + test PASS; trên admin local: PATCH ảnh 200, preview 200 image/jpeg; bấm Xuất bản → trang `co-le-van-nang` trong bản mới dùng `images/products/uploads/<file>` + ảnh webp responsive; checkout website sạch.
+**Commit:** nhánh local `fix/admin-qa` (chưa push)
+**Còn dở:** lần POST ảnh đầu tiên của người dùng trả 400 chưa xác định được lý do (log không ghi nội dung lỗi); trang sửa SP kiểu WooCommerce đang chờ người dùng duyệt bản phác.
+
+### 2026-10-11 — Claude — Nút "Xuất bản website" trong admin (local)
+**Yêu cầu:** người dùng chọn: admin quản lý toàn bộ website + nút Xuất bản; chủ tài khoản đăng thẳng, không cần người duyệt.
+**Đã làm (nhánh local `fix/admin-qa`, commit `207f76b` + commit này; chưa push):**
+- Nạp dữ liệu: `npm run import:catalog -- --published` nạp catalog ở trạng thái đã xuất bản (ngày gốc, danh mục active, ảnh catalog "Đã xác nhận"); DB local: 1.357 SP published, 0 SP thông số giả. Backup trước khi chạy: scratchpad `db/before-roundtrip.dump`.
+- Quy trình: người có quyền `product.publish` đăng thẳng / gỡ khỏi website (published → draft); đăng lại giữ ngày đầu. Điều kiện xuất bản: tên, ≥1 danh mục, ≥1 ảnh, ảnh không "hạn chế/hết hạn" (bỏ yêu cầu SEO admin vì website không đọc). Nút trên trang SP: "Lưu và xuất bản", "Lưu thay đổi", "Gỡ khỏi website". Danh mục mới mặc định active.
+- Xuất từ admin ra website không mất dữ liệu: giữ dòng thông số gốc, slug/tên/ngày gốc, thứ tự SP như website, tên danh mục từ admin, ảnh tải lên → `images/products/uploads/`. **Kiểm chứng vòng tròn**: build website từ dữ liệu admin xuất ra → 1.368/1.451 trang HTML giống hệt; 83 trang chỉ khác một dấu cách cuối dòng thông số; sitemap thêm múi giờ ở lastmod.
+- `scripts/publish-website.mjs`: build từ export của admin → `validate:export` → `WEBSITE_PUBLISH_DIR/releases/<id>` (rsync `--link-dest`) → đổi symlink `current` (atomic) → giữ 3 bản; luôn khôi phục `src/data` của checkout; `--rollback <id>`. 4 test.
+- Admin: `src/lib/websitePublish.ts` + endpoint `/api/website-publish` (GET trạng thái, POST chạy, `/log/:id`, `/rollback`), trang "Xuất bản website" (thay Trung tâm phát hành cũ) có tiến độ trực tiếp, lịch sử, nhật ký, nút quay về bản cũ; ghi audit `website.publish`. Build website nhận **env tối thiểu** (lần đầu hỏng vì kế thừa cờ `next dev`, và không được lộ `DATABASE_URL`/`PAYLOAD_SECRET`). 3 test.
+- Website: bỏ ép đúng 1.357 SP/30 DM lúc chạy (giữ baseline cho dữ liệu nguồn trong `validate-catalog`). Admin: Turbopack root = gốc repo (để import `contracts/`); thêm bộ màu tối cho các panel tuỳ chỉnh (trước đó chữ sáng trên nền sáng); thêm style `.wokin-button`.
+**Kiểm chứng:** admin typecheck + 143/143 test + `next build` production; website gate đầy đủ PASS (104/104 test). Thử thật trên giao diện local (WEBSITE_PUBLISH_DIR = scratchpad): lượt 1 lỗi build (env) → website giữ nguyên, checkout sạch; lượt 2 thành công ~20 giây; đổi tên SP → lượt 3 → trang SP trong `current` có tên mới, bản trước giữ tên cũ; "Quay về bản này" → `current` trỏ lại bản trước. Đã trả tên SP thử về như cũ.
+**Còn dở / rủi ro:** chưa triển khai VPS (cần SSH): backup DB VPS, kiểm tra Nhật ký xem có ai sửa SP trên admin VPS chưa (import ghi đè), `import:catalog -- --published`, cấu hình `WEBSITE_PUBLISH_DIR` + nginx `root .../current`, chuyển bản website hiện tại vào `releases/`. Dockerfile admin chưa hợp với chế độ mới (ghi trong DEPLOYMENT.md). Tiêu đề tab trang Xuất bản vẫn là "Payload — WOKIN Admin". Mô tả SP (`descriptionVi`) xuất ra `legacyDescription` nhưng website chưa hiển thị.
+**Việc tiếp theo:** người dùng cấp SSH VPS → triển khai theo `DEPLOYMENT.md` mục "Xuất bản website từ admin"; sau đó push GitHub.
+
+### 2026-10-11 — Claude — Kiểm thử admin (local, bản `main`) và sửa lỗi
+**Yêu cầu:** tập trung cho admin ổn trên máy local rồi mới đẩy GitHub → VPS; kiểm thử lại admin và website.
+**Môi trường:** `admin/` của checkout chính (copy `.env`, `.env.dev-accounts` từ worktree admin-ui, đều gitignore), DB docker `wokin-admin-dev` (12/12 migration đã chạy), dev server `wokin-admin` cổng 3020 (`.claude/launch.json`).
+**Kết quả kiểm thử:**
+- Chạy được: 25 màn hình admin trả 200; đăng nhập; bảng điều khiển; danh sách SP; sửa → Lưu bản nháp → lịch sử phiên bản; Xem trước; tải ảnh lên (201, đọc lại 200, xoá 200); Thông tin website + Menu đọc/ghi; `site-settings:export` ra file giống hệt `src/data/site-settings.json`.
+- Phân quyền 5 vai trò đúng: chỉ thấy tài khoản mình; editor sửa tên SP được, publisher/seo_reviewer không đổi được (API trả 200 nhưng field bị bỏ qua), readonly 403; Cài đặt chỉ owner lưu; Liên hệ chỉ owner; Trang: owner/editor.
+- Lỗi đã sửa (nhánh `fix/admin-qa`, chưa push):
+  1. Danh sách SP và Ảnh không mở được bản ghi: cột đầu là ô ảnh tự vẽ, không có link (`MediaThumbnailCell.tsx` thêm `DocumentLink`, cột tên/mã lưu trữ luôn là link).
+  2. **Form Liên hệ của website luôn bị từ chối**: endpoint không parse body (`req.data` trống với custom endpoint Payload) → thêm `addDataAndFileToRequest`, JSON hỏng trả 400; 3 test mới.
+  3. CORS của Payload và kiểm tra origin của endpoint lệch nhau; thêm `src/lib/contactOrigins.ts` dùng chung, tự cho phép cặp `www`/không `www` (VPS đang trả cả hai host).
+  4. Thuộc tính `pattern` số điện thoại của form không hợp lệ với cờ `v` của trình duyệt (dấu `-` chưa escape) → trình duyệt bỏ qua kiểm tra.
+  5. CSP `.htaccess` `connect-src` thêm `https://admin.wokin.vn` (nếu không form bị chặn trên Hostinger).
+  6. Test `admin-foundation` đọc nhầm `admin/.env` thật khi chạy local → trỏ dotenv ra file không tồn tại.
+- Form Liên hệ thử đầu-cuối: website build với `NEXT_PUBLIC_CONTACT_API_URL=http://localhost:3020/...` → điền form trên trình duyệt → "Đã nhận yêu cầu" → bản ghi có trong admin → đã xoá dữ liệu thử.
+**Vấn đề lớn chưa sửa (cần quyết định):** Q1, Q2, Q3 ở mục 3. Ghi chú thêm: `ProductSkuCell` truy vấn DB cho từng dòng (25 truy vấn/trang danh sách).
+**Kiểm chứng:** admin typecheck + 138/138 test; website gate đầy đủ PASS (audit 0, 100/100 test, build, validate:export).
+**Commit:** nhánh local `fix/admin-qa` (chưa push theo yêu cầu người dùng)
+**Việc tiếp theo:** người dùng chọn mô hình vận hành admin (Q1) → làm nút "Xuất bản website" hoặc giới hạn phạm vi admin.
+
+### 2026-10-11 — Claude — Kiểm tra bản đang chạy trên VPS
+**Yêu cầu:** người dùng cho biết site đã chạy trên VPS nhưng là bản cũ, admin chưa ổn.
+**Đã kiểm (từ bên ngoài, chưa vào được VPS):**
+- `wokin.vn` → 187.127.101.182, nginx, **bản cũ**: link danh mục còn tiếng Anh, title "WOKIN TOOLS - Dụng cụ chuyên nghiệp", `/llms.txt` 404.
+- `admin.wokin.vn` (qua Cloudflare) → Payload **bản cũ**: `/api/globals/site-settings` 404 (chưa có Cài đặt/Menu), trang đăng nhập luôn hiện thông báo "tạo tài khoản Owner đầu tiên" (lỗi đã sửa ở `bd77cee`). `/api/admins/init` → `initialized: true` nên đã có tài khoản, không bị chiếm quyền.
+- SSH bằng khoá của máy này vào root/ubuntu/deploy/admin@187.127.101.182 đều bị từ chối. Không có ghi chép nào trong repo về cách VPS được dựng.
+**Commit:** chưa commit
+**Việc tiếp theo:** người dùng cấp quyền SSH (thêm public key của máy này) và cho biết cách VPS đang chạy và lỗi admin cụ thể → Claude cập nhật website + admin lên bản `main`.
+
 ### 2026-10-11 — Claude — SEO đợt 1: URL danh mục tiếng Việt, metadata, schema, .htaccess, llms.txt
 **Yêu cầu:** người dùng đồng ý đổi URL danh mục sang tiếng Việt và làm đợt 1 của review SEO.
 **Đã làm (nhánh `feat/seo-wave1` từ `main` sau khi #7 merge):**
@@ -187,7 +262,7 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 - `.htaccess`: www → không www, HTTP → HTTPS, `ErrorDocument 404`, nén, cache. Cập nhật `DEPLOYMENT.md`, `AGENTS.md`.
 - Test mới `tests/seo-structure.test.mjs`; sửa 2 test cũ theo cấu trúc mới; validator chấp nhận title không hậu tố.
 **Kiểm chứng:** gate đầy đủ PASS (audit 0, typecheck, 100/100 test, validate/check data, build 1455 trang, validate:export 1449 route + smoke). Script audit trên `out/`: og:url đúng từng trang, 0 ảnh nội dung thiếu alt ở trang chủ/`/san-pham`, 1.298/1.357 Product có `additionalProperty`. Browser: trang chủ, GP20V, `/san-pham` → `/danh-muc/bao-ho-lao-dong/` (phân trang `/trang/2/`), `404.html` hiển thị đúng.
-**Commit:** xem PR `feat/seo-wave1`
+**Commit:** `a8682ed`, merge vào `main` qua PR #8 (`cde9ad3`), CI 3/3 xanh
 **Còn dở / rủi ro:** `.htaccess` (redirect, nén, cache, 404) chỉ kiểm được trên Hostinger. Admin `full-normalizer.ts` vẫn gán `seo.canonicalPath` mặc định `/danh-muc/<slug EN>` cho bản nháp danh mục (website không đọc trường này). Đợt 2 (tên trùng, "(Công nghiệp)", mô tả SP, dữ kiện Giới thiệu) chờ người dùng/WOKIN.
 **Việc tiếp theo:** người dùng merge PR; đo lại tốc độ trên staging.
 

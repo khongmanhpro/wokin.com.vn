@@ -216,7 +216,7 @@ export interface Media {
   path: string;
   storageKey: string;
   /**
-   * Mô tả ngắn nội dung ảnh để hỗ trợ người dùng trình đọc màn hình.
+   * Mô tả ngắn nội dung ảnh (tốt cho Google), ví dụ "Cờ lè vạn năng 9-32mm".
    */
   alt: string;
   metadata:
@@ -295,6 +295,9 @@ export interface Product {
    */
   sku?: string | null;
   nameVi: string;
+  /**
+   * Để trống thì tự tạo từ tên sản phẩm.
+   */
   slugVi: string;
   descriptionVi?: string | null;
   specifications?:
@@ -306,13 +309,15 @@ export interface Product {
         id?: string | null;
       }[]
     | null;
-  packaging: {
-    cells: {
-      value?: string | null;
-      id?: string | null;
-    }[];
-    id?: string | null;
-  }[];
+  packaging?:
+    | {
+        cells: {
+          value?: string | null;
+          id?: string | null;
+        }[];
+        id?: string | null;
+      }[]
+    | null;
   attributes?:
     | {
         legacySourceId?: number | null;

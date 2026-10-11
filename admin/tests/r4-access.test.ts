@@ -62,7 +62,7 @@ test('editor can edit content but cannot set product status to published', async
   assert.equal(await canChangeProductStatus({ req: request, siblingData: { status: 'published' } } as any), false)
   assert.throws(
     () => enforceProductMutationPolicy({ data: { status: 'published' }, originalDoc: { status: 'approved' }, req: request } as any),
-    /invalid product status transition/i,
+    /chuyển trạng thái/i,
   )
 })
 
@@ -73,7 +73,7 @@ test('publisher can publish but cannot modify product content when separation of
   assert.equal(await canChangeProductContent({ req: request } as any), false)
   assert.throws(
     () => enforceProductMutationPolicy({ data: { nameVi: 'Bypass' }, originalDoc: { nameVi: 'Original' }, req: request } as any),
-    /publisher cannot modify product content/i,
+    /không được sửa nội dung/i,
   )
 })
 

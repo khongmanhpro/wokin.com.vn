@@ -58,42 +58,45 @@ test('R5.5a merges partial updates with persisted fields before assessing publis
   } as never))
 })
 
-test('R5.5a rejects incomplete persisted SEO, relations, and no-index candidates', async () => {
+test('R5.5a rejects publishing without name, category or image (SEO fields are not a gate)', async () => {
   for (const [label, patch] of Object.entries({
     'blank name': { nameVi: '   ' },
-    'missing SEO description': { seo: { ...approvedProduct.seo, description: '' } },
-    'no index': { seo: { ...approvedProduct.seo, noIndex: true } },
-    'missing no-index setting': { seo: { title: 'Máy khoan', description: 'Mô tả', canonicalPath: '/san-pham/may-khoan' } },
     'empty categories': { categories: [] },
     'empty media': { media: [] },
+    'no spec or packaging': { specifications: [{ label: 'Tính năng', value: ' ' }], packaging: [{ cells: [{ value: '' }] }] },
   })) {
     const { req } = publisherRequest()
     await assert.rejects(
       () => enforcePublishReadiness({ data: { status: 'published' }, originalDoc: { ...approvedProduct, ...patch }, req } as never),
-      /publish readiness|SEO|Danh mục|Hình ảnh/i,
+      /tên|danh mục|hình ảnh|thông số/i,
       label,
     )
   }
+  const { req } = publisherRequest([{ id: 'media-1', rightsStatus: 'cleared' }])
+  await assert.doesNotReject(() => enforcePublishReadiness({
+    data: { status: 'published' }, originalDoc: { ...approvedProduct, seo: { ...approvedProduct.seo, description: '', noIndex: true } }, req,
+  } as never))
 })
 
-test('R5.5a rejects media that is not cleared, regardless of client-supplied relation data', async () => {
-  const { req } = publisherRequest([{ id: 'media-1', rightsStatus: 'pending' }])
-
+test('R5.5a rejects restricted media, regardless of client-supplied relation data; pending images may go live', async () => {
+  const { req } = publisherRequest([{ id: 'media-1', rightsStatus: 'restricted' }])
   await assert.rejects(
     () => enforcePublishReadiness({
       data: { status: 'published', media: [{ id: 'media-1', rightsStatus: 'cleared' }] }, originalDoc: approvedProduct, req,
     } as never),
-    /right.*cleared/i,
+    /hạn chế|hết hạn/i,
   )
+  const pending = publisherRequest([{ id: 'media-1', rightsStatus: 'pending' }])
+  await assert.doesNotReject(() => enforcePublishReadiness({ data: { status: 'published' }, originalDoc: approvedProduct, req: pending.req } as never))
 })
 
 test('R5.5a rejects client-forged publish timestamps outside the approved-to-published transition', () => {
   assert.throws(() => enforceProductMutationPolicy({
     data: { publishedAt: '2000-01-01T00:00:00.000Z' }, originalDoc: approvedProduct, req: publisherRequest().req,
-  } as never), /publishedAt/i)
+  } as never), /ngày xuất bản/i)
   assert.throws(() => enforceProductMutationPolicy({
     data: { status: 'published', publishedAt: '2000-01-01T00:00:00.000Z' }, originalDoc: approvedProduct, req: publisherRequest().req,
-  } as never), /publishedAt/i)
+  } as never), /ngày xuất bản/i)
 })
 
 test('R5.5a assigns the publish timestamp on the server precisely for approved-to-published', () => {

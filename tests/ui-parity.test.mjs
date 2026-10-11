@@ -48,7 +48,8 @@ test("favicons are self-contained raster W marks for the site and the admin", ()
     assert.ok(bytes.length > 500, `${file} must contain image data`);
   }
   assert.match(read("admin/src/payload.config.ts"), /rel: 'icon', url: '\/favicon\.ico'/);
-  assert.match(read("admin/Dockerfile"), /COPY --from=builder --chown=nextjs:nodejs \/app\/public \.\/public/);
+  // The Docker image ships the whole checkout (admin/public included) and runs `next start` in admin/.
+  assert.match(read("Dockerfile"), /COPY --chown=node:node \. \./);
 });
 
 test("round 2 matches the original's section styles and archive title band", () => {

@@ -136,11 +136,11 @@ test('v2 release selection retains published products and only their referenced 
   )
 })
 
-test('v2 release export reports inactive categories and uncleared media with record context', () => {
+test('v2 release export reports inactive categories and restricted media with record context', () => {
   const category = { id: 'bad-category', legacySourceId: 1, nameVi: 'Nhóm', slug: 'nhom', status: 'archived', parentId: null }
-  const media = { id: 'bad-media', path: 'images/x.jpg', alt: 'Ảnh', rightsStatus: 'pending' }
+  const media = { id: 'bad-media', path: 'images/x.jpg', alt: 'Ảnh', rightsStatus: 'restricted' }
   const product = { id: 'published-product', legacySourceId: 1, sku: null, status: 'published', nameVi: 'Sản phẩm', slugVi: 'san-pham', descriptionVi: '', specifications: [], packaging: [], attributes: [], categoryIds: [category.id], mediaIds: [media.id], publishedAt: '2026-08-01T00:00:00.000Z' }
-  assert.throws(() => exportReleaseSnapshot({ categories: [category], media: [media], products: [product], glossary: { ui: {} } }), /bad-category[\s\S]*bad-media[\s\S]*inactive category[\s\S]*uncleared media/)
+  assert.throws(() => exportReleaseSnapshot({ categories: [category], media: [media], products: [product], glossary: { ui: {} } }), /bad-category[\s\S]*bad-media[\s\S]*inactive category[\s\S]*restricted media/)
 })
 
 test('v2 release checksum rejects modified canonical content', () => {
@@ -217,4 +217,12 @@ test('public catalog builder consumes the POC snapshot deterministically without
   assert.equal(catalog.products.length, 20)
   assert.equal(catalog.schemaVersion, 1)
   assert.equal(catalog.sourceChecksum.length, 64)
+})
+
+test('release spec lines keep the original website text for unedited rows', async () => {
+  const { specificationLine } = await import('../src/catalog/release-exporter.js')
+  assert.equal(specificationLine({ label: 'Tính năng', value: 'Hoàn thiện crôm', sourceLine: '> Hoàn thiện crôm' }), '> Hoàn thiện crôm')
+  assert.equal(specificationLine({ label: 'Tính năng', value: 'Chống trượt', sourceLine: '> Tính năng: Chống trượt' }), '> Tính năng: Chống trượt')
+  assert.equal(specificationLine({ label: 'Điện áp', value: '20V', sourceLine: '> Điện áp: 18V' }), '> Điện áp: 20V')
+  assert.equal(specificationLine({ label: 'Tính năng', value: 'Mới thêm' }), '> Tính năng: Mới thêm')
 })

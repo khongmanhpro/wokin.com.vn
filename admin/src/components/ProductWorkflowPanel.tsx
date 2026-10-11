@@ -40,7 +40,7 @@ export function ProductWorkflowPanel() {
 
   return <section className="wokin-product-workflow" aria-label="Thao tác workflow">
     <h3>Thao tác</h3>
-    <p>Thao tác chỉ gửi dữ liệu qua form chuẩn của Payload; quyền và trạng thái được máy chủ kiểm tra lại.</p>
+    <p>Sản phẩm <strong>Đã xuất bản</strong> sẽ lên website ở lần bấm <a href="/admin/release-center">Xuất bản website</a> tiếp theo.</p>
     <div className="wokin-product-workflow__actions">
       {actions.map((action) => action === 'preview'
         ? <a href={`${pathname.replace(/\/$/, '')}/preview`} key={action}>{workflowActionLabels[action]}</a>

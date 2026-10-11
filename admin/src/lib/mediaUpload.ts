@@ -38,12 +38,19 @@ export const prepareMediaUpload: CollectionBeforeOperationHook = async ({ args, 
     if (req.file.size > MAX_IMAGE_BYTES) throw new APIError('Ảnh không được vượt quá 10 MB.', 400)
     const buffer = req.file.tempFilePath ? await readFile(req.file.tempFilePath) : req.file.data
     const normalized = await normalizeUploadedImage(buffer, req.file.mimetype)
+    req.context = { ...req.context, originalUploadName: req.file.name }
     req.file = { data: normalized.buffer, mimetype: req.file.mimetype, name: `${randomUUID()}.${normalized.extension}`, size: normalized.buffer.length }
   } else if (operation === 'create' && req.user) {
     throw new APIError('Vui lòng chọn tệp ảnh trước khi lưu.', 400)
   }
   return args
 }
+
+export function altFromFileName(name: string): string {
+  return path.parse(name).name.replace(/[-_.]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160)
+}
+
+export const MEDIA_DERIVED_FIELDS = ['path', 'storageKey', 'contentSha256', 'metadata', 'width', 'height', 'filename', 'mimeType', 'filesize', 'url', 'thumbnailURL', 'variants'] as const
 
 export const deriveMediaMetadata: CollectionBeforeValidateHook = ({ data, originalDoc, req }) => {
   if (!data) return data
@@ -54,10 +61,15 @@ export const deriveMediaMetadata: CollectionBeforeValidateHook = ({ data, origin
     data.metadata = { source: 'local-upload', mimeType: req.file.mimetype, bytes: req.file.size }
     data.rightsStatus = 'pending'
     data.variants = []
+    // Like WordPress: an empty description falls back to the uploaded file's name ("may-khoan_20v.jpg" → "may khoan 20v").
+    if (typeof data.alt !== 'string' || !data.alt.trim()) data.alt = altFromFileName(String(req.context?.originalUploadName ?? '')) || 'Ảnh sản phẩm WOKIN'
   } else if (req.user && originalDoc) {
-    const derived = ['path', 'storageKey', 'contentSha256', 'metadata', 'width', 'height', 'filename', 'mimeType', 'filesize', 'url', 'thumbnailURL', 'variants']
-    for (const key of derived) {
-      if (data[key] !== undefined && JSON.stringify(data[key]) !== JSON.stringify(originalDoc[key])) throw new APIError('Thông tin tệp được hệ thống quản lý; hãy tải ảnh mới để thay thế.', 400)
+    // File facts belong to the stored file. The admin form posts them back on every save (url/thumbnailURL are
+    // computed, so they never match the stored row), which used to reject even an alt-text edit. Keep the stored
+    // values and ignore whatever the client sent; replacing the file is the only way to change them.
+    for (const key of MEDIA_DERIVED_FIELDS) {
+      if (key in originalDoc) data[key] = originalDoc[key]
+      else delete data[key]
     }
   }
   return data

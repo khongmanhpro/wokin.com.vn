@@ -92,3 +92,48 @@ test('privileged admin submissions bypass public origin restrictions', async () 
     else Object.assign(process.env, { NODE_ENV: previousNodeEnv })
   }
 })
+
+async function withAllowedOrigin(run: () => Promise<void>) {
+  const previous = process.env.CONTACT_ALLOWED_ORIGINS
+  Object.assign(process.env, { CONTACT_ALLOWED_ORIGINS: 'https://wokin.vn' })
+  try {
+    await run()
+  } finally {
+    if (previous === undefined) delete (process.env as Record<string, string | undefined>).CONTACT_ALLOWED_ORIGINS
+    else Object.assign(process.env, { CONTACT_ALLOWED_ORIGINS: previous })
+  }
+}
+
+test('contact endpoint parses the JSON body the website actually sends (req.data is not pre-filled)', () => withAllowedOrigin(async () => {
+  const body = JSON.stringify({ fullName: 'Nguyễn Văn B', phone: '0901234567', email: '', subject: 'quote', message: 'Cần báo giá bộ dụng cụ.', consent: true, website: '' })
+  const { req, created } = request({
+    data: undefined,
+    method: 'POST',
+    body: body,
+    text: async () => body,
+    headers: new Headers({ origin: 'https://wokin.vn', 'Content-Type': 'application/json' }),
+    ip: '203.0.113.77',
+  })
+  const response = await contactSubmissionEndpoint.handler(req)
+  assert.equal(response.status, 200, JSON.stringify(await response.clone().json()))
+  assert.equal(created[0]?.fullName, 'Nguyễn Văn B')
+}))
+
+test('contact endpoint answers malformed JSON with 400 instead of crashing', () => withAllowedOrigin(async () => {
+  const { req } = request({
+    data: undefined,
+    method: 'POST',
+    body: '{oops',
+    text: async () => '{oops',
+    headers: new Headers({ origin: 'https://wokin.vn', 'Content-Type': 'application/json' }),
+    ip: '203.0.113.78',
+  })
+  const response = await contactSubmissionEndpoint.handler(req)
+  assert.equal(response.status, 400)
+}))
+
+test('allowed contact origins include the www / non-www twin and match the CORS list', async () => {
+  const { contactAllowedOrigins } = await import('../src/lib/contactOrigins.js')
+  const origins = contactAllowedOrigins({ CONTACT_ALLOWED_ORIGINS: 'https://wokin.vn/', NODE_ENV: 'production' } as NodeJS.ProcessEnv)
+  assert.deepEqual(origins.sort(), ['https://wokin.vn', 'https://www.wokin.vn'])
+})

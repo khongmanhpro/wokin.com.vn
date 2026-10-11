@@ -70,7 +70,7 @@ export function ContactForm() {
         </label>
         <label className="contact-field">
           <span>Số điện thoại <b aria-hidden="true">*</b></span>
-          <input name="phone" type="tel" autoComplete="tel" inputMode="tel" placeholder="0978 390 339" pattern="(?:\+84|0)[0-9 .-]{8,12}" maxLength={32} title="Nhập số điện thoại Việt Nam, ví dụ 0978 390 339" required />
+          <input name="phone" type="tel" autoComplete="tel" inputMode="tel" placeholder="0978 390 339" pattern="(?:\+84|0)[0-9 .\-]{8,12}" maxLength={32} title="Nhập số điện thoại Việt Nam, ví dụ 0978 390 339" required />
         </label>
         <label className="contact-field">
           <span>Email <em>(không bắt buộc)</em></span>

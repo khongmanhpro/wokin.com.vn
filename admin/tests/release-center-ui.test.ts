@@ -102,5 +102,5 @@ test('Release Center accepts authenticated identity from initPageResult', async 
   } as never))
 
   assert.doesNotMatch(markup, /phiên đăng nhập không hợp lệ/)
-  assert.match(markup, /Trung tâm phát hành/)
+  assert.match(markup, /Xuất bản website/)
 })

@@ -15,6 +15,8 @@ function runEnvCheck(overrides: NodeJS.ProcessEnv) {
   delete env.S3_ENDPOINT
   delete env.S3_REGION
   delete env.S3_SECRET_ACCESS_KEY
+  // check-env loads dotenv; point it away from a developer's real admin/.env so missing values stay missing.
+  env.DOTENV_CONFIG_PATH = path.join(adminRoot, 'tests', '.env.does-not-exist')
   Object.assign(env, overrides)
 
   return spawnSync(process.execPath, ['--import', 'tsx', 'scripts/check-env.ts'], {
@@ -121,7 +123,7 @@ test('admin CI validates database migrations and reruns when catalog contracts c
 test('Docker, CI, and Payload branding configs enforce the R2 baseline', async () => {
   const [compose, dockerfile, workflow, nextConfig, payloadConfig, styles, tokens] = await Promise.all([
     readFile(path.join(adminRoot, 'docker-compose.yml'), 'utf8'),
-    readFile(path.join(adminRoot, 'Dockerfile'), 'utf8'),
+    readFile(path.resolve(adminRoot, '../Dockerfile'), 'utf8'),
     readFile(path.resolve(adminRoot, '../.github/workflows/admin-ci.yml'), 'utf8'),
     readFile(path.join(adminRoot, 'next.config.mjs'), 'utf8'),
     readFile(path.join(adminRoot, 'src/payload.config.ts'), 'utf8'),
@@ -138,7 +140,8 @@ test('Docker, CI, and Payload branding configs enforce the R2 baseline', async (
 
   assert.match(dockerfile, /npm ci/)
   assert.match(dockerfile, /npm run build/)
-  assert.match(dockerfile, /USER nextjs/)
+  assert.match(dockerfile, /USER node/)
+  assert.match(dockerfile, /admin-entrypoint\.sh/)
 
   assert.match(workflow, /npm ci/)
   assert.match(workflow, /npm run typecheck/)

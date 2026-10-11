@@ -20,13 +20,17 @@ export const Media: CollectionConfig = {
     hideRemoveFile: true,
   },
   access: { create: canUploadMedia, delete: canUpdateMedia, read: activeAuthenticated, update: canUpdateMedia },
+  // Payload's bulk edit shares the "Chỉnh sửa" label and asks for fields one by one; editors mistook it for
+  // opening the product. Edit one item by clicking its name/thumbnail; bulk delete stays.
+  disableBulkEdit: true,
   admin: {
     defaultColumns: ['thumbnail', 'storageKey', 'path', 'width', 'height', 'rightsStatus'],
     description: 'Quản lý tệp đa phương tiện, đường dẫn lưu trữ và tình trạng quyền sử dụng.',
     group: 'Nội dung',
     listSearchableFields: ['path', 'storageKey', 'contentSha256'],
     pagination: { defaultLimit: 25, limits: [25, 50, 100] },
-    useAsTitle: 'storageKey',
+    // Relationship chips on products show the image description, not the storage path.
+    useAsTitle: 'alt',
   },
   labels: { singular: 'Tệp đa phương tiện', plural: 'Tệp đa phương tiện' },
   trash: true,
@@ -35,8 +39,8 @@ export const Media: CollectionConfig = {
   fields: [
     { name: 'thumbnail', label: 'Ảnh', type: 'ui', admin: { components: { Cell: '/components/MediaThumbnailCell#MediaThumbnailCell', Field: false } } },
     { name: 'path', label: 'Đường dẫn tệp', type: 'text', required: true, unique: true, index: true, admin: { readOnly: true } },
-    { name: 'storageKey', label: 'Mã lưu trữ', type: 'text', required: true, unique: true, index: true, admin: { readOnly: true } },
-    { name: 'alt', label: 'Mô tả ảnh', type: 'text', required: true, admin: { description: 'Mô tả ngắn nội dung ảnh để hỗ trợ người dùng trình đọc màn hình.' } },
+    { name: 'storageKey', label: 'Mã lưu trữ', type: 'text', required: true, unique: true, index: true, admin: { readOnly: true, components: { Cell: '/components/MediaThumbnailCell#TitleLinkCell' } } },
+    { name: 'alt', label: 'Mô tả ảnh', type: 'text', required: true, admin: { description: 'Mô tả ngắn nội dung ảnh (tốt cho Google), ví dụ "Cờ lè vạn năng 9-32mm".' } },
     { name: 'metadata', label: 'Thông tin tệp', type: 'json', required: true, admin: { readOnly: true } },
     { name: 'width', label: 'Chiều rộng', type: 'number', required: true, admin: { readOnly: true } },
     { name: 'height', label: 'Chiều cao', type: 'number', required: true, admin: { readOnly: true } },

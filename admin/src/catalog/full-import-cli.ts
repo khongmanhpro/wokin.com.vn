@@ -15,8 +15,10 @@ async function main() {
   const projectRoot = valueAfter(args, '--project-root', path.resolve('..'))!
   const reportPath = valueAfter(args, '--report')
   const dryRun = args.includes('--dry-run')
+  // --published: the catalog is already live on the website, so import it published (see normalizeFullCatalog).
+  const published = args.includes('--published')
   const sources = await loadFullCatalogSources({ projectRoot })
-  const catalog = normalizeFullCatalog(sources)
+  const catalog = normalizeFullCatalog(sources, { published })
   await verifyAllMediaChecksums(catalog, projectRoot)
 
   const payload = await getPayload({ config })
@@ -31,6 +33,6 @@ async function main() {
 }
 
 main().catch((error: unknown) => {
-  console.error(error instanceof Error ? error.message : error)
+  console.error(error instanceof Error ? (process.env.DEBUG_IMPORT ? error.stack : error.message) : error)
   process.exit(1)
 })

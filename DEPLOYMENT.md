@@ -88,6 +88,8 @@ Sau build, `npm run validate:export` kiểm tra mọi URL dưới `/images/produ
 
 ## Admin Payload (Node.js + PostgreSQL)
 
+> **Từ 2026-10-11 dùng Docker:** làm theo [`DEPLOY-DOCKER.md`](DEPLOY-DOCKER.md) (`docker-compose.yml` ở gốc repo: PostgreSQL + admin + nginx cho website, nút Xuất bản chạy trong container). Phần dưới là ghi chú cũ cho cách chạy Node trực tiếp.
+
 _Thêm 2026-10-11. Chưa triển khai thật; các bước dưới đây dựa trên `admin/Dockerfile`, `admin/docker-compose.yml` và `admin/src/config/environment.ts`._
 
 Admin **không chạy được trên hosting tĩnh/shared** như website public. Cần một máy có Node.js 22 hoặc Docker, PostgreSQL 16, HTTPS (reverse proxy như Caddy hoặc Nginx), và ổ đĩa lưu ảnh tải lên.
@@ -114,12 +116,28 @@ Admin **không chạy được trên hosting tĩnh/shared** như website public.
 6. Build website public với `NEXT_PUBLIC_CONTACT_API_URL=https://<admin>/api/contact-submissions/submit` để form Liên hệ gửi về admin.
 7. Sao lưu: `pg_dump` hằng ngày cho DB và sao lưu thư mục `MEDIA_UPLOAD_DIR`; thử khôi phục định kỳ.
 
+### Xuất bản website từ admin (VPS, cùng máy với admin)
+
+_Thêm 2026-10-11._ Admin có trang **Xuất bản website** (`/admin/release-center`). Bấm nút: admin xuất sản phẩm/danh mục/ảnh ở trạng thái *Đã xuất bản* + Thông tin website + Menu, chạy `scripts/publish-website.mjs` trong checkout website (build, `validate:export`), lưu vào `WEBSITE_PUBLISH_DIR/releases/<id>/` rồi đổi symlink `WEBSITE_PUBLISH_DIR/current` (đổi tức thì; lỗi thì website giữ bản cũ). Giữ 3 bản, có nút quay về bản cũ.
+
+Yêu cầu trên VPS:
+- Admin chạy bằng Node trực tiếp (không Docker) trong checkout repo, vì nút xuất bản cần mã nguồn website ở thư mục cha `admin/` (hoặc `WEBSITE_DIR`), `npm ci` ở cả thư mục gốc lẫn `admin/`, và `rsync`.
+- `admin/.env`: `WEBSITE_PUBLISH_DIR=/var/www/wokin` (thư mục mà user chạy admin ghi được), `WEBSITE_PUBLIC_URL=https://wokin.vn`, `MEDIA_UPLOAD_DIR` trỏ thư mục ảnh bền vững, `CONTACT_ALLOWED_ORIGINS=https://wokin.vn` (bản `www` được tự cho phép).
+- nginx: `root /var/www/wokin/current;` cho `wokin.vn` (và redirect `www` → không `www`), `try_files $uri $uri/ $uri.html =404; error_page 404 /404.html;`.
+- Lần đầu: chuyển bản website hiện có vào `releases/<YYYYMMDD-HHMMSS>/` và tạo symlink `current` (script từ chối ghi đè thư mục thật tên `current`).
+- Build website chỉ nhận biến môi trường tối thiểu (`PATH`, `HOME`, …); không truyền `DATABASE_URL`/`PAYLOAD_SECRET`.
+
+Chuyển dữ liệu admin cũ sang chế độ này (một lần, **sau khi backup DB**): kiểm tra Nhật ký hoạt động xem có ai sửa sản phẩm trên admin chưa (lệnh dưới ghi đè toàn bộ sản phẩm), rồi `npm run import:catalog -- --published` trong `admin/`. Kết quả: 1.357 SP *Đã xuất bản* với ngày gốc, 30 danh mục *active*, ảnh catalog *Đã xác nhận*, sửa 837 SP có thông số giả từ lần nạp cũ.
+
+Quy trình cập nhật code về sau: `git pull` → `npm ci` (gốc và `admin/`) → `npm run db:migrate` → build/khởi động lại admin → bấm **Xuất bản website**.
+
 ### Sửa Thông tin website / Menu rồi áp dụng ra website
 
-Sửa trong admin, sau đó chạy `npm run site-settings:export` trong một checkout có website, chạy gate, build và deploy website tĩnh như phần trên.
+Trên VPS có nút Xuất bản: chỉ cần sửa trong admin rồi bấm **Xuất bản website**. Cách cũ (không có nút): `npm run site-settings:export` trong checkout có website, chạy gate, build và deploy website tĩnh.
 
 ### Lưu ý đã biết (chưa xử lý)
 
 - **Ảnh catalog trong container:** Docker build dùng ngữ cảnh `admin/`, nên image không chứa `public/images` của website. Endpoint `/api/media/preview/:id` đọc ảnh catalog từ thư mục `public` của repo, nên khi chạy bằng Docker cần mount thư mục này vào hoặc sửa endpoint. Chưa kiểm chứng trong container.
 - **S3:** `STORAGE_ADAPTER=s3` qua được bước kiểm tra env, nhưng `payload.config.ts` chưa gắn plugin lưu trữ S3, nên ảnh vẫn lưu ở `MEDIA_UPLOAD_DIR`.
 - Chưa có email adapter: tính năng quên mật khẩu chỉ in email ra log.
+- `admin/Dockerfile` cũ đã bỏ; image mới là `Dockerfile` ở gốc repo (xem `DEPLOY-DOCKER.md`).

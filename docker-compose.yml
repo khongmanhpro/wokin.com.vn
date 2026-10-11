@@ -1,0 +1,56 @@
+# WOKIN production stack: PostgreSQL + admin (Payload, with the "Xuất bản website" button) + nginx for the static site.
+#   cp .env.docker.example .env   # then fill in the secrets
+#   docker compose up -d --build
+# Both web ports bind to 127.0.0.1; the host's nginx terminates HTTPS and proxies to them
+# (see deploy/docker/host-nginx.example.conf and DEPLOY-DOCKER.md).
+name: wokin
+
+services:
+  db:
+    image: postgres:16.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wokin_payload
+      POSTGRES_USER: wokin_payload
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Đặt POSTGRES_PASSWORD trong .env}"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wokin_payload -d wokin_payload"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  admin:
+    build: .
+    image: wokin-admin:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://wokin_payload:${POSTGRES_PASSWORD}@db:5432/wokin_payload"
+      PAYLOAD_SECRET: "${PAYLOAD_SECRET:?Đặt PAYLOAD_SECRET (>= 32 ký tự) trong .env}"
+      PAYLOAD_PUBLIC_SERVER_URL: "${ADMIN_URL:?Đặt ADMIN_URL trong .env, ví dụ https://admin.wokin.vn}"
+      CONTACT_ALLOWED_ORIGINS: "${SITE_URL:?Đặt SITE_URL trong .env, ví dụ https://wokin.vn}"
+      WEBSITE_PUBLIC_URL: "${SITE_URL}"
+      PAYLOAD_SEPARATION_OF_DUTIES: "false"
+    volumes:
+      - media:/data/media
+      - site:/srv/site
+    ports:
+      - "127.0.0.1:${ADMIN_PORT:-3000}:3000"
+
+  web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    volumes:
+      - site:/srv/site:ro
+      - ./deploy/docker/nginx-site.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
+
+volumes:
+  db-data:
+  media:
+  site:

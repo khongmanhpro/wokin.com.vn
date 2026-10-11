@@ -22,3 +22,20 @@
   --wokin-target-size: 2.75rem;
   --wokin-layer-dialog: 1000;
 }
+
+// Payload's dark theme (html[data-theme="dark"]): without these, custom panels kept the light surfaces with
+// Payload's light text on top and became unreadable.
+html[data-theme='dark'] {
+  --wokin-accent-contrast: #21150a;
+  --wokin-focus-ring: #ffb066;
+  --wokin-surface: #1c1c1c;
+  --wokin-surface-subtle: #2a2219;
+  --wokin-text: #ededed;
+  --wokin-text-muted: #b5b5b5;
+  --wokin-border: #444;
+  --wokin-success: #6fd59a;
+  --wokin-warning: #f2b057;
+  --wokin-danger: #ff8a80;
+  --wokin-info: #7cc2ef;
+  --wokin-shadow: 0 0.125rem 0.5rem rgb(0 0 0 / 45%);
+}

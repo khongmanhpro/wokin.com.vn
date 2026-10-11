@@ -51,6 +51,12 @@ export interface FullCatalogSources {
   searchIndex: SearchInput[]
   translations: TranslationInput[]
   projectRoot: string
+  /** Website category URL segments (src/data/category-paths.json); optional for older fixtures. */
+  categoryPaths?: Record<string, string>
+}
+
+function isoDate(value: string): string {
+  return new Date(value.endsWith('Z') || /[+-]\d\d:\d\d$/.test(value) ? value : `${value}Z`).toISOString()
 }
 
 const sha256Pattern = /^[a-f\d]{64}$/
@@ -86,16 +92,24 @@ function specification(line: string): ProductionProductInput['specifications'][n
 
 export async function loadFullCatalogSources(options: { projectRoot: string }): Promise<FullCatalogSources> {
   const projectRoot = path.resolve(options.projectRoot)
+  const categoryPaths = await readFile(path.join(projectRoot, 'src/data/category-paths.json'), 'utf8')
+    .then((text) => Object.fromEntries(Object.entries(JSON.parse(text) as Record<string, string>).filter(([key]) => key !== '_comment')))
+    .catch(() => undefined)
   const [catalog, imageMetadata, searchIndex, translations] = await Promise.all([
     readFile(path.join(projectRoot, 'src/data/catalog.generated.json'), 'utf8').then(JSON.parse) as Promise<GeneratedCatalog>,
     readFile(path.join(projectRoot, 'src/data/image-metadata.generated.json'), 'utf8').then(JSON.parse) as Promise<Record<string, [number, number, string]>>,
     readFile(path.join(projectRoot, 'src/data/search-index.json'), 'utf8').then(JSON.parse) as Promise<SearchInput[]>,
     readFile(path.join(projectRoot, 'data/products_vi.json'), 'utf8').then(JSON.parse) as Promise<TranslationInput[]>,
   ])
-  return { catalog, imageMetadata, searchIndex, translations, projectRoot }
+  return { catalog, imageMetadata, searchIndex, translations, projectRoot, categoryPaths }
 }
 
-export function normalizeFullCatalog(sources: FullCatalogSources): FullCatalogInput {
+/**
+ * `published: true` imports the catalog as already live (the website serves it today): products published with their
+ * original dates, categories active, catalog images cleared. Default stays the old draft-only review import.
+ */
+export function normalizeFullCatalog(sources: FullCatalogSources, options: { published?: boolean } = {}): FullCatalogInput {
+  const published = options.published === true
   const errors: string[] = []
   const { catalog } = sources
   if (catalog.schemaVersion !== 1) errors.push(`catalog schemaVersion ${catalog.schemaVersion} is unsupported`)
@@ -124,14 +138,14 @@ export function normalizeFullCatalog(sources: FullCatalogSources): FullCatalogIn
       nameVi: category.translation.name,
       sourceName: category.sourceName,
       slug: category.slug,
-      status: 'draft',
+      status: published ? 'active' : 'draft',
       parentId: parent ? stableUuid('category', parent.legacySourceId) : null,
       sortOrder,
       seo: {
         title: category.translation.name,
         description: `Danh mục ${category.translation.name} chính hãng WOKIN.`,
-        canonicalPath: `/danh-muc/${category.slug}`,
-        noIndex: true,
+        canonicalPath: `/danh-muc/${sources.categoryPaths?.[category.slug] ?? category.slug}`,
+        noIndex: !published,
       },
     }
   })
@@ -164,7 +178,7 @@ export function normalizeFullCatalog(sources: FullCatalogSources): FullCatalogIn
       width,
       height,
       contentSha256,
-      rightsStatus: 'pending',
+      rightsStatus: published ? 'cleared' : 'pending',
       variants: [],
     }
   })
@@ -207,7 +221,7 @@ export function normalizeFullCatalog(sources: FullCatalogSources): FullCatalogIn
       id: stableUuid('product', product.legacySourceId),
       legacySourceId: product.legacySourceId,
       sku,
-      status: 'draft',
+      status: published ? 'published' : 'draft',
       nameVi: translation?.name_vi ?? product.translation.name,
       slugVi,
       descriptionVi: null,
@@ -220,12 +234,12 @@ export function normalizeFullCatalog(sources: FullCatalogSources): FullCatalogIn
       })),
       categoryIds,
       mediaIds,
-      publishedAt: null,
+      publishedAt: published && product.publishedAt ? isoDate(product.publishedAt) : null,
       seo: {
         title: translation?.name_vi ?? product.translation.name,
         description: `${translation?.name_vi ?? product.translation.name}${sku ? `, mã ${sku}` : ''} chính hãng WOKIN.`,
         canonicalPath: `/san-pham/${slugVi}`,
-        noIndex: true,
+        noIndex: !published,
       },
       sourceMetadata: {
         sourceType: product.sourceType,

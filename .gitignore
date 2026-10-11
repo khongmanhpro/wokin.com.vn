@@ -40,3 +40,6 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Admin uploads copied in only while publishing (scripts/publish-website.mjs)
+public/images/products/uploads/
