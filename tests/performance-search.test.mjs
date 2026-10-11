@@ -10,7 +10,8 @@ test("search index is lightweight and contains only searchable catalog fields", 
   const index = readJson("src/data/search-index.json");
   assert.equal(index.length, 1357);
   for (const product of index) {
-    assert.deepEqual(Object.keys(product).sort(), ["categories", "id", "name", "sku", "slug"]);
+    assert.deepEqual(Object.keys(product).sort(), ["categories", "id", "image", "name", "sku", "slug"]);
+    assert.ok(product.image === null || /^\/images\/products\/[^?#]+\.(jpe?g|png|webp)$/i.test(product.image));
     assert.equal(typeof product.id, "number");
     assert.equal(typeof product.name, "string");
     assert.equal(typeof product.sku, "string");

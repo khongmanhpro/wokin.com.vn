@@ -6,9 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from "react";
 import categoriesJson from "@/data/categories.json";
 import glossaryJson from "@/data/vi-glossary.json";
+import { siteSettings, type NavLink } from "@/lib/site-settings";
 
 const categories = categoriesJson as { id: number; slug: string }[];
-type SearchProduct = { id: number; sku: string; name: string; slug: string; categories: string[] };
+type SearchProduct = { id: number; sku: string; name: string; slug: string; categories: string[]; image: string | null };
 const glossary = glossaryJson as unknown as { categories: Record<string, string>; ui: Record<string, string>; marketing: Record<string, string> };
 const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -62,6 +63,15 @@ function makeBackgroundInert(dialog: HTMLElement) {
   };
 }
 
+const headerNav = siteSettings.navigation.header;
+
+function NavAnchor({ item, className, onClick }: { item: NavLink; className?: string; onClick?: () => void }) {
+  if (item.newTab || !item.url.startsWith("/")) {
+    return <a className={className} href={item.url} onClick={onClick} {...(item.newTab ? { target: "_blank", rel: "noreferrer" } : {})}>{item.label}</a>;
+  }
+  return <Link className={className} href={item.url} onClick={onClick}>{item.label}</Link>;
+}
+
 function Icon({ name }: { name: "search" | "menu" | "close" | "chevron" }) {
   const paths = {
     search: <><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></>,
@@ -75,7 +85,7 @@ function Icon({ name }: { name: "search" | "menu" | "close" | "chevron" }) {
 export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [supportOpen, setSupportOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState<number | null>(null);
   const [query, setQuery] = useState("");
   const [searchProducts, setSearchProducts] = useState<SearchProduct[] | null>(null);
   const searchDialogRef = useRef<HTMLDivElement>(null);
@@ -173,17 +183,14 @@ export function Header() {
             <Image src="/images/logo.png" alt="WOKIN TOOLS" width={301} height={52} priority />
           </Link>
           <nav className="main-nav" aria-label="Điều hướng chính">
-            <Link className="nav-link" href="/san-pham">{glossary.ui.Products}</Link>
-            <Link className="nav-link" href="/gp20v">GP20V</Link>
-            <Link className="nav-link" href="/san-pham-moi">{glossary.ui["New Products"]}</Link>
-            <div className="nav-item" onMouseEnter={() => setSupportOpen(true)} onMouseLeave={() => setSupportOpen(false)}>
-              <button className="action-button" aria-expanded={supportOpen} onClick={() => setSupportOpen((open) => !open)}>{glossary.ui.Support}<Icon name="chevron" /></button>
-              {supportOpen && <div className="dropdown">
-                <Link href="/gioi-thieu/">{glossary.ui["About WOKIN"]}</Link>
-                <Link href="/lien-he/">{glossary.ui["Contact WOKIN"]}</Link>
-                <Link href="/nha-phan-phoi/">{glossary.ui["Seeking Distributors"]}</Link>
-              </div>}
-            </div>
+            {headerNav.map((item, index) => item.children.length === 0
+              ? <NavAnchor className="nav-link" item={item} key={`${item.url}-${index}`} />
+              : <div className="nav-item" key={`${item.url}-${index}`} onMouseEnter={() => setOpenMenu(index)} onMouseLeave={() => setOpenMenu(null)}>
+                <button className="action-button" aria-expanded={openMenu === index} onClick={() => setOpenMenu((open) => open === index ? null : index)}>{item.label}<Icon name="chevron" /></button>
+                {openMenu === index && <div className="dropdown">
+                  {item.children.map((child, childIndex) => <NavAnchor item={child} key={`${child.url}-${childIndex}`} />)}
+                </div>}
+              </div>)}
           </nav>
           <div className="header-actions">
             <button className="icon-button desktop-search" aria-label={glossary.ui.Search} aria-controls="search-dialog" aria-expanded={searchOpen} onClick={openSearch}><Icon name="search" /></button>
@@ -202,7 +209,7 @@ export function Header() {
           {query && searchProducts === null && <p className="empty-search">Đang tải chỉ mục tìm kiếm...</p>}
           {query && searchProducts !== null && <div className="search-results">
             {results.length ? results.map((product) => <Link className="search-result" href={`/san-pham/${product.slug}`} key={product.id} onClick={closeSearch}>
-              <Image className="result-image" src="/images/logo.png" alt="" width={58} height={58} />
+              <img className="result-image" src={product.image ?? "/images/logo.png"} alt="" width={58} height={58} loading="lazy" decoding="async" />
               <span><strong>{product.name}</strong><br /><small>{glossary.ui.SKU}: {product.sku}</small></span>
             </Link>) : <p className="empty-search">Không tìm thấy sản phẩm phù hợp.</p>}
           </div>}
@@ -212,12 +219,14 @@ export function Header() {
       {drawerOpen && <aside className="mobile-drawer" id="category-drawer" ref={drawerDialogRef} role="dialog" aria-modal="true" aria-labelledby="category-drawer-title" onKeyDown={trapFocusDrawer}>
         <div className="drawer-header"><strong id="category-drawer-title">{glossary.ui.Categories}</strong><button ref={drawerCloseRef} className="icon-button overlay-close" aria-label="Đóng danh mục" onClick={closeDrawer}><Icon name="close" /></button></div>
         <ul className="drawer-list">
-          <li><Link href="/san-pham" onClick={closeDrawer}>{glossary.ui.Products}</Link></li>
-          {categories.map((category) => <li key={category.id}><Link href={`/danh-muc/${category.slug}`} onClick={closeDrawer}>{glossary.categories[category.slug] ?? category.slug}</Link></li>)}
-          <li><Link href="/san-pham-moi" onClick={closeDrawer}>{glossary.ui["New Products"]}</Link></li>
-          <li><Link href="/gioi-thieu/" onClick={closeDrawer}>{glossary.ui["About WOKIN"]}</Link></li>
-          <li><Link href="/lien-he/" onClick={closeDrawer}>{glossary.ui["Contact WOKIN"]}</Link></li>
-          <li><Link href="/nha-phan-phoi/" onClick={closeDrawer}>{glossary.ui["Seeking Distributors"]}</Link></li>
+          {headerNav.flatMap((item, index) => {
+            const links = [item, ...item.children].filter((link, linkIndex, all) => all.findIndex((other) => other.url === link.url) === linkIndex);
+            const entries = links.map((link) => <li key={`${index}-${link.url}`}><NavAnchor item={link} onClick={closeDrawer} /></li>);
+            // Category shortcuts follow the products entry, as before the menu became editable.
+            return index === 0
+              ? [...entries, ...categories.map((category) => <li key={category.id}><Link href={`/danh-muc/${category.slug}`} onClick={closeDrawer}>{glossary.categories[category.slug] ?? category.slug}</Link></li>)]
+              : entries;
+          })}
         </ul>
       </aside>}
     </>

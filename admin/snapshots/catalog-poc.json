@@ -1,0 +1,650 @@
+{
+  "categories": [
+    {
+      "id": "a82dd0be-d0dc-5b8e-a8dc-f63d6541949a",
+      "nameVi": "Nền tảng pin Li-Ion 20V",
+      "slug": "20v-lithium-ion-platform"
+    },
+    {
+      "id": "ed4cbd3b-2c44-59f8-a74b-044159dfbd81",
+      "nameVi": "Dụng cụ siết và vặn",
+      "slug": "fastening-tools"
+    },
+    {
+      "id": "3e3a7fe7-0725-5a49-a162-6ad12304566b",
+      "nameVi": "Dụng cụ làm vườn",
+      "slug": "garden-tools"
+    },
+    {
+      "id": "dcf0d420-792a-55c7-a590-af21f0c1f9f6",
+      "nameVi": "Kim khí và sản phẩm khác",
+      "slug": "hardware-and-others"
+    },
+    {
+      "id": "0a7664c4-a393-5cde-a37a-80389ccdb638",
+      "nameVi": "Dụng cụ kẹp giữ",
+      "slug": "holding-tools"
+    },
+    {
+      "id": "14fbeb20-0954-5039-a378-c75b4717f430",
+      "nameVi": "Dụng cụ sơn và xây dựng",
+      "slug": "painting-and-masonry-tools"
+    },
+    {
+      "id": "6e987425-0713-5850-acda-f518ba3604f6",
+      "nameVi": "Dụng cụ khí nén",
+      "slug": "pneumatic-tools"
+    },
+    {
+      "id": "775e508e-d195-5ceb-a732-e7577e88b7f1",
+      "nameVi": "Dụng cụ điện",
+      "slug": "power-tools"
+    },
+    {
+      "id": "f5f76ed8-81eb-57b1-a91a-8b14333782d2",
+      "nameVi": "Dụng cụ điện thị trường 110-120V",
+      "slug": "power-tools-110-120v-market"
+    },
+    {
+      "id": "92e6251b-47fc-5cac-a4b1-0e6ccf8bec86",
+      "nameVi": "Phụ kiện dụng cụ điện",
+      "slug": "power-tools-accessories"
+    },
+    {
+      "id": "0b43244c-18bb-5fc4-a9b0-a0f642b8be08",
+      "nameVi": "Dụng cụ đập",
+      "slug": "striking-tools"
+    },
+    {
+      "id": "7334ba54-2cc2-54f0-a18d-e26971703b0b",
+      "nameVi": "Túi và hộp đựng dụng cụ",
+      "slug": "tool-bag-and-storage"
+    }
+  ],
+  "checksum": "228c17ddd1abeebfe89ba8711766bfdce5915c4d61756f1fb6ba5d2cc567628e",
+  "media": [
+    {
+      "alt": "Kìm cắt ngang sát",
+      "id": "6781dac7-8384-51e4-a50e-c596d82478b4",
+      "path": "images/products/109513/0.jpg"
+    },
+    {
+      "alt": "Bộ mũi vít động lực 10 chi tiết",
+      "id": "91fa5a03-45a0-51ff-a24c-7f7bcdf76680",
+      "path": "images/products/212506/0.jpg"
+    },
+    {
+      "alt": "Đầu chuyển vít xoay 105 độ",
+      "id": "dd71f6b9-902b-55f9-a184-a56753139e1e",
+      "path": "images/products/223910/0.jpg"
+    },
+    {
+      "alt": "Rìu bóc gỗ",
+      "id": "f1dc0107-7aa1-57db-afe1-b0cc7cc2aebd",
+      "path": "images/products/253404/0.jpg"
+    },
+    {
+      "alt": "Cào làm vườn",
+      "id": "b2fbba47-4cd0-5a3b-ae49-32885c0309fe",
+      "path": "images/products/313140/0.jpg"
+    },
+    {
+      "alt": "Bay PU",
+      "id": "82d93c27-501f-5e67-a074-53e0dae85073",
+      "path": "images/products/355620/0.jpg"
+    },
+    {
+      "alt": "Máy thổi dùng pin 20V Li-Ion không chổi than",
+      "id": "d6f458f3-ffad-5a5c-a6fa-f480de9ba788",
+      "path": "images/products/621821/0.jpg"
+    },
+    {
+      "alt": "Bẫy keo",
+      "id": "191032ad-b673-581c-a908-1748407d4923",
+      "path": "images/products/655810/0.jpg"
+    },
+    {
+      "alt": "Bản lề thường 165 độ",
+      "id": "a01828b4-bc76-569c-a624-dbbe7e9ab9b2",
+      "path": "images/products/656203/0.jpg"
+    },
+    {
+      "alt": "Bản lề giảm chấn 165 độ",
+      "id": "a7707a8d-0583-531d-a4ab-5646566faad5",
+      "path": "images/products/656233/0.jpg"
+    },
+    {
+      "alt": "Súng phun lửa đốt hai đầu",
+      "id": "d8a5eec9-b6a2-58dd-a793-67267979102c",
+      "path": "images/products/666007/0.jpg"
+    },
+    {
+      "alt": "Mũi khoan lỗ tròn kim cương",
+      "id": "197ac856-8830-5a5f-a2d3-85dd3e994198",
+      "path": "images/products/757802/0.jpg"
+    },
+    {
+      "alt": "Lưỡi cưa đĩa hợp kim",
+      "id": "c0dd5b7e-7b65-527e-ad7a-ce508ed65c4e",
+      "path": "images/products/758004/0.jpg"
+    },
+    {
+      "alt": "Bộ lưỡi máy đa năng 15 chi tiết",
+      "id": "18cb327b-1439-50c7-a7c1-0273d2a541c5",
+      "path": "images/products/767006/0.jpg"
+    },
+    {
+      "alt": "Kẹp ba máy khoan dùng chìa 789501",
+      "id": "a5de7cdc-19c8-5b2a-abbb-bda1426dce34",
+      "path": "images/products/789501/0.jpg"
+    },
+    {
+      "alt": "Máy nén khí",
+      "id": "eb397dd8-0cd9-5464-a226-5197cf97e8ad",
+      "path": "images/products/830912/0.jpg"
+    },
+    {
+      "alt": "Máy nén khí - ảnh 2",
+      "id": "30df20ff-3e08-5774-ae9c-646426f2121e",
+      "path": "images/products/830912/1.jpg"
+    },
+    {
+      "alt": "Hộp dụng cụ 450 mm",
+      "id": "c873ea07-d368-51df-ad5f-62c461ce7284",
+      "path": "images/products/900418/0.jpg"
+    },
+    {
+      "alt": "Hộp dụng cụ 405 mm",
+      "id": "43035bb9-4b3a-5ace-ad33-3deb3a41bb3a",
+      "path": "images/products/900516/0.jpg"
+    },
+    {
+      "alt": "Sơn xịt thường",
+      "id": "852f4ff5-b114-52a5-a5ae-8a24e0518478",
+      "path": "images/products/normal-spray-paint/0.jpg"
+    },
+    {
+      "alt": "Sơn xịt thường - ảnh 2",
+      "id": "185bf2e3-682a-59c5-a298-c12be637f144",
+      "path": "images/products/normal-spray-paint/1.jpg"
+    },
+    {
+      "alt": "Sơn xịt thường - ảnh 3",
+      "id": "b4733096-2c65-538b-a4ab-1ebda9bce3db",
+      "path": "images/products/normal-spray-paint/2.jpg"
+    }
+  ],
+  "products": [
+    {
+      "categoryIds": [
+        "775e508e-d195-5ceb-a732-e7577e88b7f1"
+      ],
+      "id": "10000000-0000-5000-8000-000000005784",
+      "legacySourceId": 5784,
+      "mediaIds": [
+        "a5de7cdc-19c8-5b2a-abbb-bda1426dce34"
+      ],
+      "nameVi": "Kẹp ba máy khoan dùng chìa",
+      "sku": "789501",
+      "slugVi": "kep-ba-may-khoan-dung-chia-789501",
+      "specifications": [
+        {
+          "label": "Khả năng kẹp",
+          "unit": "mm",
+          "value": "1.5-13"
+        },
+        {
+          "label": "Kích thước kết nối",
+          "value": "1/2-20UNF"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "f5f76ed8-81eb-57b1-a91a-8b14333782d2"
+      ],
+      "id": "10000000-0000-5000-8000-000000006263",
+      "legacySourceId": 6263,
+      "mediaIds": [
+        "a5de7cdc-19c8-5b2a-abbb-bda1426dce34"
+      ],
+      "nameVi": "Kẹp ba máy khoan dùng chìa",
+      "sku": "789501",
+      "slugVi": "kep-ba-may-khoan-dung-chia",
+      "specifications": [
+        {
+          "label": "Khả năng kẹp",
+          "unit": "mm",
+          "value": "1.5-13"
+        },
+        {
+          "label": "Kích thước kết nối",
+          "value": "1/2-20UNF"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "dcf0d420-792a-55c7-a590-af21f0c1f9f6"
+      ],
+      "id": "10000000-0000-5000-8000-000000008998",
+      "legacySourceId": 8998,
+      "mediaIds": [
+        "852f4ff5-b114-52a5-a5ae-8a24e0518478",
+        "185bf2e3-682a-59c5-a298-c12be637f144",
+        "b4733096-2c65-538b-a4ab-1ebda9bce3db"
+      ],
+      "nameVi": "Sơn xịt thường",
+      "sku": null,
+      "slugVi": "son-xit-thuong",
+      "specifications": [
+        {
+          "label": "Dung tích",
+          "unit": "ml",
+          "value": "450"
+        },
+        {
+          "label": "Khối lượng sơn tịnh",
+          "unit": "g",
+          "value": "230"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "a82dd0be-d0dc-5b8e-a8dc-f63d6541949a"
+      ],
+      "id": "10000000-0000-5000-8000-000000010463",
+      "legacySourceId": 10463,
+      "mediaIds": [
+        "d6f458f3-ffad-5a5c-a6fa-f480de9ba788"
+      ],
+      "nameVi": "Máy thổi dùng pin 20V Li-Ion không chổi than (Công nghiệp)",
+      "sku": "621821",
+      "slugVi": "may-thoi-dung-pin-20v-li-ion-khong-choi-than-cong-nghiep",
+      "specifications": [
+        {
+          "label": "Điện áp",
+          "unit": "V",
+          "value": "20"
+        },
+        {
+          "label": "Tốc độ không tải",
+          "unit": "vòng/phút",
+          "value": "12000/15000/18000"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "6e987425-0713-5850-acda-f518ba3604f6"
+      ],
+      "id": "10000000-0000-5000-8000-000000010505",
+      "legacySourceId": 10505,
+      "mediaIds": [
+        "eb397dd8-0cd9-5464-a226-5197cf97e8ad",
+        "30df20ff-3e08-5774-ae9c-646426f2121e"
+      ],
+      "nameVi": "Máy nén khí",
+      "sku": "830912",
+      "slugVi": "may-nen-khi",
+      "specifications": [
+        {
+          "label": "Công suất đầu vào",
+          "unit": "W",
+          "value": "1500"
+        },
+        {
+          "label": "Áp suất tối đa",
+          "unit": "bar",
+          "value": "8"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "3e3a7fe7-0725-5a49-a162-6ad12304566b"
+      ],
+      "id": "10000000-0000-5000-8000-000000010601",
+      "legacySourceId": 10601,
+      "mediaIds": [
+        "b2fbba47-4cd0-5a3b-ae49-32885c0309fe"
+      ],
+      "nameVi": "Cào làm vườn",
+      "sku": "313140",
+      "slugVi": "cao-lam-vuon",
+      "specifications": [
+        {
+          "label": "Vật liệu",
+          "value": "Thép carbon"
+        },
+        {
+          "label": "Kích thước",
+          "unit": "mm",
+          "value": "420"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "0b43244c-18bb-5fc4-a9b0-a0f642b8be08"
+      ],
+      "id": "10000000-0000-5000-8000-000000010607",
+      "legacySourceId": 10607,
+      "mediaIds": [
+        "f1dc0107-7aa1-57db-afe1-b0cc7cc2aebd"
+      ],
+      "nameVi": "Rìu bóc gỗ",
+      "sku": "253404",
+      "slugVi": "riu-boc-go",
+      "specifications": [
+        {
+          "label": "Vật liệu",
+          "value": "Thép 45#"
+        },
+        {
+          "label": "Độ cứng đầu rìu",
+          "value": "HRC40-50"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "0a7664c4-a393-5cde-a37a-80389ccdb638"
+      ],
+      "id": "10000000-0000-5000-8000-000000010608",
+      "legacySourceId": 10608,
+      "mediaIds": [
+        "6781dac7-8384-51e4-a50e-c596d82478b4"
+      ],
+      "nameVi": "Kìm cắt ngang sát",
+      "sku": "109513",
+      "slugVi": "kim-cat-ngang-sat",
+      "specifications": [
+        {
+          "label": "Vật liệu",
+          "value": "Thép 65Mn"
+        },
+        {
+          "label": "Chiều dài",
+          "unit": "mm",
+          "value": "130"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "92e6251b-47fc-5cac-a4b1-0e6ccf8bec86"
+      ],
+      "id": "10000000-0000-5000-8000-000000010610",
+      "legacySourceId": 10610,
+      "mediaIds": [
+        "197ac856-8830-5a5f-a2d3-85dd3e994198"
+      ],
+      "nameVi": "Mũi khoan lỗ tròn kim cương (Công nghiệp)",
+      "sku": "757802",
+      "slugVi": "mui-khoan-lo-tron-kim-cuong-cong-nghiep",
+      "specifications": [
+        {
+          "label": "Tổng chiều dài",
+          "unit": "mm",
+          "value": "63"
+        },
+        {
+          "label": "Chiều sâu khoan",
+          "unit": "mm",
+          "value": "35"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "dcf0d420-792a-55c7-a590-af21f0c1f9f6"
+      ],
+      "id": "10000000-0000-5000-8000-000000010613",
+      "legacySourceId": 10613,
+      "mediaIds": [
+        "a01828b4-bc76-569c-a624-dbbe7e9ab9b2"
+      ],
+      "nameVi": "Bản lề thường 165 độ",
+      "sku": "656203",
+      "slugVi": "ban-le-thuong-165-do",
+      "specifications": [
+        {
+          "label": "Góc mở",
+          "unit": "độ",
+          "value": "165"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "dcf0d420-792a-55c7-a590-af21f0c1f9f6"
+      ],
+      "id": "10000000-0000-5000-8000-000000010614",
+      "legacySourceId": 10614,
+      "mediaIds": [
+        "a7707a8d-0583-531d-a4ab-5646566faad5"
+      ],
+      "nameVi": "Bản lề giảm chấn 165 độ",
+      "sku": "656233",
+      "slugVi": "ban-le-giam-chan-165-do",
+      "specifications": [
+        {
+          "label": "Góc mở",
+          "unit": "độ",
+          "value": "165"
+        },
+        {
+          "label": "Đường kính lỗ cốc",
+          "unit": "mm",
+          "value": "35"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "14fbeb20-0954-5039-a378-c75b4717f430"
+      ],
+      "id": "10000000-0000-5000-8000-000000010626",
+      "legacySourceId": 10626,
+      "mediaIds": [
+        "82d93c27-501f-5e67-a074-53e0dae85073"
+      ],
+      "nameVi": "Bay PU",
+      "sku": "355620",
+      "slugVi": "bay-pu",
+      "specifications": [
+        {
+          "label": "Kích thước",
+          "unit": "mm",
+          "value": "280 × 140"
+        },
+        {
+          "label": "Khối lượng",
+          "unit": "g",
+          "value": "110"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "7334ba54-2cc2-54f0-a18d-e26971703b0b"
+      ],
+      "id": "10000000-0000-5000-8000-000000010630",
+      "legacySourceId": 10630,
+      "mediaIds": [
+        "c873ea07-d368-51df-ad5f-62c461ce7284"
+      ],
+      "nameVi": "Hộp dụng cụ",
+      "sku": "900418",
+      "slugVi": "hop-dung-cu-900418",
+      "specifications": [
+        {
+          "label": "Kích thước",
+          "unit": "mm",
+          "value": "450 × 240 × 230"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "7334ba54-2cc2-54f0-a18d-e26971703b0b"
+      ],
+      "id": "10000000-0000-5000-8000-000000010632",
+      "legacySourceId": 10632,
+      "mediaIds": [
+        "43035bb9-4b3a-5ace-ad33-3deb3a41bb3a"
+      ],
+      "nameVi": "Hộp dụng cụ",
+      "sku": "900516",
+      "slugVi": "hop-dung-cu",
+      "specifications": [
+        {
+          "label": "Kích thước",
+          "unit": "mm",
+          "value": "405 × 230 × 190"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "ed4cbd3b-2c44-59f8-a74b-044159dfbd81"
+      ],
+      "id": "10000000-0000-5000-8000-000000010667",
+      "legacySourceId": 10667,
+      "mediaIds": [
+        "dd71f6b9-902b-55f9-a184-a56753139e1e"
+      ],
+      "nameVi": "Đầu chuyển vít xoay 105 độ",
+      "sku": "223910",
+      "slugVi": "dau-chuyen-vit-xoay-105-do",
+      "specifications": [
+        {
+          "label": "Góc uốn",
+          "unit": "độ",
+          "value": "105"
+        },
+        {
+          "label": "Mô-men xoắn tối đa",
+          "unit": "N·m",
+          "value": "12"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "92e6251b-47fc-5cac-a4b1-0e6ccf8bec86"
+      ],
+      "id": "10000000-0000-5000-8000-000000010670",
+      "legacySourceId": 10670,
+      "mediaIds": [
+        "c0dd5b7e-7b65-527e-ad7a-ce508ed65c4e"
+      ],
+      "nameVi": "Lưỡi cưa đĩa hợp kim",
+      "sku": "758004",
+      "slugVi": "luoi-cua-dia-hop-kim",
+      "specifications": [
+        {
+          "label": "Vật liệu",
+          "value": "Hợp kim YG8"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "92e6251b-47fc-5cac-a4b1-0e6ccf8bec86"
+      ],
+      "id": "10000000-0000-5000-8000-000000010671",
+      "legacySourceId": 10671,
+      "mediaIds": [
+        "18cb327b-1439-50c7-a7c1-0273d2a541c5"
+      ],
+      "nameVi": "Bộ lưỡi máy đa năng 15 chi tiết",
+      "sku": "767006",
+      "slugVi": "bo-luoi-may-da-nang-15-chi-tiet",
+      "specifications": [
+        {
+          "label": "Số chi tiết",
+          "unit": "chi tiết",
+          "value": "15"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "dcf0d420-792a-55c7-a590-af21f0c1f9f6"
+      ],
+      "id": "10000000-0000-5000-8000-000000010675",
+      "legacySourceId": 10675,
+      "mediaIds": [
+        "d8a5eec9-b6a2-58dd-a793-67267979102c"
+      ],
+      "nameVi": "Súng phun lửa đốt hai đầu",
+      "sku": "666007",
+      "slugVi": "sung-phun-lua-dot-hai-dau",
+      "specifications": [
+        {
+          "label": "Đường kính đầu lửa",
+          "unit": "mm",
+          "value": "60"
+        },
+        {
+          "label": "Tổng chiều dài",
+          "unit": "cm",
+          "value": "70"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "ed4cbd3b-2c44-59f8-a74b-044159dfbd81"
+      ],
+      "id": "10000000-0000-5000-8000-000000010677",
+      "legacySourceId": 10677,
+      "mediaIds": [
+        "91fa5a03-45a0-51ff-a24c-7f7bcdf76680"
+      ],
+      "nameVi": "Bộ mũi vít động lực 10 chi tiết (Công nghiệp)",
+      "sku": "212506",
+      "slugVi": "bo-mui-vit-dong-luc-10-chi-tiet-cong-nghiep",
+      "specifications": [
+        {
+          "label": "Vật liệu",
+          "value": "Thép S2"
+        },
+        {
+          "label": "Chuôi",
+          "value": "1/4 inch"
+        }
+      ]
+    },
+    {
+      "categoryIds": [
+        "dcf0d420-792a-55c7-a590-af21f0c1f9f6"
+      ],
+      "id": "10000000-0000-5000-8000-000000010679",
+      "legacySourceId": 10679,
+      "mediaIds": [
+        "191032ad-b673-581c-a908-1748407d4923"
+      ],
+      "nameVi": "Bẫy keo",
+      "sku": "655810",
+      "slugVi": "bay-keo",
+      "specifications": [
+        {
+          "label": "Khối lượng keo",
+          "unit": "g",
+          "value": "26"
+        },
+        {
+          "label": "Kích thước mở",
+          "unit": "cm",
+          "value": "33 × 21.5"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "snapshotId": "poc-d2ea5162bce16ca3"
+}

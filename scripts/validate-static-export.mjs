@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const STATIC_ROUTES = ["/", "/san-pham/", "/san-pham-moi/", "/gp20v/", "/gioi-thieu/", "/lien-he/", "/nha-phan-phoi/"];
+const STATIC_ROUTES = ["/", "/san-pham/", "/san-pham-moi/", "/gp20v/", "/gioi-thieu/", "/lien-he/", "/nha-phan-phoi/", "/chinh-sach-bao-mat/", "/chinh-sach-cookie/"];
 const LEGACY_STATIC_ROUTES = new Set(["/about/", "/contact/", "/distributors/"]);
 const PRODUCTS_PER_PAGE = 20;
 const TEXT_EXTENSIONS = new Set([".html", ".js", ".json", ".xml", ".txt", ".css", ".map"]);

@@ -43,7 +43,7 @@ export async function smokeStaticServer(options) {
   const categories = JSON.parse(readFileSync(path.join(options.dataDir, "categories.json"), "utf8"));
   if (!translations[0]?.slug_vi || !categories[0]?.slug) throw new Error("Không suy ra được representative catalog routes.");
   const routes = [
-    "/", "/san-pham/", "/san-pham-moi/", "/gp20v/", "/gioi-thieu/", "/lien-he/", "/nha-phan-phoi/",
+    "/", "/san-pham/", "/san-pham-moi/", "/gp20v/", "/gioi-thieu/", "/lien-he/", "/nha-phan-phoi/", "/chinh-sach-bao-mat/", "/chinh-sach-cookie/",
     `/danh-muc/${categories[0].slug}/`, `/san-pham/${translations[0].slug_vi}/`, "/sitemap.xml", "/robots.txt",
   ];
   const legacyRoutes = ["/about/", "/contact/", "/distributors/"];

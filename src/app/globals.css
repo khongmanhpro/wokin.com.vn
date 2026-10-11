@@ -1074,3 +1074,17 @@ h4 {
   .contact-field-full { grid-column: auto; }
   .contact-form-actions { align-items: flex-start; flex-direction: column; }
 }
+
+/* Floating quick contact (Zalo, hotline, back to top) and footer social links. */
+.floating-actions { bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; position: fixed; right: 1rem; z-index: 40; }
+.floating-action { align-items: center; border: 0; border-radius: 999px; box-shadow: 0 0.25rem 0.75rem rgb(0 0 0 / 20%); cursor: pointer; display: inline-flex; font-weight: 700; height: 3rem; justify-content: center; text-decoration: none; width: 3rem; }
+.floating-zalo { background: #0068ff; color: #fff; font-size: 0.8rem; }
+.floating-call { background: var(--primary); color: var(--darker); }
+.floating-top { background: #fff; border: 1px solid var(--line); color: var(--darker); }
+.floating-action:focus-visible { outline: 3px solid var(--darker); outline-offset: 2px; }
+.footer-social { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; list-style: none; margin: 1rem 0 0; padding: 0; }
+.footer-social a { color: inherit; }
+.footer-social a:hover { color: var(--primary); }
+.footer-bottom a { color: inherit; }
+.footer-bottom a:hover { color: var(--primary); }
+@media print { .floating-actions { display: none; } }

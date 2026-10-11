@@ -19,6 +19,8 @@ import {
   preservesTechnicalTokens,
 } from "./spec-translation-utils.mjs";
 
+import { assertCatalogPublishSnapshot } from "../contracts/catalog-snapshot-validator.mjs";
+
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DEFAULT_SOURCE_DIR = path.join(projectRoot, "data");
 const DEFAULT_OUTPUT_DIR = path.join(projectRoot, "src/data");
@@ -624,6 +626,8 @@ function outputPayload(normalized, sourceDir) {
     "search-index.json": stableJson(normalized.snapshot.products.map((product) => ({
       categories: product.categoryRelations.map((category) => category.slug),
       id: product.legacySourceId,
+      // First product photo for search result thumbnails; null when a product has no image.
+      image: product.media[0] ? `/${product.media[0].path.replace(/^\//, "")}` : null,
       name: product.translation.name,
       sku: product.productCode ?? "",
       slug: product.translation.canonicalSlug,
@@ -653,12 +657,220 @@ function outputPayload(normalized, sourceDir) {
   return { files, outputChecksum, sourceChecksum };
 }
 
+function snapshotOutputPayload(snapshot) {
+  assertCatalogPublishSnapshot(snapshot);
+  if (snapshot.schemaVersion === 2) return releaseSnapshotOutputPayload(snapshot);
+  const categoryCounts = new Map(snapshot.categories.map((category) => [category.id, 0]));
+  for (const product of snapshot.products) {
+    for (const categoryId of product.categoryIds) categoryCounts.set(categoryId, (categoryCounts.get(categoryId) ?? 0) + 1);
+  }
+  const categoryLegacyIds = new Map(snapshot.categories.map((category, index) => [category.id, index + 1]));
+  const categoryById = new Map(snapshot.categories.map((category) => [category.id, category]));
+  const mediaById = new Map(snapshot.media.map((media) => [media.id, media]));
+  const normalizedCategories = snapshot.categories.map((category) => ({
+    count: categoryCounts.get(category.id) ?? 0,
+    internalId: category.id,
+    legacySourceId: categoryLegacyIds.get(category.id),
+    parentInternalId: null,
+    slug: category.slug,
+    sourceName: category.nameVi,
+    translation: { locale: "vi", name: category.nameVi },
+  }));
+  const normalizedProducts = snapshot.products.map((product) => ({
+    attributes: [],
+    categoryRelations: product.categoryIds.map((categoryId) => {
+      const category = categoryById.get(categoryId);
+      return {
+        categoryInternalId: categoryId,
+        legacySourceId: categoryLegacyIds.get(categoryId),
+        name: category.nameVi,
+        slug: category.slug,
+      };
+    }),
+    internalId: product.id,
+    legacyDescription: "",
+    legacySlug: product.slugVi,
+    legacySourceId: product.legacySourceId,
+    media: product.mediaIds.map((mediaId, position) => {
+      const media = mediaById.get(mediaId);
+      return { alt: media.alt, kind: "image", path: media.path, position };
+    }),
+    packaging: { table: [] },
+    productCode: product.sku?.trim() || null,
+    publishedAt: "1970-01-01T00:00:00.000Z",
+    sourceType: "simple",
+    technicalSpecs: {
+      lines: product.specifications.map((specification) => `> ${specification.label}: ${specification.value}${specification.unit ? ` ${specification.unit}` : ""}`),
+    },
+    translation: {
+      canonicalSlug: product.slugVi,
+      locale: "vi",
+      name: product.nameVi,
+      sourceName: product.nameVi,
+    },
+  }));
+  const canonicalSlugSha256 = sha256(`${snapshot.products
+    .map((product) => `${product.legacySourceId}|${product.slugVi}`)
+    .sort((left, right) => Number(left.split("|", 1)[0]) - Number(right.split("|", 1)[0]))
+    .join("\n")}\n`);
+  const catalog = {
+    canonicalSlugSha256,
+    categories: normalizedCategories,
+    products: normalizedProducts,
+    schemaVersion: SCHEMA_VERSION,
+    sourceChecksum: snapshot.checksum,
+  };
+  const categories = snapshot.categories.map((category, index) => ({
+    count: categoryCounts.get(category.id) ?? 0,
+    id: index + 1,
+    name: category.nameVi,
+    parent: 0,
+    slug: category.slug,
+  }));
+  const translations = snapshot.products.map((product) => ({
+    id: product.legacySourceId,
+    name_en: product.nameVi,
+    name_vi: product.nameVi,
+    sku: product.sku ?? "",
+    slug_vi: product.slugVi,
+  }));
+  const files = {
+    "catalog.generated.json": stableJson(catalog),
+    "categories.json": stableJson(categories),
+    "products_vi.json": stableJson(translations),
+    "search-index.json": stableJson(snapshot.products.map((product) => ({
+      categories: product.categoryIds.map((id) => categoryById.get(id).slug),
+      id: product.legacySourceId,
+      name: product.nameVi,
+      sku: product.sku ?? "",
+      slug: product.slugVi,
+    }))),
+    "vi-glossary.json": stableJson({
+      categories: Object.fromEntries(snapshot.categories.map((category) => [category.slug, category.nameVi])),
+      marketing: {},
+      spec_labels: {},
+      terms: {},
+      ui: {},
+    }),
+  };
+  const outputChecksum = sha256(Object.keys(files).sort().map((name) => `${name}\0${sha256(files[name])}\n`).join(""));
+  files["README.md"] = [
+    "# Generated catalog data",
+    "",
+    "Do not edit files in this directory by hand. This POC output was adapted from a validated Payload publish snapshot.",
+    "",
+    `Schema version: ${SCHEMA_VERSION}`,
+    `Snapshot ID: ${snapshot.snapshotId}`,
+    `Output checksum: ${outputChecksum}`,
+    "",
+  ].join("\n");
+  const generatedFiles = Object.fromEntries(Object.entries(files).map(([name, content]) => [name, sha256(content)]));
+  files["catalog-data.checksums.json"] = stableJson({
+    counts: { products: snapshot.products.length, categories: snapshot.categories.length, localImageReferences: snapshot.media.length },
+    generatedFiles,
+    outputChecksum,
+    schemaVersion: SCHEMA_VERSION,
+    snapshotId: snapshot.snapshotId,
+    sourceChecksum: snapshot.checksum,
+    sourceFiles: { [path.basename("catalog-snapshot.json")]: snapshot.checksum },
+  });
+  return { files, outputChecksum, sourceChecksum: snapshot.checksum };
+}
+
+function releaseSnapshotOutputPayload(snapshot) {
+  const catalog = snapshot.catalog;
+  const categoryById = new Map(catalog.categories.map((category) => [category.internalId, category]));
+  const parentLegacyId = (category) => {
+    if (!category.parentInternalId) return 0;
+    const parent = categoryById.get(category.parentInternalId);
+    if (!parent) throw new Error(`Release snapshot category ${category.internalId} references missing parent ${category.parentInternalId}`);
+    return parent.legacySourceId;
+  };
+  const files = {
+    "catalog.generated.json": stableJson(catalog),
+    "categories.json": stableJson(catalog.categories.map((category) => ({
+      count: category.count,
+      id: category.legacySourceId,
+      name: category.translation.name,
+      parent: parentLegacyId(category),
+      slug: category.slug,
+    }))),
+    "products_vi.json": stableJson(catalog.products.map((product) => ({
+      id: product.legacySourceId,
+      name_en: product.translation.name,
+      name_vi: product.translation.name,
+      sku: product.productCode ?? "",
+      slug_vi: product.translation.canonicalSlug,
+    }))),
+    "search-index.json": stableJson(catalog.products.map((product) => ({
+      categories: product.categoryRelations.map((category) => category.slug),
+      id: product.legacySourceId,
+      name: product.translation.name,
+      sku: product.productCode ?? "",
+      slug: product.translation.canonicalSlug,
+    }))),
+    "vi-glossary.json": stableJson(snapshot.glossary),
+  };
+  const outputChecksum = sha256(Object.keys(files).sort().map((name) => `${name}\0${sha256(files[name])}\n`).join(""));
+  files["README.md"] = [
+    "# Generated catalog data",
+    "",
+    "Do not edit files in this directory by hand. This release output was adapted from a validated Payload release snapshot.",
+    "",
+    `Schema version: ${SCHEMA_VERSION}`,
+    `Snapshot ID: ${snapshot.snapshotId}`,
+    `Output checksum: ${outputChecksum}`,
+    "",
+  ].join("\n");
+  const generatedFiles = Object.fromEntries(Object.entries(files).map(([name, content]) => [name, sha256(content)]));
+  files["catalog-data.checksums.json"] = stableJson({
+    counts: { products: catalog.products.length, categories: catalog.categories.length, localImageReferences: catalog.products.reduce((count, product) => count + product.media.length, 0) },
+    generatedFiles,
+    outputChecksum,
+    schemaVersion: SCHEMA_VERSION,
+    snapshotId: snapshot.snapshotId,
+    sourceChecksum: snapshot.checksum,
+    sourceFiles: { [path.basename("catalog-release.json")]: snapshot.checksum },
+  });
+  return { files, outputChecksum, sourceChecksum: snapshot.checksum };
+}
+
+function writeOrCheckPayload(payload, outputDir, check) {
+  const mismatches = [];
+  for (const [name, content] of Object.entries(payload.files)) {
+    const target = path.join(outputDir, name);
+    if (check) {
+      if (!existsSync(target)) mismatches.push(`${name}: missing generated file`);
+      else if (readFileSync(target, "utf8") !== content) mismatches.push(`${name}: generated content is stale or edited`);
+    } else {
+      mkdirSync(path.dirname(target), { recursive: true });
+      writeFileSync(target, content);
+    }
+  }
+  if (mismatches.length) throw new Error(`Generated catalog drift detected:\n${mismatches.map((item) => `- ${item}`).join("\n")}`);
+}
+
+export async function buildCatalogDataFromSnapshot({ snapshotFile, outputDir = DEFAULT_OUTPUT_DIR, check = false }) {
+  const snapshot = JSON.parse(readFileSync(path.resolve(snapshotFile), "utf8"));
+  const payload = snapshotOutputPayload(snapshot);
+  writeOrCheckPayload(payload, path.resolve(outputDir), check);
+  return {
+    counts: snapshot.schemaVersion === 2
+      ? { products: snapshot.catalog.products.length, categories: snapshot.catalog.categories.length, localImageReferences: snapshot.catalog.products.reduce((count, product) => count + product.media.length, 0) }
+      : { products: snapshot.products.length, categories: snapshot.categories.length, localImageReferences: snapshot.media.length },
+    outputChecksum: payload.outputChecksum,
+    sourceChecksum: payload.sourceChecksum,
+  };
+}
+
 export async function buildCatalogData({
   sourceDir = DEFAULT_SOURCE_DIR,
   outputDir = DEFAULT_OUTPUT_DIR,
   publicDir = DEFAULT_PUBLIC_DIR,
   check = false,
+  snapshotFile,
 } = {}) {
+  if (snapshotFile) return buildCatalogDataFromSnapshot({ snapshotFile, outputDir, check });
   const normalized = validateAndNormalize({ sourceDir: path.resolve(sourceDir), publicDir: path.resolve(publicDir) });
   const payload = outputPayload(normalized, path.resolve(sourceDir));
   const mismatches = [];
@@ -692,6 +904,7 @@ function parseArgs(argv) {
       if (argument === "--source-dir") options.sourceDir = path.resolve(value);
       else if (argument === "--output-dir") options.outputDir = path.resolve(value);
       else if (argument === "--public-dir") options.publicDir = path.resolve(value);
+      else if (argument === "--snapshot") options.snapshotFile = path.resolve(value);
       else throw new Error(`Unknown argument: ${argument}.`);
       index += 1;
     }

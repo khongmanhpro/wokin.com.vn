@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "site": {
+    "siteName": "WOKIN TOOLS Việt Nam",
+    "defaultTitle": "WOKIN TOOLS Việt Nam | Dụng cụ cầm tay & công nghiệp",
+    "defaultDescription": "WOKIN TOOLS Việt Nam cung cấp dụng cụ cầm tay, máy dụng cụ, thiết bị công nghiệp và hệ pin GP20V cho xưởng, công trường và đội ngũ kỹ thuật."
+  },
+  "company": {
+    "legalName": "CÔNG TY CỔ PHẦN THIẾT BỊ CÔNG NGHIỆP WORKMAN",
+    "address": "T2/D3B/31, Đường Bình Chuẩn 62, khu phố Bình Thuận 2, Phường Thuận Giao, Thành Phố Hồ Chí Minh.",
+    "taxCode": "3702963744",
+    "hotline": "0978.390.339",
+    "email": "",
+    "zaloUrl": "https://zalo.me/0978390339",
+    "social": {
+      "facebook": "https://www.facebook.com/workmanjsc/",
+      "youtube": "https://www.youtube.com/@workmanjsc",
+      "tiktok": "https://www.tiktok.com/@workmanjsc"
+    }
+  },
+  "navigation": {
+    "header": [
+      {
+        "label": "Sản phẩm",
+        "url": "/san-pham",
+        "newTab": false,
+        "children": []
+      },
+      {
+        "label": "GP20V",
+        "url": "/gp20v",
+        "newTab": false,
+        "children": []
+      },
+      {
+        "label": "Sản phẩm mới",
+        "url": "/san-pham-moi",
+        "newTab": false,
+        "children": []
+      },
+      {
+        "label": "Hỗ trợ",
+        "url": "/gioi-thieu/",
+        "newTab": false,
+        "children": [
+          {
+            "label": "Giới thiệu",
+            "url": "/gioi-thieu/",
+            "newTab": false
+          },
+          {
+            "label": "Liên hệ",
+            "url": "/lien-he/",
+            "newTab": false
+          },
+          {
+            "label": "Tuyển đại lý",
+            "url": "/nha-phan-phoi/",
+            "newTab": false
+          }
+        ]
+      }
+    ],
+    "footer": [
+      {
+        "label": "Sản phẩm",
+        "url": "/san-pham",
+        "newTab": false
+      },
+      {
+        "label": "Giới thiệu",
+        "url": "/gioi-thieu/",
+        "newTab": false
+      },
+      {
+        "label": "Liên hệ",
+        "url": "/lien-he/",
+        "newTab": false
+      },
+      {
+        "label": "Tuyển đại lý",
+        "url": "/nha-phan-phoi/",
+        "newTab": false
+      }
+    ]
+  }
+}

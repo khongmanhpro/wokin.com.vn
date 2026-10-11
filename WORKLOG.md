@@ -57,7 +57,9 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-09-20 bởi Codex (nối form liên hệ vào Payload Admin; giữ nguyên C1)_
+_Cập nhật: 2026-10-11 bởi Claude (gộp admin vào dòng main, vá bảo mật admin, sửa nhanh website; chờ merge PR #3, #2, #5, #4, #6)_
+
+- **Admin (2026-10-11):** worktree `.hermes/worktrees/admin-ui`, nhánh `feat/admin-wordpress-parity` (PR #2 vào `payload-r1`). Admin Payload làm nền, bật tính năng kiểu WordPress; thử nghiệm shadcn `/dashboard` đã gỡ. Website đọc Cài đặt/Menu từ `src/data/site-settings.json` (nhánh `feat/site-settings-json`). Chạy thử với Postgres Docker (`docker compose -p wokin-admin-dev`) và catalog thật. Chi tiết trong `docs/admin-shadcn-ui.md` của nhánh. Đã phát hiện và vá lỗi migration contact-submissions thiếu cột `payload_locked_documents_rels.contact_submissions_id`.
 
 - **Nhánh `main`:** Phase 0–11 và checkpoint C1.3 trước đó đã commit/push tại `12baf0f`; phiên này có thay đổi chưa commit ở từ điển spec, gate token, font heading và snapshot sinh tự động. Untracked `.claude/`, `.hermes/`, `reports/` giữ nguyên ngoài commit.
 - **Gate sau phiên tiếp tục C1.3 (2026-09-15):** typecheck PASS, **83/83 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS, `git diff --check` PASS; npm audit 0 vulnerabilities. Font heading đã chuyển từ Tomorrow sang Saira Semi Condensed với subset `vietnamese`.
@@ -84,7 +86,14 @@ _Cập nhật: 2026-09-20 bởi Codex (nối form liên hệ vào Payload Admin;
 | R2 | Push lên GitHub để CI chạy thật | Đã push 2026-09-15; chờ CI | GitHub Actions | Checkpoint `12baf0f`, run `34912149736` |
 | L1 | Đồng bộ lại bundle tạm `.next` của local dev `:3001` | Xong 2026-09-15 | — | Đã dừng đúng server `:3001`, xoá `.next`, chạy lại; trang chủ 200, hết lỗi chunk `124`. Server cổng 3000 không bị đụng. |
 | P1 | Payload admin UX roadmap (UX-0 → UX-9) | **Chưa đủ vận hành chính thức** | Codex / chủ sản phẩm | Đã thêm upload local, pagination query, preview và Việt hóa; Next Critical đã xử lý. Còn 5 Moderate dependency findings, S3/backup, xuất ảnh CMS vào public, đường tạo SP mới, pagination queue tải lớn, responsive/a11y/staging. Xem báo cáo 2026-09-16. |
-| P2 | Gộp nhánh Payload với `main` | Chưa làm | — | **Sẽ conflict**, xem mục 5 |
+| P2 | Gộp nhánh Payload với `main` | **PR #6 (`feat/integrate-admin`), chờ merge** | Người dùng | Merge không xung đột; gate website + admin + chạy lại CI DB trên bản gộp đều PASS. Gồm PR #3, #4, #2, #5 |
+| A6 | Docker image admin không có ảnh catalog cho `/api/media/preview`; `STORAGE_ADAPTER=s3` chưa gắn plugin; chưa có email adapter | Chưa làm | Cần chọn hosting | Ghi trong `DEPLOYMENT.md` mục Admin |
+| A7 | Merge PR | **Bị chặn tự động** | Người dùng | Lệnh merge PR #3/#2 bị chế độ tự động chặn ("merge chưa review"); PR #1 đã merge |
+| A1 | Admin Payload + tính năng kiểu WordPress | **PR #2 (→payload-r1), CI xanh, chờ merge** | Người dùng | Đã được gộp vào nhánh tích hợp `feat/integrate-admin` |
+| A5 | Website đọc Cài đặt/Menu từ `src/data/site-settings.json` | **PR #3, chờ merge** | Người dùng | Admin ghi file bằng `npm run site-settings:export` |
+| A2 | Migration `20261011_000001_contact_submissions_locked_documents` | Có trên nhánh admin-ui | Vận hành | Bắt buộc chạy ở mọi DB đã chạy migration 20260920, nếu không mọi thao tác update đều lỗi SQL |
+| A3 | CI admin đỏ từ 92c6f93 | **Đã sửa** (PR #2: `38d7852`, `2b531a8`) | — | Commit file evidence, port glossary builder, CI import catalog đầy đủ 2 lần + kiểm tra lặp lại, thêm `CONTACT_ALLOWED_ORIGINS` |
+| A4 | Vá bảo mật admin | **PR #5, CI xanh, chờ merge** | Người dùng | Payload 3.90.2, Next 16.3.8, sharp 0.35.5, override undici/chokidar; audit high/critical 0 (còn 5 moderate esbuild trong drizzle-kit, chưa có bản vá upstream); migration `20261011_085955_payload_3_90_auth_reset_throttle` |
 
 ---
 
@@ -123,6 +132,105 @@ _Cập nhật: 2026-09-20 bởi Codex (nối form liên hệ vào Payload Admin;
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-10-11 — Claude — Làm trọn chuỗi: merge, vá bảo mật admin, sửa nhanh website, gộp admin vào main
+**Yêu cầu:** "làm từ đầu tới hết rồi báo cáo".
+**Đã làm:**
+- Merge PR #1 vào `main`. Lệnh merge PR #3 và #2 bị chế độ tự động chặn ("Merge Without Review") nên dừng ở đó, không tìm cách lách.
+- Subagent mở PR #5: Payload 3.90.2, Next 16.3.8, sharp 0.35.5, override undici 7.29.1 và chokidar 4.0.3; thêm migration `reset_password_requested_at`. Sau đó Claude sửa trên PR #5:
+  - Bỏ `admin.condition` ở các trường nguồn gốc vì nó khiến Payload đòi DROP NOT NULL.
+  - Thông báo "Owner đầu tiên" chỉ hiện khi chưa có admin.
+- PR #4 (website): trang chính sách bảo mật/cookie, nút Zalo/hotline/về đầu trang, link mạng xã hội, ảnh trong kết quả tìm kiếm.
+- PR #6 `feat/integrate-admin`: gộp dòng payload-r1 (PR #2 + PR #5) vào dòng main (PR #3 + PR #4), không xung đột; lưu `site-settings.json` theo định dạng của lệnh export; thêm hướng dẫn triển khai admin vào `DEPLOYMENT.md`.
+**Kiểm chứng trên bản gộp:**
+- Website: audit 0, typecheck, 92/92 test, validate/check data, build 1454 trang, validate:export 1449 route, smoke 13 route.
+- Admin: audit 0 high/critical, `tsc` sạch, 135/135 test, build PASS.
+- DB mới: migrate 12/12, import catalog 2 lần (lần 2: 0 tạo / 0 cập nhật), đồng bộ site-settings giống hệt từng byte.
+- Form tạo sản phẩm trong `/admin` chỉ báo thiếu danh mục và ảnh.
+**Commit:** PR #4 `a9c47c2`; PR #5 `f0c97b1`, `bd77cee`; PR #6 `b4f83c4`, `452ee3d`, `82d7756`, `0b52e3c`
+**Còn dở / rủi ro:** cần người dùng merge (hoặc chỉ merge PR #6); hosting admin chưa chọn (A6); nội dung chính sách cần pháp lý duyệt; nhóm 2/3 của so sánh giao diện chưa làm.
+**Việc tiếp theo:** merge PR; chọn hosting admin; làm nhóm 2 (header cam, băng chuyền danh mục, trang chi tiết 2 cột, sắp xếp danh mục).
+
+### 2026-10-11 — Claude — Sửa nhanh cho website giống bản gốc (nhóm 1)
+**Yêu cầu:** "làm từ đầu tới hết rồi báo cáo" sau khi so sánh với wokintools.com.
+**Đã làm (nhánh `feat/site-parity-quick`, tách từ nhánh PR #3):**
+- Thêm trang `/chinh-sach-bao-mat/` và `/chinh-sach-cookie/`, nội dung chỉ mô tả đúng những gì website đang làm; chữ Cookie/Bảo mật ở footer đã thành link. Hai trang được đưa vào sitemap, `validate-static-export` và smoke test.
+- Nút nổi Zalo và gọi hotline, nút về đầu trang (tôn trọng cài đặt giảm chuyển động).
+- Footer có link Facebook/YouTube/TikTok, lấy từ `site-settings.json`.
+- Chỉ mục tìm kiếm có thêm `image`; kết quả tìm kiếm hiện ảnh sản phẩm. Dữ liệu sinh lại, checksum mới `6d7aae5d…`.
+**Kiểm chứng:**
+- Gate PASS: audit 0, typecheck, 92/92 test, validate/check data, build 1454 trang, validate:export 1449 route, smoke 13 route.
+- Browser trên bản static: nút nổi trỏ đúng Zalo/tel, link footer đúng, kết quả tìm kiếm "máy thổi" hiện ảnh thật.
+**Commit:** xem nhánh `feat/site-parity-quick`
+**Còn dở / rủi ro:** nội dung chính sách cần bộ phận pháp lý duyệt trước khi chạy thật; nhóm 2 (header cam, băng chuyền danh mục, trang chi tiết 2 cột, sắp xếp danh mục) và nhóm 3 (ảnh/video từ WOKIN) chưa làm.
+**Việc tiếp theo:** merge PR #3 rồi đến PR này.
+
+### 2026-10-11 — Claude — So sánh website mới với wokintools.com (bản gốc WordPress)
+**Yêu cầu:** kiểm tra website mới khác gì site gốc.
+**Đã làm:** mở song song https://www.wokintools.com và bản static local (khổ ~800px), so trang chủ, chi tiết sản phẩm (blower 621821), danh mục tool-sets, liên hệ.
+**Phát hiện chính (đã kiểm trên trình duyệt):**
+- Trang chủ: gốc có header cam, hero ảnh lifestyle, danh mục dạng băng chuyền icon nhỏ, banner Racing có video. Bản mới có topbar đen + header trắng, hero ảnh sản phẩm, lưới 30 thẻ lớn, banner ảnh tĩnh (D1).
+- Chi tiết SP: gốc có video YouTube nhúng, nhiều ảnh/badge, phóng to, nút chia sẻ, SP trước/sau, 2 cột ở 800px. Bản mới 1 ảnh (1.286/1.357 SP chỉ có 1 ảnh trong dữ liệu crawl), không video/chia sẻ, 1 cột ở 800px.
+- Danh mục: gốc có sắp xếp, chọn 20/25/30 SP mỗi trang, đổi kiểu lưới, thứ tự SP khác (269PCS đứng đầu). Bản mới không có các điều khiển này.
+- Toàn site: gốc có nút liên hệ nổi (bit-assist), nút về đầu trang, link mạng xã hội, trang Cookie/Privacy. Bản mới: chữ "Chính sách cookie · Chính sách bảo mật" ở footer không phải link.
+- Danh mục: gốc có thêm "Pneumatic tools (NPT connector)" và "Merchandising and promotional" trong menu; bản mới có 30 danh mục.
+**Kiểm chứng:** so trực quan bằng ảnh chụp + truy vấn DOM; không sửa code.
+**Commit:** chưa commit
+**Việc tiếp theo:** người dùng chọn hạng mục cần làm cho giống bản gốc.
+
+### 2026-10-11 — Claude — Bỏ giao diện shadcn, nối Cài đặt/Menu vào website, mở PR
+**Yêu cầu:** "làm như bạn đề xuất": bỏ `/dashboard` shadcn, nối "Thông tin website" và "Menu" vào website public, commit/push/PR.
+**Đã làm:**
+- Admin (nhánh đổi tên thành `feat/admin-wordpress-parity`, commit `955821f`, PR #2 vào `payload-r1`):
+  - Gỡ toàn bộ starter shadcn và các dependency Tailwind; giữ lại phần tính năng Payload.
+  - Thêm `site-settings:import` / `site-settings:export`, có kiểm tra link an toàn.
+  - Tài liệu: `docs/admin-wordpress-parity.md`.
+- Website (nhánh `feat/site-settings-json`, tách từ nhánh của PR #1):
+  - `src/data/site-settings.json` chứa đúng giá trị hiện tại; `src/lib/site-settings.ts` kiểm tra cấu trúc khi build và chỉ nhận `/…` hoặc http(s).
+  - `contact.ts` và `site.ts` lấy dữ liệu từ file này; Header và Footer dựng menu từ đó.
+  - Test liên hệ chuyển sang kiểm tra JSON; thêm `tests/site-settings.test.mjs`.
+**Kiểm chứng:**
+- Gate website PASS: audit 0, typecheck, 89/89 test, validate/check data, build 1452 trang, validate:export + smoke.
+- Bản static: menu, dropdown, footer, thông tin công ty, tiêu đề giống hệt trước.
+- Admin: `tsc` sạch, 133/135 test (2 lỗi có sẵn), build PASS; đi một vòng site settings (file → admin → file) giống hệt bản gốc.
+**Commit:** admin `955821f` (PR #2); website xem commit của nhánh `feat/site-settings-json`
+**Còn dở / rủi ro:** PR website phụ thuộc PR #1 (cùng sửa WORKLOG); quy trình sửa menu vẫn cần chạy export + build + deploy thủ công; lỗi có sẵn A3/A4.
+**Việc tiếp theo:** review và merge PR #1 → PR website → PR #2; xử lý A3, A4.
+
+### 2026-10-11 — Claude — Chuyển sang admin Payload làm nền + tính năng kiểu WordPress
+**Yêu cầu:** admin mới thiếu nhiều chức năng; người dùng quen WordPress (workmanjsc.vn), hỏi cách làm cho đủ tính năng. Người dùng chọn "Payload tự sinh + làm đẹp".
+**Đã làm (nhánh `feat/admin-shadcn-ui`, chưa commit):**
+- Bật versions (SP, danh mục, trang, global), trash (SP, danh mục, trang, media), folders (media); Trang dùng drafts + autosave và Lexical.
+- Thêm global Thông tin website và Menu. Thêm cột ảnh thu nhỏ cho SP và media.
+- Tạo SP tay: tự cấp mã từ 900000, nguồn gốc `manual`.
+- Làm lại bảng tin và menu `WokinNav`; nút chính màu cam. `/` chuyển về `/admin`.
+- Migration ghép tay `20261011_081958_wordpress_parity`.
+**Kiểm chứng:**
+- Migration chạy up/down/up OK; `tsc` sạch; `npm test` 131/133 (2 lỗi có sẵn); `npm run build` PASS.
+- Browser: tạo và xuất bản trang (Lexical, tự lưu, 2 phiên bản); tạo SP tay; chuyển SP vào thùng rác; lưu cài đặt; không có lỗi server.
+**Commit:** chưa commit
+**Còn dở / rủi ro:** website public chưa đọc global Cài đặt/Menu; plugin SEO/form của Payload chưa dùng (đã có SEO và form liên hệ tự làm); SP trong thùng rác có thể làm import lỗi trùng khoá; `/dashboard` shadcn còn tồn tại song song, chờ quyết định giữ hay bỏ.
+**Việc tiếp theo:** người dùng xem thử `/admin`; quyết định commit/push/PR, giữ hay bỏ `/dashboard`, nối global vào website public.
+
+### 2026-10-11 — Claude — Admin UI mới bằng shadcn (Kiranism starter) trên nền Payload
+**Yêu cầu:** thay giao diện admin xấu bằng next-shadcn-dashboard-starter, dễ tùy biến; dùng Docker để chạy thử.
+**Đã làm:**
+- Người dùng chọn: giữ Payload làm backend, auth Payload, làm đủ màn hình đợt đầu.
+- Worktree mới `.hermes/worktrees/admin-ui`, nhánh `feat/admin-shadcn-ui`, tách từ `92c6f93`. Không đụng worktree `payload-r1`.
+- Đưa starter vào `admin/` dưới route group `(dashboard)` có root layout riêng. Bỏ Clerk/Sentry/AI/demo, Việt hóa, theme WOKIN cam.
+- Thêm `requireAdmin` và `adminAction`: Local API chạy với `overrideAccess:false` để giữ RBAC và hook. Menu lọc theo capability.
+- Màn hình: Tổng quan, Sản phẩm (bảng + trình sửa + workflow), Danh mục (cây), Thư viện ảnh (lọc/sửa/tải), Hàng đợi duyệt, Phát hành, Liên hệ. Hai subagent làm song song phần sản phẩm/danh mục và media/duyệt/phát hành.
+- Vá lỗi migration: thêm `20261011_000001_contact_submissions_locked_documents` (thiếu cột locked-documents khiến mọi update lỗi SQL).
+- Chạy Postgres bằng Docker (`admin/docker-compose.yml`, project `wokin-admin-dev`). `admin/.env` sinh ngẫu nhiên và bị gitignore. Đã migrate, import catalog đầy đủ, tạo 5 tài khoản test theo vai trò; mật khẩu nằm ngoài repo, trong thư mục nháp của phiên.
+**Kiểm chứng:**
+- `npx tsc --noEmit` sạch (cần `admin/.hermes/evidence` untracked, xem A3).
+- `npm run build` PASS, 13 route mới.
+- `npm test` 131/133: 1 test fail chỉ khi có `.env` local; 1 lỗi có sẵn ở `public builder` của commit gốc.
+- Browser: đăng nhập; lưu sản phẩm; duyệt và hoàn tất; xuất bản bị chặn với thông báo tiếng Việt; đổi trạng thái liên hệ; RBAC ẩn menu. Không có lỗi console hay server.
+- `npm audit` admin: 2 critical / 7 high, đều ở next/payload/sharp có sẵn (A4).
+**Commit:** chưa commit (chờ người dùng yêu cầu)
+**Còn dở / rủi ro:** chưa có màn tạo SP/danh mục và quản lý admin (vẫn dùng `/admin`); nhánh tách từ payload-r1 nên khi gộp main sẽ conflict (P2); dev server cổng 3020 và container Docker đang chạy.
+**Việc tiếp theo:** người dùng xem thử, quyết định commit/push/PR; xử lý A2–A4.
 
 ### 2026-10-11 — Claude — Đọc hiểu mã nguồn website public
 **Yêu cầu:** đọc code trang website wokin.com.vn.

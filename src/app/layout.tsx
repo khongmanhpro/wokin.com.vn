@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, Saira_Semi_Condensed } from "next/font/google";
+import { FloatingActions } from "@/components/FloatingActions";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { JsonLd } from "@/components/JsonLd";
@@ -42,6 +43,7 @@ export default function RootLayout({
         <Header />
         {children}
         <Footer />
+        <FloatingActions />
       </body>
     </html>
   );

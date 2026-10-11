@@ -1,15 +1,16 @@
+import { siteSettings } from "@/lib/site-settings";
+
+const { company } = siteSettings;
+
+// Verified details live in src/data/site-settings.json (editable via the admin "Thông tin website").
 export const companyContact = {
-  legalName: "CÔNG TY CỔ PHẦN THIẾT BỊ CÔNG NGHIỆP WORKMAN",
-  address: "T2/D3B/31, Đường Bình Chuẩn 62, khu phố Bình Thuận 2, Phường Thuận Giao, Thành Phố Hồ Chí Minh.",
-  hotline: "0978.390.339",
-  hotlineHref: "tel:0978390339",
-  zaloHref: "https://zalo.me/0978390339",
-  taxCode: "3702963744",
-  social: {
-    facebook: "https://www.facebook.com/workmanjsc/",
-    youtube: "https://www.youtube.com/@workmanjsc",
-    tiktok: "https://www.tiktok.com/@workmanjsc",
-  },
+  legalName: company.legalName,
+  address: company.address,
+  hotline: company.hotline,
+  hotlineHref: `tel:${company.hotline.replace(/[^\d+]/g, "")}`,
+  zaloHref: company.zaloUrl,
+  taxCode: company.taxCode,
+  social: company.social,
 } as const;
 
 // The static public site stays deployable without a backend. Set this at build
