@@ -36,6 +36,7 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
+    "admin",
     "node_modules",
     "out",
     "tools"
