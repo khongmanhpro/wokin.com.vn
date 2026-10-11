@@ -57,7 +57,7 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-10-11 (phiên tối) bởi Claude. Phiên mới: đọc mục này và mục 3 trước, rồi `git fetch && gh pr list`._
+_Cập nhật: 2026-10-11 (đêm) bởi Claude. Phiên mới: đọc mục này và mục 3 trước, rồi `git fetch && gh pr list`._
 
 ### Tóm tắt một dòng
 Website (Next.js static) và admin (Payload CMS) đã làm xong, chạy được local. **PR #6, #7, #8 (SEO đợt 1) đã merge vào `main` (`cde9ad3`)**; chưa deploy.
@@ -179,6 +179,16 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-10-11 — Claude — Bộ Docker chuẩn cho VPS
+**Yêu cầu:** tạm giữ trang sửa SP như hiện tại; dựng Docker chuẩn rồi đẩy GitHub để người dùng clone về VPS.
+**Đã làm:**
+- `Dockerfile` (gốc repo, node:22.19.0-alpine3.22 + rsync + tini, user `node`): cài deps website + admin, build admin, chạy `deploy/docker/admin-entrypoint.sh` (migrate rồi `next start`). Biến mặc định `WEBSITE_DIR=/app`, `MEDIA_UPLOAD_DIR=/data/media`, `WEBSITE_PUBLISH_DIR=/srv/site`. Bỏ `admin/Dockerfile` và `output: 'standalone'`; ảnh xem trước đọc `WEBSITE_DIR/public`.
+- `docker-compose.yml`: `db` (postgres 16.6), `admin` (127.0.0.1:3000), `web` (nginx 1.27, 127.0.0.1:8080, đọc volume `site` = `releases/<id>` + `current`). `.env.docker.example`, `.dockerignore`, `deploy/docker/nginx-site.conf` (header bảo mật như `.htaccess`, cache, gzip, 404, redirect WordPress cũ), `deploy/docker/host-nginx.example.conf` (HTTPS, www → non-www, proxy). Hướng dẫn `DEPLOY-DOCKER.md`.
+- Sửa: volume cache ảnh responsive gây `EBUSY` (script thay cả thư mục) → bỏ volume, ảnh tạo lại ở lần xuất bản đầu sau mỗi lần build.
+**Kiểm chứng (cụm thử `-p wokintest`, cổng 3091/8091, đã `down -v`):** image build OK (~650 MB); 12 migration chạy khi khởi động; check-env production PASS; `import:catalog -- --published` trong container: 30 DM/1.717 ảnh/1.357 SP trong 16 giây; tạo owner + đăng nhập; Xuất bản trong container thành công ~75 giây; web: `/`, `/san-pham/`, `/danh-muc/bao-ho-lao-dong/` (+`trang/2/`), trang SP, `llms.txt`, sitemap, ảnh webp → 200; 404 tiếng Việt; `/about/` → 301 `/gioi-thieu/`; CSP/X-Frame/cache/gzip đúng.
+**Commit:** xem PR nhánh `fix/admin-qa`
+**Còn dở:** chạy trên VPS thật (người dùng tự clone theo `DEPLOY-DOCKER.md`); trang sửa SP kiểu WooCommerce để sau.
 
 ### 2026-10-11 — Claude — Tắt "sửa hàng loạt" gây nhầm ở danh sách SP/ảnh
 **Yêu cầu:** chọn SP rồi bấm "Chỉnh sửa" không ra form đầy đủ mà bắt chọn từng trường.

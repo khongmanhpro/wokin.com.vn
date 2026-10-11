@@ -88,6 +88,8 @@ Sau build, `npm run validate:export` kiểm tra mọi URL dưới `/images/produ
 
 ## Admin Payload (Node.js + PostgreSQL)
 
+> **Từ 2026-10-11 dùng Docker:** làm theo [`DEPLOY-DOCKER.md`](DEPLOY-DOCKER.md) (`docker-compose.yml` ở gốc repo: PostgreSQL + admin + nginx cho website, nút Xuất bản chạy trong container). Phần dưới là ghi chú cũ cho cách chạy Node trực tiếp.
+
 _Thêm 2026-10-11. Chưa triển khai thật; các bước dưới đây dựa trên `admin/Dockerfile`, `admin/docker-compose.yml` và `admin/src/config/environment.ts`._
 
 Admin **không chạy được trên hosting tĩnh/shared** như website public. Cần một máy có Node.js 22 hoặc Docker, PostgreSQL 16, HTTPS (reverse proxy như Caddy hoặc Nginx), và ổ đĩa lưu ảnh tải lên.
@@ -138,4 +140,4 @@ Trên VPS có nút Xuất bản: chỉ cần sửa trong admin rồi bấm **Xu�
 - **Ảnh catalog trong container:** Docker build dùng ngữ cảnh `admin/`, nên image không chứa `public/images` của website. Endpoint `/api/media/preview/:id` đọc ảnh catalog từ thư mục `public` của repo, nên khi chạy bằng Docker cần mount thư mục này vào hoặc sửa endpoint. Chưa kiểm chứng trong container.
 - **S3:** `STORAGE_ADAPTER=s3` qua được bước kiểm tra env, nhưng `payload.config.ts` chưa gắn plugin lưu trữ S3, nên ảnh vẫn lưu ở `MEDIA_UPLOAD_DIR`.
 - Chưa có email adapter: tính năng quên mật khẩu chỉ in email ra log.
-- **Dockerfile** build với ngữ cảnh `admin/`, nhưng từ 2026-10-11 admin import `contracts/` ở gốc repo (Turbopack root = gốc repo) và nút Xuất bản cần mã nguồn website: chạy admin bằng Node trong checkout đầy đủ; Dockerfile cần sửa (ngữ cảnh gốc repo, `CMD node admin/server.js`) nếu muốn dùng lại.
+- `admin/Dockerfile` cũ đã bỏ; image mới là `Dockerfile` ở gốc repo (xem `DEPLOY-DOCKER.md`).

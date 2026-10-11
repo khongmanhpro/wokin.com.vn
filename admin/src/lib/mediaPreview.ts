@@ -6,7 +6,8 @@ import type { Endpoint } from 'payload'
 import { isActiveAdmin } from '../access/hasCapability'
 import { mediaUploadDirectory } from './mediaUpload'
 
-const publicRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public')
+// WEBSITE_DIR is set in Docker (/app); locally the website checkout is the admin's parent folder.
+const publicRoot = process.env.WEBSITE_DIR ? path.join(process.env.WEBSITE_DIR, 'public') : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../public')
 
 export const mediaPreviewEndpoint: Endpoint = {
   path: '/preview/:id',
