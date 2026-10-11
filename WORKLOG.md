@@ -57,21 +57,21 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-10-11 cuối ngày bởi Claude. Phiên mới: đọc mục này và mục 3 trước, rồi `git fetch && gh pr list`._
+_Cập nhật: 2026-10-11 (phiên tối) bởi Claude. Phiên mới: đọc mục này và mục 3 trước, rồi `git fetch && gh pr list`._
 
 ### Tóm tắt một dòng
-Website (Next.js static) và admin (Payload CMS) đã làm xong, chạy được local, **chờ người dùng merge PR**; chưa deploy.
+Website (Next.js static) và admin (Payload CMS) đã làm xong, chạy được local. **PR #6 đã merge vào `main`; còn PR #7 chờ người dùng merge**; chưa deploy.
 
 ### PR đang mở (github.com/khongmanhpro/wokin.com.vn) và thứ tự merge
 PR #1 (vá dependency website) **đã merge** vào `main`. Lệnh merge của agent bị chế độ tự động chặn ("merge chưa review"), nên **người dùng phải tự bấm merge**.
 
 | Thứ tự | PR | Nhánh → base | Nội dung |
 |---|---|---|---|
-| 1 | #6 | `feat/integrate-admin` → `main` | Gộp tất cả: website đọc `site-settings.json` (#3), sửa nhanh website (#4), admin kiểu WordPress (#2), vá bảo mật admin (#5), hướng dẫn deploy admin |
-| 2 | #7 | `feat/ui-parity` → `main` | Giao diện giống wokintools.com (header cam, băng chuyền, banner chia đôi, dải xám danh mục, GP20V nền nhạt, dải nhà phân phối), favicon W, đổ bóng thẻ `/san-pham/` |
-| — | #2, #3, #4, #5 | | Đã nằm trong #6; đóng sau khi #6 merge |
+| ✅ | #6 | `feat/integrate-admin` → `main` | **Đã merge 2026-10-11** (`06e3ae2`), CI main xanh. Gộp tất cả: website đọc `site-settings.json` (#3), sửa nhanh website (#4), admin kiểu WordPress (#2), vá bảo mật admin (#5), hướng dẫn deploy admin |
+| 1 | #7 | `feat/ui-parity` → `main` | **Còn mở, CI xanh, MERGEABLE.** Giao diện giống wokintools.com (header cam, băng chuyền, banner chia đôi, dải xám danh mục, GP20V nền nhạt, dải nhà phân phối), favicon W, đổ bóng thẻ `/san-pham/` |
+| — | #2, #5 | | Đã nằm trong `main` (kiểm bằng `git merge-base --is-ancestor`); **người dùng tự đóng** (agent bị chặn đóng PR). #3, #4 đã merge |
 
-Merge #6 rồi #7 là đủ. CI của các PR đều xanh tại thời điểm ghi.
+Chỉ còn merge #7 rồi đóng #2, #5.
 
 ### Checkout và nhánh đang dùng
 - Checkout chính `/Volumes/data AI/wokin.com.vn`: nhánh `feat/ui-parity` (mới nhất, chứa mọi thứ). Thư mục `out/` là bản build mới nhất.
@@ -89,7 +89,7 @@ Merge #6 rồi #7 là đủ. CI của các PR đều xanh tại thời điểm g
 - Website static đọc `src/data/site-settings.json`; admin ghi file này bằng `npm run site-settings:export`.
 
 ### Việc tiếp theo (theo ưu tiên)
-1. Người dùng merge #6 → #7.
+1. Người dùng merge #7, đóng #2 và #5.
 2. Chọn hosting cho admin (VPS Node/Docker + PostgreSQL + HTTPS). Xem `DEPLOYMENT.md` mục Admin và A6.
 3. Deploy website tĩnh lên Hostinger staging, kiểm tra `.htaccess` và Lighthouse (R1).
 4. Chờ WOKIN cấp ảnh lifestyle, video Racing, ảnh GP20V (D1); bộ phận pháp lý duyệt trang chính sách.
@@ -127,14 +127,14 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 | R2 | Push lên GitHub để CI chạy thật | Đã push 2026-09-15; chờ CI | GitHub Actions | Checkpoint `12baf0f`, run `34912149736` |
 | L1 | Đồng bộ lại bundle tạm `.next` của local dev `:3001` | Xong 2026-09-15 | — | Đã dừng đúng server `:3001`, xoá `.next`, chạy lại; trang chủ 200, hết lỗi chunk `124`. Server cổng 3000 không bị đụng. |
 | P1 | Payload admin UX roadmap (UX-0 → UX-9) | **Chưa đủ vận hành chính thức** | Codex / chủ sản phẩm | Đã thêm upload local, pagination query, preview và Việt hóa; Next Critical đã xử lý. Còn 5 Moderate dependency findings, S3/backup, xuất ảnh CMS vào public, đường tạo SP mới, pagination queue tải lớn, responsive/a11y/staging. Xem báo cáo 2026-09-16. |
-| P2 | Gộp nhánh Payload với `main` | **PR #6 (`feat/integrate-admin`), chờ merge** | Người dùng | Merge không xung đột; gate website + admin + chạy lại CI DB trên bản gộp đều PASS. Gồm PR #3, #4, #2, #5 |
+| P2 | Gộp nhánh Payload với `main` | **Xong 2026-10-11** (PR #6 merge `06e3ae2`) | — | Merge không xung đột; gate website + admin + chạy lại CI DB trên bản gộp đều PASS. Gồm PR #3, #4, #2, #5 |
 | A6 | Docker image admin không có ảnh catalog cho `/api/media/preview`; `STORAGE_ADAPTER=s3` chưa gắn plugin; chưa có email adapter | Chưa làm | Cần chọn hosting | Ghi trong `DEPLOYMENT.md` mục Admin |
-| A7 | Merge PR | **Bị chặn tự động** | Người dùng | Lệnh merge PR #3/#2 bị chế độ tự động chặn ("merge chưa review"); PR #1 đã merge |
-| A1 | Admin Payload + tính năng kiểu WordPress | **PR #2 (→payload-r1), CI xanh, chờ merge** | Người dùng | Đã được gộp vào nhánh tích hợp `feat/integrate-admin` |
-| A5 | Website đọc Cài đặt/Menu từ `src/data/site-settings.json` | **PR #3, chờ merge** | Người dùng | Admin ghi file bằng `npm run site-settings:export` |
+| A7 | Merge/đóng PR | **Bị chặn tự động** | Người dùng | Agent bị chặn merge và cả đóng PR ("External System Writes"). Người dùng đã merge #1, #3, #4, #6; còn merge #7, đóng #2/#5 |
+| A1 | Admin Payload + tính năng kiểu WordPress | **Đã vào `main` qua PR #6**; PR #2 chờ người dùng đóng | Người dùng | Đã được gộp vào nhánh tích hợp `feat/integrate-admin` |
+| A5 | Website đọc Cài đặt/Menu từ `src/data/site-settings.json` | **Xong** (PR #3 merge, vào `main` qua #6) | — | Admin ghi file bằng `npm run site-settings:export` |
 | A2 | Migration `20261011_000001_contact_submissions_locked_documents` | Có trên nhánh admin-ui | Vận hành | Bắt buộc chạy ở mọi DB đã chạy migration 20260920, nếu không mọi thao tác update đều lỗi SQL |
 | A3 | CI admin đỏ từ 92c6f93 | **Đã sửa** (PR #2: `38d7852`, `2b531a8`) | — | Commit file evidence, port glossary builder, CI import catalog đầy đủ 2 lần + kiểm tra lặp lại, thêm `CONTACT_ALLOWED_ORIGINS` |
-| A4 | Vá bảo mật admin | **PR #5, CI xanh, chờ merge** | Người dùng | Payload 3.90.2, Next 16.3.8, sharp 0.35.5, override undici/chokidar; audit high/critical 0 (còn 5 moderate esbuild trong drizzle-kit, chưa có bản vá upstream); migration `20261011_085955_payload_3_90_auth_reset_throttle` |
+| A4 | Vá bảo mật admin | **Đã vào `main` qua PR #6**; PR #5 chờ người dùng đóng | Người dùng | Payload 3.90.2, Next 16.3.8, sharp 0.35.5, override undici/chokidar; audit high/critical 0 (còn 5 moderate esbuild trong drizzle-kit, chưa có bản vá upstream); migration `20261011_085955_payload_3_90_auth_reset_throttle` |
 
 ---
 
@@ -173,6 +173,18 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-10-11 — Claude — Kiểm tra sau khi PR #6 được merge
+**Yêu cầu:** đọc WORKLOG và tiếp tục.
+**Đã làm:**
+- `gh pr list`: #6 đã MERGED (`06e3ae2`), CI trên `main` (CI + Admin CI) xanh.
+- Xác nhận `feat/admin-wordpress-parity` (#2) và `chore/admin-security-upgrade` (#5) đã nằm trong `origin/main`. Thử đóng #2, #5 nhưng bị chế độ tự động chặn → người dùng tự đóng.
+- Chờ CI PR #7 chạy lại trên base mới: admin, verify-static-export ×2 đều pass; PR MERGEABLE.
+- Cập nhật mục 2, 3.
+**Kiểm chứng:** gate đầy đủ PASS (audit 0, typecheck, test, validate/check data, build, validate:export 1449 route + smoke); `gh pr checks 7` → toàn bộ pass; `git merge-base --is-ancestor origin/<nhánh> origin/main` → #2, #5 đều đã trong main.
+**Commit:** commit docs này trên `feat/ui-parity` (PR #7)
+**Còn dở / rủi ro:** không đổi code. Các việc còn lại (hosting admin, staging Hostinger, ảnh WOKIN) cần người dùng quyết định/cung cấp.
+**Việc tiếp theo:** người dùng merge #7, đóng #2 và #5; sau đó chọn hosting admin và cấp quyền staging Hostinger.
 
 ### 2026-10-11 — Claude — Review lại giao diện theo số đo site gốc (vòng 2)
 **Yêu cầu:** giao diện vẫn chưa giống trang gốc, review lại.
