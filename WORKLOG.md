@@ -57,7 +57,7 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-10-11 bởi Claude (admin UI mới bằng shadcn trên nhánh `feat/admin-shadcn-ui`; vá dependency public site ở PR #1)_
+_Cập nhật: 2026-10-11 bởi Claude (gộp admin vào dòng main, vá bảo mật admin, sửa nhanh website; chờ merge PR #3, #2, #5, #4, #6)_
 
 - **Admin (2026-10-11):** worktree `.hermes/worktrees/admin-ui`, nhánh `feat/admin-wordpress-parity` (PR #2 vào `payload-r1`). Admin Payload làm nền, bật tính năng kiểu WordPress; thử nghiệm shadcn `/dashboard` đã gỡ. Website đọc Cài đặt/Menu từ `src/data/site-settings.json` (nhánh `feat/site-settings-json`). Chạy thử với Postgres Docker (`docker compose -p wokin-admin-dev`) và catalog thật. Chi tiết trong `docs/admin-shadcn-ui.md` của nhánh. Đã phát hiện và vá lỗi migration contact-submissions thiếu cột `payload_locked_documents_rels.contact_submissions_id`.
 
@@ -86,12 +86,14 @@ _Cập nhật: 2026-10-11 bởi Claude (admin UI mới bằng shadcn trên nhán
 | R2 | Push lên GitHub để CI chạy thật | Đã push 2026-09-15; chờ CI | GitHub Actions | Checkpoint `12baf0f`, run `34912149736` |
 | L1 | Đồng bộ lại bundle tạm `.next` của local dev `:3001` | Xong 2026-09-15 | — | Đã dừng đúng server `:3001`, xoá `.next`, chạy lại; trang chủ 200, hết lỗi chunk `124`. Server cổng 3000 không bị đụng. |
 | P1 | Payload admin UX roadmap (UX-0 → UX-9) | **Chưa đủ vận hành chính thức** | Codex / chủ sản phẩm | Đã thêm upload local, pagination query, preview và Việt hóa; Next Critical đã xử lý. Còn 5 Moderate dependency findings, S3/backup, xuất ảnh CMS vào public, đường tạo SP mới, pagination queue tải lớn, responsive/a11y/staging. Xem báo cáo 2026-09-16. |
-| P2 | Gộp nhánh Payload với `main` | Chưa làm | — | **Sẽ conflict**, xem mục 5 |
-| A1 | Admin Payload làm nền + tính năng kiểu WordPress (versions, nháp/tự lưu, thùng rác, thư mục, Lexical, Cài đặt/Menu, tạo SP tay); `/dashboard` shadcn còn song song | **PR #2 chờ review** | Người dùng | Nhánh `feat/admin-wordpress-parity` vào `payload-r1`; giao diện shadcn `/dashboard` đã gỡ |
-| A5 | Nối global Thông tin website / Menu vào build website public | **PR chờ review** | Người dùng | Website đọc `src/data/site-settings.json`; admin ghi file bằng `npm run site-settings:export` |
+| P2 | Gộp nhánh Payload với `main` | **PR #6 (`feat/integrate-admin`), chờ merge** | Người dùng | Merge không xung đột; gate website + admin + chạy lại CI DB trên bản gộp đều PASS. Gồm PR #3, #4, #2, #5 |
+| A6 | Docker image admin không có ảnh catalog cho `/api/media/preview`; `STORAGE_ADAPTER=s3` chưa gắn plugin; chưa có email adapter | Chưa làm | Cần chọn hosting | Ghi trong `DEPLOYMENT.md` mục Admin |
+| A7 | Merge PR | **Bị chặn tự động** | Người dùng | Lệnh merge PR #3/#2 bị chế độ tự động chặn ("merge chưa review"); PR #1 đã merge |
+| A1 | Admin Payload + tính năng kiểu WordPress | **PR #2 (→payload-r1), CI xanh, chờ merge** | Người dùng | Đã được gộp vào nhánh tích hợp `feat/integrate-admin` |
+| A5 | Website đọc Cài đặt/Menu từ `src/data/site-settings.json` | **PR #3, chờ merge** | Người dùng | Admin ghi file bằng `npm run site-settings:export` |
 | A2 | Migration `20261011_000001_contact_submissions_locked_documents` | Có trên nhánh admin-ui | Vận hành | Bắt buộc chạy ở mọi DB đã chạy migration 20260920, nếu không mọi thao tác update đều lỗi SQL |
-| A3 | CI admin đỏ từ 92c6f93 (file evidence chưa commit, glossary builder chưa commit, `import:poc` lỗi thời) | **Đã sửa trong PR #2** (`38d7852`) | CI | Commit `pilot-subset.ts`, port phần glossary, CI dùng import catalog đầy đủ 2 lần + kiểm tra lặp lại |
-| A4 | Nâng Payload 3.90.2 / Next 16.4 / sharp 0.35.5 cho admin | Chưa làm | — | `npm audit` admin còn 2 critical / 7 high (có sẵn từ 92c6f93) |
+| A3 | CI admin đỏ từ 92c6f93 | **Đã sửa** (PR #2: `38d7852`, `2b531a8`) | — | Commit file evidence, port glossary builder, CI import catalog đầy đủ 2 lần + kiểm tra lặp lại, thêm `CONTACT_ALLOWED_ORIGINS` |
+| A4 | Vá bảo mật admin | **PR #5, CI xanh, chờ merge** | Người dùng | Payload 3.90.2, Next 16.3.8, sharp 0.35.5, override undici/chokidar; audit high/critical 0 (còn 5 moderate esbuild trong drizzle-kit, chưa có bản vá upstream); migration `20261011_085955_payload_3_90_auth_reset_throttle` |
 
 ---
 
@@ -130,6 +132,24 @@ _Cập nhật: 2026-10-11 bởi Claude (admin UI mới bằng shadcn trên nhán
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-10-11 — Claude — Làm trọn chuỗi: merge, vá bảo mật admin, sửa nhanh website, gộp admin vào main
+**Yêu cầu:** "làm từ đầu tới hết rồi báo cáo".
+**Đã làm:**
+- Merge PR #1 vào `main`. Lệnh merge PR #3 và #2 bị chế độ tự động chặn ("Merge Without Review") nên dừng ở đó, không tìm cách lách.
+- Subagent mở PR #5: Payload 3.90.2, Next 16.3.8, sharp 0.35.5, override undici 7.29.1 và chokidar 4.0.3; thêm migration `reset_password_requested_at`. Sau đó Claude sửa trên PR #5:
+  - Bỏ `admin.condition` ở các trường nguồn gốc vì nó khiến Payload đòi DROP NOT NULL.
+  - Thông báo "Owner đầu tiên" chỉ hiện khi chưa có admin.
+- PR #4 (website): trang chính sách bảo mật/cookie, nút Zalo/hotline/về đầu trang, link mạng xã hội, ảnh trong kết quả tìm kiếm.
+- PR #6 `feat/integrate-admin`: gộp dòng payload-r1 (PR #2 + PR #5) vào dòng main (PR #3 + PR #4), không xung đột; lưu `site-settings.json` theo định dạng của lệnh export; thêm hướng dẫn triển khai admin vào `DEPLOYMENT.md`.
+**Kiểm chứng trên bản gộp:**
+- Website: audit 0, typecheck, 92/92 test, validate/check data, build 1454 trang, validate:export 1449 route, smoke 13 route.
+- Admin: audit 0 high/critical, `tsc` sạch, 135/135 test, build PASS.
+- DB mới: migrate 12/12, import catalog 2 lần (lần 2: 0 tạo / 0 cập nhật), đồng bộ site-settings giống hệt từng byte.
+- Form tạo sản phẩm trong `/admin` chỉ báo thiếu danh mục và ảnh.
+**Commit:** PR #4 `a9c47c2`; PR #5 `f0c97b1`, `bd77cee`; PR #6 `b4f83c4`, `452ee3d`, `82d7756`, `0b52e3c`
+**Còn dở / rủi ro:** cần người dùng merge (hoặc chỉ merge PR #6); hosting admin chưa chọn (A6); nội dung chính sách cần pháp lý duyệt; nhóm 2/3 của so sánh giao diện chưa làm.
+**Việc tiếp theo:** merge PR; chọn hosting admin; làm nhóm 2 (header cam, băng chuyền danh mục, trang chi tiết 2 cột, sắp xếp danh mục).
 
 ### 2026-10-11 — Claude — Sửa nhanh cho website giống bản gốc (nhóm 1)
 **Yêu cầu:** "làm từ đầu tới hết rồi báo cáo" sau khi so sánh với wokintools.com.
