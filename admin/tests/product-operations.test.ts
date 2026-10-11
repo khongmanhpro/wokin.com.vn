@@ -24,8 +24,11 @@ test('UX-4 gives status and readiness a readable, deterministic operational mean
 
 test('UX-4 presents only policy-permitted workflow actions for the current state and role', () => {
   assert.deepEqual(getProductWorkflowActions('editor', 'draft'), ['save_draft', 'preview', 'request_review'])
-  assert.deepEqual(getProductWorkflowActions('publisher', 'in_review'), ['preview', 'request_changes', 'approve'])
+  // Publishers post directly instead of the approve hop.
+  assert.deepEqual(getProductWorkflowActions('publisher', 'in_review'), ['preview', 'publish'])
   assert.deepEqual(getProductWorkflowActions('publisher', 'approved'), ['preview', 'publish'])
+  assert.deepEqual(getProductWorkflowActions('owner', 'draft'), ['save_draft', 'preview', 'publish'])
+  assert.deepEqual(getProductWorkflowActions('owner', 'published'), ['save', 'preview', 'unpublish', 'archive'])
   assert.deepEqual(getProductWorkflowActions('readonly', 'approved'), ['preview'])
 })
 

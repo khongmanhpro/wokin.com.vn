@@ -9,8 +9,11 @@ const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
   allowedDevOrigins: ['localhost', '127.0.0.1'],
+  // Repo root, not admin/: the admin shares contracts/catalog-snapshot-validator.mjs with the website build,
+  // and the "Xuất bản website" export imports it at runtime.
+  outputFileTracingRoot: path.resolve(dirname, '..'),
   turbopack: {
-    root: dirname,
+    root: path.resolve(dirname, '..'),
   },
 }
 

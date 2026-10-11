@@ -141,8 +141,10 @@ export const categories: Category[] = catalogSnapshot.categories.map((category) 
   };
 });
 
-if (products.length !== 1357) throw new Error(`Sai số lượng sản phẩm: ${products.length}`);
-if (categories.length !== 30) throw new Error(`Sai số lượng danh mục: ${categories.length}`);
+// Counts come from the admin's published catalog, so they may change; an empty catalog is always a broken export.
+// The fixed 1.357/30 baseline for the checked-in source data lives in scripts/validate-catalog.mjs.
+if (products.length === 0) throw new Error("Catalog không có sản phẩm nào");
+if (categories.length === 0) throw new Error("Catalog không có danh mục nào");
 if (new Set(categories.map((category) => category.path)).size !== categories.length) {
   throw new Error("Đường dẫn danh mục không duy nhất");
 }

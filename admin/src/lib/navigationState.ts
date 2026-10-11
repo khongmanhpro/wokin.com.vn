@@ -8,7 +8,7 @@ export const NAVIGATION_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   { label: 'Biên tập', items: [{ label: 'Chờ duyệt', href: '/admin/collections/review-requests/queue', capability: 'product.review' }, { label: 'Cần sửa', href: '/admin/collections/review-requests/queue?view=changes' }, { label: 'Đã hoàn tất', href: '/admin/collections/review-requests/queue?view=completed', capability: 'product.review' }] },
   { label: 'Nội dung', items: [{ label: 'Trang', href: '/admin/collections/pages', capability: 'page.update' }, { label: 'Chuyển hướng', href: '/admin/collections/redirects', capability: 'redirect.manage' }] },
   { label: 'Khách hàng', items: [{ label: 'Yêu cầu liên hệ', href: '/admin/collections/contact-submissions', capability: 'settings.manage' }] },
-  { label: 'Phát hành', items: [{ label: 'Trung tâm phát hành', href: '/admin/release-center', capability: 'release.create' }] },
+  { label: 'Phát hành', items: [{ label: 'Xuất bản website', href: '/admin/release-center', capability: 'release.create' }] },
   { label: 'Cài đặt', items: [{ label: 'Thông tin website', href: '/admin/globals/site-settings', capability: 'settings.manage' }, { label: 'Menu', href: '/admin/globals/navigation', capability: 'settings.manage' }] },
   { label: 'Quản trị', items: [{ label: 'Người dùng', href: '/admin/collections/admins', capability: 'user.manage' }, { label: 'Nhật ký hoạt động', href: '/admin/collections/audit-events', capability: 'audit.read' }, { label: 'Cài đặt tài khoản', href: '/admin/account' }] },
 ]

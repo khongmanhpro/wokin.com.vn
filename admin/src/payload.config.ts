@@ -18,6 +18,7 @@ import { Releases } from './collections/Releases'
 import { ReviewRequests } from './collections/ReviewRequests'
 import { Navigation } from './globals/Navigation'
 import { SiteSettings } from './globals/SiteSettings'
+import { websitePublishEndpoints } from './endpoints/websitePublish'
 import { contactAllowedOrigins } from './lib/contactOrigins'
 import { MAX_IMAGE_BYTES } from './lib/mediaUpload'
 
@@ -61,6 +62,7 @@ export default buildConfig({
   },
   collections: [Admins, Categories, Media, Products, ReviewRequests, Pages, Redirects, CatalogSnapshots, Releases, AuditEvents, ContactSubmissions],
   globals: [SiteSettings, Navigation],
+  endpoints: websitePublishEndpoints,
   editor: lexicalEditor(),
   cors: corsOrigins,
   csrf: corsOrigins,

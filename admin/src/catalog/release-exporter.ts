@@ -19,6 +19,14 @@ function text(value: unknown): string | undefined {
   return typeof value === 'string' && value ? value : undefined
 }
 
+/**
+ * Admin uploads live in media/uploads/ (MEDIA_UPLOAD_DIR); the publish step copies them to
+ * public/images/products/uploads/ where the website's responsive-image build picks them up.
+ */
+export function publicMediaPath(storedPath: string): string {
+  return storedPath.startsWith('media/uploads/') ? `images/products/uploads/${storedPath.slice('media/uploads/'.length)}` : storedPath
+}
+
 /** Same split as the importer's specification(): "> Label: value" or a bare "> value" feature line. */
 function parsedSourceLine(sourceLine: string): { label: string; value: string } {
   const normalized = sourceLine.trim().replace(/^>\s*/, '').trim()
@@ -148,13 +156,15 @@ export function exportReleaseSnapshot(input: ReleaseInput) {
       legacyDescription: product.descriptionVi ?? text(product.sourceMetadata?.legacyDescription) ?? '',
       translation: { locale: 'vi', name: product.nameVi, sourceName: text(product.sourceMetadata?.sourceName) ?? product.nameVi, canonicalSlug: product.slugVi },
       categoryRelations: product.categoryIds.map((id) => { const category = categoryById.get(id)!; return { categoryInternalId: id, legacySourceId: category.legacySourceId, name: category.nameVi, slug: category.slug } }),
-      media: product.mediaIds.map((id, position) => { const item = mediaById.get(id)!; return { kind: 'image', path: item.path, alt: item.alt, position } }),
+      media: product.mediaIds.map((id, position) => { const item = mediaById.get(id)!; return { kind: 'image', path: publicMediaPath(item.path), alt: item.alt, position } }),
       technicalSpecs: { lines: product.specifications.map(specificationLine) },
       packaging: { table: product.packaging.map((row) => row.cells.map((cell) => cell.value)) },
       attributes: product.attributes.map((attribute) => ({ legacySourceId: attribute.legacySourceId, name: attribute.name, values: attribute.values.map((value) => value.value) })),
     })),
   }
-  const content = { schemaVersion: 2 as const, catalog, glossary: { categories: input.glossary.categories ?? {}, marketing: input.glossary.marketing ?? {}, spec_labels: input.glossary.spec_labels ?? {}, terms: input.glossary.terms ?? [], ui: input.glossary.ui } }
+  // Category names are edited in the admin, so they override the glossary file (new or renamed categories included).
+  const categoryNames = { ...(input.glossary.categories ?? {}), ...Object.fromEntries(categories.map((category) => [category.slug, category.nameVi])) }
+  const content = { schemaVersion: 2 as const, catalog, glossary: { categories: categoryNames, marketing: input.glossary.marketing ?? {}, spec_labels: input.glossary.spec_labels ?? {}, terms: input.glossary.terms ?? [], ui: input.glossary.ui } }
   const snapshotId = releaseId(content)
   const withoutChecksum = { ...content, snapshotId }
   const snapshot = { ...withoutChecksum, checksum: snapshotChecksum(withoutChecksum) }
