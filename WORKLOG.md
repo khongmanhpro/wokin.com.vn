@@ -180,6 +180,12 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-11 — Claude — Tắt "sửa hàng loạt" gây nhầm ở danh sách SP/ảnh
+**Yêu cầu:** chọn SP rồi bấm "Chỉnh sửa" không ra form đầy đủ mà bắt chọn từng trường.
+**Nguyên nhân:** đó là bulk edit của Payload (nhãn trùng "Chỉnh sửa"). **Đã làm:** `disableBulkEdit: true` cho Products và Media; sửa một SP = bấm tên/ảnh (link đã có từ `1359da4`). Xoá hàng loạt vẫn giữ.
+**Kiểm chứng:** tab riêng trên admin local: chọn 1 dòng → chỉ còn "Chọn tất cả | Xóa"; admin test PASS. Ghi nhận: SP "Cờ lè vạn năng" (5562) vừa bị người dùng chuyển vào Thùng rác lúc 15:29 UTC (khôi phục được).
+**Commit:** nhánh local `fix/admin-qa` (chưa push)
+
 ### 2026-10-11 — Claude — Sửa lỗi "Something went wrong" khi tạo sản phẩm mới
 **Yêu cầu:** người dùng lưu sản phẩm mới thì admin báo "Something went wrong".
 **Nguyên nhân (log dev server):** form tạo mới gửi `publishedAt: null` → `enforceProductMutationPolicy` coi null ≠ undefined là sửa ngày xuất bản → `Error` thường → Payload trả 500 với câu tiếng Anh chung chung. Thêm: tạo mới bắt buộc tự gõ đường dẫn; "Lưu và xuất bản" khi tạo mới bị luật "SP mới phải là nháp" chặn; ô Đóng gói bắt buộc; website cần ≥1 dòng thông số hoặc đóng gói nên SP thiếu cả hai sẽ làm hỏng bước xuất bản.

@@ -14,6 +14,9 @@ const audit = auditHooks('products')
 export const Products: CollectionConfig = {
   slug: 'products',
   access: { create: canCreateProduct, delete: canDeleteProduct, read: activeAuthenticated, update: canUpdateProduct },
+  // Payload's bulk edit shares the "Chỉnh sửa" label and asks for fields one by one; editors mistook it for
+  // opening the product. Edit one item by clicking its name/thumbnail; bulk delete stays.
+  disableBulkEdit: true,
   admin: {
     defaultColumns: ['thumbnail', 'nameVi', 'sku', 'status', 'categories', 'legacySourceId', 'slugVi'],
     description: 'Quản lý nội dung, trạng thái biên tập, hình ảnh và SEO của sản phẩm.',

@@ -20,6 +20,9 @@ export const Media: CollectionConfig = {
     hideRemoveFile: true,
   },
   access: { create: canUploadMedia, delete: canUpdateMedia, read: activeAuthenticated, update: canUpdateMedia },
+  // Payload's bulk edit shares the "Chỉnh sửa" label and asks for fields one by one; editors mistook it for
+  // opening the product. Edit one item by clicking its name/thumbnail; bulk delete stays.
+  disableBulkEdit: true,
   admin: {
     defaultColumns: ['thumbnail', 'storageKey', 'path', 'width', 'height', 'rightsStatus'],
     description: 'Quản lý tệp đa phương tiện, đường dẫn lưu trữ và tình trạng quyền sử dụng.',
