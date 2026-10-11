@@ -81,3 +81,41 @@ Tên output deterministic dạng `public/images/products-responsive/<sku>/<stem>
 Pipeline dựng output trong thư mục tạm rồi mới thay thế thư mục generated hiện hành. Nếu source thiếu, metadata không hợp lệ hoặc Sharp thất bại, lệnh trả exit khác 0 và không publish bộ derivatives dở dang. Output JSON của lệnh báo `sourceFiles`, `sourceBytes`, `generatedFiles` và `derivativeBytes` để theo dõi dung lượng.
 
 Sau build, `npm run validate:export` kiểm tra mọi URL dưới `/images/products-responsive/` xuất hiện trong `srcset` hoặc `src` đều tồn tại trong `out/`. Ảnh gốc vẫn là `img src` fallback cho trình duyệt không chọn WebP hoặc media không có metadata local.
+
+## Admin Payload (Node.js + PostgreSQL)
+
+_Thêm 2026-10-11. Chưa triển khai thật; các bước dưới đây dựa trên `admin/Dockerfile`, `admin/docker-compose.yml` và `admin/src/config/environment.ts`._
+
+Admin **không chạy được trên hosting tĩnh/shared** như website public. Cần một máy có Node.js 22 hoặc Docker, PostgreSQL 16, HTTPS (reverse proxy như Caddy hoặc Nginx), và ổ đĩa lưu ảnh tải lên.
+
+### Biến môi trường (bắt buộc khi `NODE_ENV=production`)
+
+| Biến | Ghi chú |
+|---|---|
+| `DATABASE_URL` | `postgresql://…` |
+| `PAYLOAD_SECRET` | ≥ 32 ký tự, sinh ngẫu nhiên, không commit |
+| `STORAGE_ADAPTER` | `local` (xem lưu ý S3 bên dưới) |
+| `PAYLOAD_PUBLIC_SERVER_URL` | URL HTTPS của admin, ví dụ `https://admin.wokin.vn` |
+| `CONTACT_ALLOWED_ORIGINS` | Origin HTTPS của website public, ví dụ `https://wokin.vn` |
+| `PAYLOAD_SEPARATION_OF_DUTIES` | `true` (mặc định khuyến nghị) |
+| `MEDIA_UPLOAD_DIR` | Thư mục lưu ảnh tải lên; mount volume bền vững |
+
+### Các bước
+
+1. Build image: `docker build -t wokin-admin admin/`.
+2. Chạy migration trên DB đích **trước khi** mở admin: `npm run db:migrate` (từ thư mục `admin/` với env đích), rồi `npm run db:status`. Migration `20261011_000001_contact_submissions_locked_documents` là bắt buộc với DB đã chạy `20260920_000001_contact_submissions`.
+3. Nạp catalog: `npm run import:catalog` (chạy lại được nhiều lần; lần sau phải báo 0 tạo / 0 cập nhật).
+4. Nạp cài đặt hiện tại của website: `npm run site-settings:import -- --force`.
+5. Chạy container, đặt sau reverse proxy HTTPS, mở `/admin` và tạo tài khoản đầu tiên. Tài khoản này tự nhận vai trò `owner` khi bảng `admins` còn trống.
+6. Build website public với `NEXT_PUBLIC_CONTACT_API_URL=https://<admin>/api/contact-submissions/submit` để form Liên hệ gửi về admin.
+7. Sao lưu: `pg_dump` hằng ngày cho DB và sao lưu thư mục `MEDIA_UPLOAD_DIR`; thử khôi phục định kỳ.
+
+### Sửa Thông tin website / Menu rồi áp dụng ra website
+
+Sửa trong admin, sau đó chạy `npm run site-settings:export` trong một checkout có website, chạy gate, build và deploy website tĩnh như phần trên.
+
+### Lưu ý đã biết (chưa xử lý)
+
+- **Ảnh catalog trong container:** Docker build dùng ngữ cảnh `admin/`, nên image không chứa `public/images` của website. Endpoint `/api/media/preview/:id` đọc ảnh catalog từ thư mục `public` của repo, nên khi chạy bằng Docker cần mount thư mục này vào hoặc sửa endpoint. Chưa kiểm chứng trong container.
+- **S3:** `STORAGE_ADAPTER=s3` qua được bước kiểm tra env, nhưng `payload.config.ts` chưa gắn plugin lưu trữ S3, nên ảnh vẫn lưu ở `MEDIA_UPLOAD_DIR`.
+- Chưa có email adapter: tính năng quên mật khẩu chỉ in email ra log.
