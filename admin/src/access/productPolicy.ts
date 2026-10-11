@@ -23,9 +23,10 @@ function enforceProductStatusTransition(user: unknown, previous: ProductStatus |
   ) || (
     previous === 'in_review' && (next === 'approved' || next === 'changes_requested') && hasCapability(user, 'product.review')
   ) || (
-    previous === 'approved' && next === 'published' && hasCapability(user, 'product.publish')
+    // Owner decision 2026-10-11: whoever may publish posts directly, no second reviewer required.
+    previous !== 'archived' && next === 'published' && hasCapability(user, 'product.publish')
   ) || (
-    previous === 'published' && next === 'archived' && hasCapability(user, 'product.publish')
+    previous === 'published' && (next === 'archived' || next === 'draft') && hasCapability(user, 'product.publish')
   )
 
   if (!isAllowed) throw new Error(`Invalid product status transition: ${previous} to ${next}`)
@@ -39,20 +40,21 @@ export function isSeparationOfDutiesEnabled(req: { context?: Record<string, unkn
 export const enforceProductMutationPolicy: CollectionBeforeChangeHook = ({ data, originalDoc, req }) => {
   const previousStatus = originalDoc?.status as ProductStatus | undefined
   const nextStatus = (data.status ?? previousStatus ?? 'draft') as ProductStatus
-  const isPublishing = previousStatus === 'approved' && nextStatus === 'published'
-  const requestedPublishedAt = data.publishedAt
 
-  if (isPublishing) {
-    if (requestedPublishedAt !== undefined && requestedPublishedAt !== originalDoc?.publishedAt) throw new Error('publishedAt is server-derived during publishing')
-    data.publishedAt = new Date().toISOString()
-  } else if (requestedPublishedAt !== undefined && requestedPublishedAt !== originalDoc?.publishedAt) {
-    throw new Error('publishedAt can only change during approved-to-published')
-  }
-
-  // Payload's R3 importers intentionally use overrideAccess for trusted maintenance work.
-  // Network and user-driven Local API requests are stopped by collection access before this hook.
+  // Payload's importers intentionally use overrideAccess for trusted maintenance work: they carry the live catalog's
+  // own status and publish dates. Network and user-driven Local API requests are stopped by collection access first.
   if (!req.user) return data
   if (!isActiveAdmin(req.user)) throw new Error('Active authentication is required')
+
+  const isPublishing = previousStatus !== 'published' && nextStatus === 'published'
+  const requestedPublishedAt = data.publishedAt
+  if (isPublishing) {
+    if (requestedPublishedAt !== undefined && requestedPublishedAt !== originalDoc?.publishedAt) throw new Error('publishedAt is server-derived during publishing')
+    // Re-publishing keeps the first publish date so the product does not jump to "Sản phẩm mới".
+    data.publishedAt = (originalDoc?.publishedAt as string | null | undefined) || new Date().toISOString()
+  } else if (requestedPublishedAt !== undefined && requestedPublishedAt !== originalDoc?.publishedAt) {
+    throw new Error('publishedAt can only change while publishing')
+  }
 
   enforceProductStatusTransition(req.user, previousStatus, nextStatus)
 

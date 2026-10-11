@@ -35,7 +35,8 @@ export const Categories: CollectionConfig = {
     { name: 'sourceName', type: 'text', required: true },
     { name: 'slug', type: 'text', required: true, unique: true, index: true },
     {
-      name: 'status', type: 'select', required: true, index: true, defaultValue: 'draft',
+      // New categories are live by default (owner decision 2026-10-11: no separate review step).
+      name: 'status', type: 'select', required: true, index: true, defaultValue: 'active',
       options: ['draft', 'active', 'archived'],
     },
     { name: 'parent', type: 'relationship', relationTo: 'categories', required: false, index: true },

@@ -49,25 +49,30 @@ async function findMedia(req: { payload: { find: unknown } }, ids: string[]): Pr
   return documents
 }
 
-export const enforcePublishReadiness: CollectionBeforeChangeHook = async ({ data, originalDoc, req }) => {
-  if (originalDoc?.status !== 'approved' || data.status !== 'published') return data
+/** Images whose rights are known to be unusable; "pending" catalog images may go live. */
+export const BLOCKED_MEDIA_RIGHTS = new Set(['restricted', 'expired'])
 
-  const candidate = mergedCandidate(data as Record<string, unknown>, originalDoc as Record<string, unknown>)
-  const seo = candidate.seo as Record<string, unknown>
-  if (!nonBlank(candidate.nameVi) || !nonBlank(candidate.slugVi)) throw new Error('Publish readiness requires a Vietnamese name and slug')
-  if (!nonBlank(seo.title) || !nonBlank(seo.description) || !nonBlank(seo.canonicalPath) || seo.noIndex !== false) {
-    throw new Error('Publish readiness requires complete indexable SEO')
-  }
+/**
+ * Checked whenever a product goes live (direct publishing). The website reads name, slug, categories and images;
+ * admin SEO fields are not published to the site, so they are not a gate here.
+ */
+export const enforcePublishReadiness: CollectionBeforeChangeHook = async ({ data, originalDoc, req }) => {
+  if (originalDoc?.status === 'published' || data.status !== 'published') return data
+  // Trusted maintenance (importers, no user) carries the already-live catalog.
+  if (!req.user) return data
+
+  const candidate = mergedCandidate(data as Record<string, unknown>, (originalDoc ?? {}) as Record<string, unknown>)
+  if (!nonBlank(candidate.nameVi) || !nonBlank(candidate.slugVi)) throw new Error('Cần có tên và đường dẫn tiếng Việt trước khi xuất bản.')
 
   const categories = relationIds(candidate.categories)
-  if (categories.length === 0) throw new Error('Publish readiness requires at least one Danh mục')
+  if (categories.length === 0) throw new Error('Cần chọn ít nhất một danh mục trước khi xuất bản.')
   const mediaIds = relationIds(candidate.media)
-  if (mediaIds.length === 0) throw new Error('Publish readiness requires at least one Hình ảnh')
+  if (mediaIds.length === 0) throw new Error('Cần gắn ít nhất một hình ảnh trước khi xuất bản.')
 
   const media = await findMedia(req as unknown as { payload: { find: unknown } }, mediaIds)
   const byId = new Map(media.map((document) => [document.id === undefined ? '' : String(document.id), document]))
-  if (mediaIds.some((id) => byId.get(id)?.rightsStatus !== 'cleared')) {
-    throw new Error('Publish readiness requires every media right to be cleared')
+  if (mediaIds.some((id) => !byId.has(id) || BLOCKED_MEDIA_RIGHTS.has(String(byId.get(id)?.rightsStatus)))) {
+    throw new Error('Có hình ảnh bị hạn chế hoặc hết hạn quyền sử dụng; hãy thay ảnh trước khi xuất bản.')
   }
   return data
 }

@@ -44,8 +44,21 @@ test('R5.3 enforces the product workflow matrix on the server', () => {
   assert.throws(() => enforceProductMutationPolicy({
     data: { status: 'approved' }, originalDoc: { status: 'draft' }, req: workflowRequest('owner'),
   } as any), /invalid product status transition/i)
-  assert.throws(() => enforceProductMutationPolicy({
+  // Direct publishing (owner decision 2026-10-11): publish capability skips the review hop; editors still cannot.
+  assert.doesNotThrow(() => enforceProductMutationPolicy({
     data: { status: 'published' }, originalDoc: { status: 'in_review' }, req: workflowRequest('publisher'),
+  } as any))
+  assert.doesNotThrow(() => enforceProductMutationPolicy({
+    data: { status: 'published' }, originalDoc: { status: 'draft' }, req: workflowRequest('owner'),
+  } as any))
+  assert.doesNotThrow(() => enforceProductMutationPolicy({
+    data: { status: 'draft' }, originalDoc: { status: 'published' }, req: workflowRequest('owner'),
+  } as any))
+  assert.throws(() => enforceProductMutationPolicy({
+    data: { status: 'published' }, originalDoc: { status: 'draft' }, req: workflowRequest('editor'),
+  } as any), /invalid product status transition/i)
+  assert.throws(() => enforceProductMutationPolicy({
+    data: { status: 'published' }, originalDoc: { status: 'archived' }, req: workflowRequest('owner'),
   } as any), /invalid product status transition/i)
   assert.throws(() => enforceProductMutationPolicy({
     data: { status: 'in_review' }, originalDoc: { status: 'approved' }, req: workflowRequest('editor'),
@@ -56,6 +69,12 @@ test('R5.3 only exposes reviewer and publisher status actions to their capabilit
   assert.equal(await canChangeProductStatus({ req: workflowRequest('editor'), siblingData: { status: 'changes_requested' } } as any), false)
   assert.equal(await canChangeProductStatus({ req: workflowRequest('publisher'), siblingData: { status: 'changes_requested' } } as any), true)
   assert.equal(await canChangeProductStatus({ req: workflowRequest('editor'), siblingData: { status: 'archived' } } as any), false)
+})
+
+test('re-publishing keeps the first publish date', () => {
+  const data: Record<string, unknown> = { status: 'published' }
+  enforceProductMutationPolicy({ data, originalDoc: { status: 'draft', publishedAt: '2025-01-02T03:04:05.000Z' }, req: workflowRequest('owner') } as any)
+  assert.equal(data.publishedAt, '2025-01-02T03:04:05.000Z')
 })
 
 test('R5.3 blocks editor content edits after a product is published', () => {

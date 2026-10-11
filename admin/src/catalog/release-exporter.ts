@@ -6,11 +6,38 @@ import { assertCatalogPublishSnapshot, snapshotChecksum, stableStringify } from 
 type ReleaseInput = {
   categories: Array<{ id: string; legacySourceId: number; nameVi: string; slug: string; status: string; parentId: string | null }>
   media: Array<{ id: string; path: string; alt: string; rightsStatus: string }>
-  products: Array<{ id: string; legacySourceId: number; sku: string | null; status: string; nameVi: string; slugVi: string; descriptionVi: string | null; specifications: Array<{ label: string; value: string; unit?: string }>; packaging: Array<{ cells: Array<{ value: string }> }>; attributes: Array<{ legacySourceId: number | null; name: string; values: Array<{ value: string }> }>; categoryIds: string[]; mediaIds: string[]; publishedAt: string | null }>
+  products: Array<{ id: string; legacySourceId: number; sku: string | null; status: string; nameVi: string; slugVi: string; descriptionVi: string | null; specifications: Array<{ label: string; value: string; unit?: string; sourceLine?: string }>; packaging: Array<{ cells: Array<{ value: string }> }>; attributes: Array<{ legacySourceId: number | null; name: string; values: Array<{ value: string }> }>; categoryIds: string[]; mediaIds: string[]; publishedAt: string | null; sourceMetadata?: Record<string, unknown> }>
   glossary: { categories?: Record<string, string>; marketing?: Record<string, string>; spec_labels?: Record<string, string>; terms?: Array<[string, string]>; ui: Record<string, string> }
 }
 
+// Matches BLOCKED_MEDIA_RIGHTS in access/publishReadiness.ts: pending catalog images may go live.
+const BLOCKED_RIGHTS = new Set(['restricted', 'expired'])
+
 const forbiddenPublicText = /\b(?:www\.)?wokintools\.com\b|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i
+
+function text(value: unknown): string | undefined {
+  return typeof value === 'string' && value ? value : undefined
+}
+
+/** Same split as the importer's specification(): "> Label: value" or a bare "> value" feature line. */
+function parsedSourceLine(sourceLine: string): { label: string; value: string } {
+  const normalized = sourceLine.trim().replace(/^>\s*/, '').trim()
+  const separator = normalized.indexOf(':')
+  if (separator > 0 && separator < normalized.length - 1) return { label: normalized.slice(0, separator).trim(), value: normalized.slice(separator + 1).trim() }
+  return { label: 'Tính năng', value: normalized }
+}
+
+/**
+ * Unedited rows round-trip to their original website line (the importer labels bare feature lines "Tính năng",
+ * which must not leak into the site as "Tính năng: …"); edited or new rows render as "> Label: value unit".
+ */
+export function specificationLine(specification: { label: string; value: string; unit?: string; sourceLine?: string }): string {
+  if (specification.sourceLine && !specification.unit) {
+    const original = parsedSourceLine(specification.sourceLine)
+    if (original.label === specification.label && original.value === specification.value) return specification.sourceLine.trim()
+  }
+  return `> ${specification.label}: ${specification.value}${specification.unit ? ` ${specification.unit}` : ''}`
+}
 
 function hash(value: unknown): string {
   return createHash('sha256').update(stableStringify(value)).digest('hex')
@@ -70,7 +97,7 @@ function candidateErrors(input: ReleaseInput): string[] {
     if (category.parentId && !categories.has(category.parentId)) errors.push(`categories[${index}] (${category.id}) parentId references missing category ${category.parentId}`)
   }
   for (const [index, item] of input.media.entries()) {
-    if (item.rightsStatus !== 'cleared') errors.push(`media[${index}] (${item.id}) rightsStatus must be cleared`)
+    if (BLOCKED_RIGHTS.has(item.rightsStatus)) errors.push(`media[${index}] (${item.id}) rightsStatus ${item.rightsStatus} cannot be published`)
     if (!isNonEmpty(item.path) || !isNonEmpty(item.alt)) errors.push(`media[${index}] (${item.id}) must include public path and alt`)
   }
   for (const [index, product] of input.products.entries()) {
@@ -88,7 +115,7 @@ function candidateErrors(input: ReleaseInput): string[] {
     for (const mediaId of product.mediaIds ?? []) {
       const item = media.get(mediaId)
       if (!item) errors.push(`${path} mediaIds references missing media ${mediaId}`)
-      else if (item.rightsStatus !== 'cleared') errors.push(`${path} mediaIds references uncleared media ${mediaId}`)
+      else if (BLOCKED_RIGHTS.has(item.rightsStatus)) errors.push(`${path} mediaIds references ${item.rightsStatus} media ${mediaId}`)
     }
   }
   if (forbiddenPublicText.test(JSON.stringify({ categories: input.categories, media: input.media, products: input.products, glossary: input.glossary }))) errors.push('release candidate contains source-domain or email leakage')
@@ -110,12 +137,19 @@ export function exportReleaseSnapshot(input: ReleaseInput) {
     sourceChecksum: hash({ categories, media, products }),
     canonicalSlugSha256: createHash('sha256').update(`${products.map((product) => `${product.legacySourceId}|${product.slugVi}`).join('\n')}\n`).digest('hex'),
     categories: categories.map((category) => ({ internalId: category.id, legacySourceId: category.legacySourceId, sourceName: category.nameVi, slug: category.slug, count: categoryCounts.get(category.id) ?? 0, parentInternalId: category.parentId, translation: { locale: 'vi', name: category.nameVi } })),
-    products: products.map((product) => ({
-      internalId: product.id, legacySourceId: product.legacySourceId, legacySlug: product.slugVi, sourceType: 'payload-release', productCode: product.sku, publishedAt: product.publishedAt!, legacyDescription: product.descriptionVi ?? '',
-      translation: { locale: 'vi', name: product.nameVi, sourceName: product.nameVi, canonicalSlug: product.slugVi },
+    // Website order (category pages list products in catalog order): newest first, then higher source id first.
+    products: [...products].sort((left, right) => (right.publishedAt ?? '').localeCompare(left.publishedAt ?? '') || right.legacySourceId - left.legacySourceId).map((product) => ({
+      internalId: product.id, legacySourceId: product.legacySourceId,
+      // Imported products keep their website-era identity (old slug, source type and name used by search).
+      // WordPress-era slugs may be percent-encoded (one is); the website only uses legacySlug as a lookup alias.
+      legacySlug: [text(product.sourceMetadata?.legacySlug)].find((slug) => slug && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) ?? product.slugVi,
+      sourceType: text(product.sourceMetadata?.sourceType) ?? 'payload-release',
+      productCode: product.sku, publishedAt: product.publishedAt!,
+      legacyDescription: product.descriptionVi ?? text(product.sourceMetadata?.legacyDescription) ?? '',
+      translation: { locale: 'vi', name: product.nameVi, sourceName: text(product.sourceMetadata?.sourceName) ?? product.nameVi, canonicalSlug: product.slugVi },
       categoryRelations: product.categoryIds.map((id) => { const category = categoryById.get(id)!; return { categoryInternalId: id, legacySourceId: category.legacySourceId, name: category.nameVi, slug: category.slug } }),
       media: product.mediaIds.map((id, position) => { const item = mediaById.get(id)!; return { kind: 'image', path: item.path, alt: item.alt, position } }),
-      technicalSpecs: { lines: product.specifications.map((specification) => `> ${specification.label}: ${specification.value}${specification.unit ? ` ${specification.unit}` : ''}`) },
+      technicalSpecs: { lines: product.specifications.map(specificationLine) },
       packaging: { table: product.packaging.map((row) => row.cells.map((cell) => cell.value)) },
       attributes: product.attributes.map((attribute) => ({ legacySourceId: attribute.legacySourceId, name: attribute.name, values: attribute.values.map((value) => value.value) })),
     })),
