@@ -180,6 +180,13 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-11 — Claude — Sửa lỗi "Something went wrong" khi tạo sản phẩm mới
+**Yêu cầu:** người dùng lưu sản phẩm mới thì admin báo "Something went wrong".
+**Nguyên nhân (log dev server):** form tạo mới gửi `publishedAt: null` → `enforceProductMutationPolicy` coi null ≠ undefined là sửa ngày xuất bản → `Error` thường → Payload trả 500 với câu tiếng Anh chung chung. Thêm: tạo mới bắt buộc tự gõ đường dẫn; "Lưu và xuất bản" khi tạo mới bị luật "SP mới phải là nháp" chặn; ô Đóng gói bắt buộc; website cần ≥1 dòng thông số hoặc đóng gói nên SP thiếu cả hai sẽ làm hỏng bước xuất bản.
+**Đã sửa:** coi null/'' là chưa đặt ngày; lỗi luật/điều kiện xuất bản thành `APIError` 400 tiếng Việt (hiện đúng nội dung trên màn hình); đường dẫn để trống tự tạo từ tên (bỏ dấu, đ→d, tránh trùng), có kiểm tra định dạng; người có quyền xuất bản được tạo mới ở trạng thái đã xuất bản; Đóng gói không bắt buộc, bỏ dòng trống khi xuất; điều kiện xuất bản thêm "≥1 dòng thông số hoặc đóng gói".
+**Kiểm chứng:** admin typecheck + 147/147 test. Trên admin local: tạo SP thiếu thông số → 400 "Cần ít nhất một dòng thông số…"; tạo SP đủ thông tin, để trống đường dẫn → 201, slug `san-pham-thu-tao-moi`, mã 900001, đã xuất bản; tạo nháp → 201. Bấm Xuất bản → 1.358 SP, trang SP mới có trong bản website và sitemap, nháp không lên. Đã xoá 2 SP thử.
+**Commit:** nhánh local `fix/admin-qa` (chưa push)
+
 ### 2026-10-11 — Claude — Sửa lỗi tải ảnh từ máy lên sản phẩm
 **Yêu cầu:** người dùng tải ảnh từ máy vào sản phẩm thì báo lỗi, không đăng được.
 **Nguyên nhân (từ log dev server):** (1) `PATCH /api/media/:id` 400: form admin gửi lại các trường tệp (url/thumbnailURL tính toán) → hook `deriveMediaMetadata` coi là sửa trái phép, chặn cả việc sửa mô tả/quyền ảnh; (2) `/api/media/preview/:id` 404 với ảnh tải lên (chỉ đọc `public/images`); (3) ô quan hệ hiện `media/uploads/<uuid>` vì `useAsTitle: storageKey`.

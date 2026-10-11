@@ -1,11 +1,11 @@
-import type { CollectionConfig } from 'payload'
+import { APIError, type CollectionConfig } from 'payload'
 
 import { auditHooks } from '../access/audit'
 import { activeAuthenticated, canCreateProduct, canDeleteProduct, canUpdateProduct } from '../access/collectionAccess'
 import { canChangeProductContent, canChangeProductSEO, canChangeProductStatus } from '../access/fieldAccess'
 import { enforceProductMutationPolicy } from '../access/productPolicy'
 import { enforcePublishReadiness } from '../access/publishReadiness'
-import { assignManualProductIdentity, requiredAfterCreate } from '../lib/manualProductIdentity'
+import { assignManualProductIdentity, requiredAfterCreate, validateProductSlug } from '../lib/manualProductIdentity'
 import { productStatusLabel } from '../lib/productOperations'
 
 const productStatuses = ['draft', 'in_review', 'changes_requested', 'approved', 'published', 'archived'] as const
@@ -43,7 +43,7 @@ export const Products: CollectionConfig = {
     beforeValidate: [assignManualProductIdentity],
     beforeChange: [enforceProductMutationPolicy, enforcePublishReadiness, ({ data, originalDoc }) => {
       if (originalDoc?.legacySourceId !== undefined && data.legacySourceId !== undefined && data.legacySourceId !== originalDoc.legacySourceId) {
-        throw new Error('legacySourceId is immutable')
+        throw new APIError('Mã nguồn của sản phẩm không được thay đổi (legacySourceId is immutable).', 400)
       }
       return data
     }],
@@ -73,7 +73,7 @@ export const Products: CollectionConfig = {
           label: 'Nội dung tiếng Việt',
           fields: [
             { name: 'nameVi', type: 'text', required: true, label: 'Tên sản phẩm', access: { create: canChangeProductContent, update: canChangeProductContent }, admin: { components: { Cell: '/components/MediaThumbnailCell#TitleLinkCell' } } },
-            { name: 'slugVi', type: 'text', required: true, unique: true, index: true, label: 'Đường dẫn tiếng Việt', access: { create: canChangeProductContent, update: canChangeProductContent } },
+            { name: 'slugVi', type: 'text', required: true, unique: true, index: true, label: 'Đường dẫn tiếng Việt', validate: validateProductSlug, admin: { description: 'Để trống thì tự tạo từ tên sản phẩm.' }, access: { create: canChangeProductContent, update: canChangeProductContent } },
             { name: 'descriptionVi', type: 'textarea', required: false, label: 'Mô tả tiếng Việt', access: { create: canChangeProductContent, update: canChangeProductContent } },
           ],
         },
@@ -93,7 +93,7 @@ export const Products: CollectionConfig = {
           label: 'Đóng gói & thuộc tính',
           fields: [
             {
-              name: 'packaging', type: 'array', required: true, minRows: 1, label: 'Đóng gói', defaultValue: [{ cells: [{ value: '' }] }], access: { create: canChangeProductContent, update: canChangeProductContent },
+              name: 'packaging', type: 'array', required: false, label: 'Đóng gói', access: { create: canChangeProductContent, update: canChangeProductContent },
               fields: [{
                 name: 'cells', label: 'Các ô trong hàng', type: 'array', required: true, minRows: 1,
                 fields: [{ name: 'value', label: 'Nội dung ô', type: 'text', required: false }],

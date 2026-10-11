@@ -43,7 +43,7 @@ test('R5.3 enforces the product workflow matrix on the server', () => {
 
   assert.throws(() => enforceProductMutationPolicy({
     data: { status: 'approved' }, originalDoc: { status: 'draft' }, req: workflowRequest('owner'),
-  } as any), /invalid product status transition/i)
+  } as any), /chuyển trạng thái/i)
   // Direct publishing (owner decision 2026-10-11): publish capability skips the review hop; editors still cannot.
   assert.doesNotThrow(() => enforceProductMutationPolicy({
     data: { status: 'published' }, originalDoc: { status: 'in_review' }, req: workflowRequest('publisher'),
@@ -56,13 +56,13 @@ test('R5.3 enforces the product workflow matrix on the server', () => {
   } as any))
   assert.throws(() => enforceProductMutationPolicy({
     data: { status: 'published' }, originalDoc: { status: 'draft' }, req: workflowRequest('editor'),
-  } as any), /invalid product status transition/i)
+  } as any), /chuyển trạng thái/i)
   assert.throws(() => enforceProductMutationPolicy({
     data: { status: 'published' }, originalDoc: { status: 'archived' }, req: workflowRequest('owner'),
-  } as any), /invalid product status transition/i)
+  } as any), /chuyển trạng thái/i)
   assert.throws(() => enforceProductMutationPolicy({
     data: { status: 'in_review' }, originalDoc: { status: 'approved' }, req: workflowRequest('editor'),
-  } as any), /invalid product status transition/i)
+  } as any), /chuyển trạng thái/i)
 })
 
 test('R5.3 only exposes reviewer and publisher status actions to their capabilities', async () => {
@@ -80,7 +80,7 @@ test('re-publishing keeps the first publish date', () => {
 test('R5.3 blocks editor content edits after a product is published', () => {
   assert.throws(() => enforceProductMutationPolicy({
     data: { nameVi: 'Tên đã sửa' }, originalDoc: { status: 'published', nameVi: 'Tên gốc' }, req: workflowRequest('editor'),
-  } as any), /published product content/i)
+  } as any), /đã xuất bản/i)
 })
 
 test('R5.3 requires resolution metadata before a review request can close', () => {
@@ -207,4 +207,20 @@ test('R5.3.1 registers FK integrity migration with RESTRICT up and SET NULL down
     assert.doesNotMatch(statement, /(?:^|;)\s*(?:INSERT|UPDATE|DELETE|MERGE)\b/im, 'FK policy migration must not mutate data')
   }
   assert.ok(migrations.some((entry) => entry.name === '20260828_000001_r5_review_fk_integrity'))
+})
+
+test('creating a product from the admin form (empty publishedAt) works, as draft or published directly', () => {
+  assert.doesNotThrow(() => enforceProductMutationPolicy({ data: { status: 'draft', publishedAt: null }, originalDoc: undefined, req: workflowRequest('editor') } as any))
+  const data: Record<string, unknown> = { status: 'published', publishedAt: null }
+  enforceProductMutationPolicy({ data, originalDoc: undefined, req: workflowRequest('owner') } as any)
+  assert.match(String(data.publishedAt), /^\d{4}-\d\d-\d\dT/)
+  assert.throws(() => enforceProductMutationPolicy({ data: { status: 'published' }, originalDoc: undefined, req: workflowRequest('editor') } as any), /chỉ được lưu nháp/)
+  assert.doesNotThrow(() => enforceProductMutationPolicy({ data: { nameVi: 'X', publishedAt: '' }, originalDoc: { status: 'draft', publishedAt: null }, req: workflowRequest('editor') } as any))
+})
+
+test('product URLs are made from the Vietnamese name when left empty', async () => {
+  const { vietnameseSlug, validateProductSlug } = await import('../src/lib/manualProductIdentity.js')
+  assert.equal(vietnameseSlug('Cờ lè vạn năng 9-32mm (Đặc biệt)'), 'co-le-van-nang-9-32mm-dac-biet')
+  assert.equal((validateProductSlug as (value: unknown) => unknown)(''), true)
+  assert.match(String((validateProductSlug as (value: unknown) => unknown)('Cờ Lè')), /chữ thường/)
 })

@@ -158,7 +158,7 @@ export function exportReleaseSnapshot(input: ReleaseInput) {
       categoryRelations: product.categoryIds.map((id) => { const category = categoryById.get(id)!; return { categoryInternalId: id, legacySourceId: category.legacySourceId, name: category.nameVi, slug: category.slug } }),
       media: product.mediaIds.map((id, position) => { const item = mediaById.get(id)!; return { kind: 'image', path: publicMediaPath(item.path), alt: item.alt, position } }),
       technicalSpecs: { lines: product.specifications.map(specificationLine) },
-      packaging: { table: product.packaging.map((row) => row.cells.map((cell) => cell.value)) },
+      packaging: { table: product.packaging.map((row) => row.cells.map((cell) => cell.value)).filter((row) => row.some((cell) => cell.trim())) },
       attributes: product.attributes.map((attribute) => ({ legacySourceId: attribute.legacySourceId, name: attribute.name, values: attribute.values.map((value) => value.value) })),
     })),
   }

@@ -63,11 +63,12 @@ test('R5.5a rejects publishing without name, category or image (SEO fields are n
     'blank name': { nameVi: '   ' },
     'empty categories': { categories: [] },
     'empty media': { media: [] },
+    'no spec or packaging': { specifications: [{ label: 'Tính năng', value: ' ' }], packaging: [{ cells: [{ value: '' }] }] },
   })) {
     const { req } = publisherRequest()
     await assert.rejects(
       () => enforcePublishReadiness({ data: { status: 'published' }, originalDoc: { ...approvedProduct, ...patch }, req } as never),
-      /tên|danh mục|hình ảnh/i,
+      /tên|danh mục|hình ảnh|thông số/i,
       label,
     )
   }
@@ -92,10 +93,10 @@ test('R5.5a rejects restricted media, regardless of client-supplied relation dat
 test('R5.5a rejects client-forged publish timestamps outside the approved-to-published transition', () => {
   assert.throws(() => enforceProductMutationPolicy({
     data: { publishedAt: '2000-01-01T00:00:00.000Z' }, originalDoc: approvedProduct, req: publisherRequest().req,
-  } as never), /publishedAt/i)
+  } as never), /ngày xuất bản/i)
   assert.throws(() => enforceProductMutationPolicy({
     data: { status: 'published', publishedAt: '2000-01-01T00:00:00.000Z' }, originalDoc: approvedProduct, req: publisherRequest().req,
-  } as never), /publishedAt/i)
+  } as never), /ngày xuất bản/i)
 })
 
 test('R5.5a assigns the publish timestamp on the server precisely for approved-to-published', () => {

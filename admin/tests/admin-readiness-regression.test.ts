@@ -17,7 +17,7 @@ const actor = { active: true, id: 'publisher-1', role: 'publisher' }
 test('runtime: publisher accepts hydrated unchanged null date but rejects forged timestamps', () => {
   const result = enforceProductMutationPolicy({ data: { status: 'published', publishedAt: null }, originalDoc: { status: 'approved', publishedAt: null }, req: { user: actor } } as never) as { publishedAt: string }
   assert.match(result.publishedAt, /^\d{4}-\d{2}-\d{2}T/)
-  assert.throws(() => enforceProductMutationPolicy({ data: { status: 'published', publishedAt: '2000-01-01' }, originalDoc: { status: 'approved', publishedAt: null }, req: { user: actor } } as never), /server-derived/)
+  assert.throws(() => enforceProductMutationPolicy({ data: { status: 'published', publishedAt: '2000-01-01' }, originalDoc: { status: 'approved', publishedAt: null }, req: { user: actor } } as never), /ngày xuất bản/i)
 })
 
 test('runtime: resolving accepts hydrated null actor and derives real identity', () => {
@@ -34,7 +34,7 @@ test('runtime: publish media lookup retains authenticated request and transactio
     assert.equal(options.overrideAccess, false)
     return { docs: [{ id: 'media-1', rightsStatus: 'cleared' }], hasNextPage: false }
   } } }
-  await enforcePublishReadiness({ data: { status: 'published' }, originalDoc: { status: 'approved', nameVi: 'Máy khoan', slugVi: 'may-khoan', seo: { title: 'Máy khoan', description: 'Thông tin', canonicalPath: '/san-pham/may-khoan', noIndex: false }, categories: ['category-1'], media: ['media-1'] }, req } as never)
+  await enforcePublishReadiness({ data: { status: 'published' }, originalDoc: { status: 'approved', nameVi: 'Máy khoan', slugVi: 'may-khoan', seo: { title: 'Máy khoan', description: 'Thông tin', canonicalPath: '/san-pham/may-khoan', noIndex: false }, categories: ['category-1'], media: ['media-1'], specifications: [{ label: 'Công suất', value: '500W' }] }, req } as never)
 })
 
 test('media pagination composes filters server-side and uses stable sort/page', () => {
