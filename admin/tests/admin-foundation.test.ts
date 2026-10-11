@@ -15,6 +15,8 @@ function runEnvCheck(overrides: NodeJS.ProcessEnv) {
   delete env.S3_ENDPOINT
   delete env.S3_REGION
   delete env.S3_SECRET_ACCESS_KEY
+  // check-env loads dotenv; point it away from a developer's real admin/.env so missing values stay missing.
+  env.DOTENV_CONFIG_PATH = path.join(adminRoot, 'tests', '.env.does-not-exist')
   Object.assign(env, overrides)
 
   return spawnSync(process.execPath, ['--import', 'tsx', 'scripts/check-env.ts'], {

@@ -1,6 +1,7 @@
-import type { Endpoint, PayloadRequest } from 'payload'
+import { addDataAndFileToRequest, type Endpoint, type PayloadRequest } from 'payload'
 
 import { hasCapability, type Capability } from '../access/hasCapability'
+import { contactAllowedOrigins } from '../lib/contactOrigins'
 
 const CONTACT_CAPABILITY: Capability = 'settings.manage'
 const MAX_NAME_LENGTH = 120
@@ -30,12 +31,7 @@ function messageValue(value: unknown): string {
 }
 
 function allowedOrigins(): Set<string> {
-  const configured = (process.env.CONTACT_ALLOWED_ORIGINS ?? '')
-    .split(',')
-    .map((origin) => origin.trim().replace(/\/$/u, ''))
-    .filter(Boolean)
-  if (process.env.NODE_ENV !== 'production') configured.push('http://localhost:4173', 'http://127.0.0.1:4173')
-  return new Set(configured)
+  return new Set(contactAllowedOrigins())
 }
 
 function sourceUrl(value: unknown, fallback: string | null): string | undefined {
@@ -89,6 +85,14 @@ export const contactSubmissionEndpoint: Endpoint = {
       return json({ error: 'Nguồn gửi không được phép.' }, 403)
     }
 
+    // Payload does not parse the body for custom endpoints; without this every website submission was rejected as empty.
+    if (req.data === undefined) {
+      try {
+        await addDataAndFileToRequest(req)
+      } catch {
+        return json({ error: 'Dữ liệu không hợp lệ.' }, 400)
+      }
+    }
     const data = (req.data ?? {}) as Record<string, unknown>
     if (textValue(data.website, 200)) return json({ error: 'Dữ liệu không hợp lệ.' }, 400)
     if (!privileged && !consumeRateLimit(clientKey(req))) return json({ error: 'Vui lòng thử lại sau.' }, 429)

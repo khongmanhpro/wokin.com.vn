@@ -35,7 +35,7 @@ export const Media: CollectionConfig = {
   fields: [
     { name: 'thumbnail', label: 'Ảnh', type: 'ui', admin: { components: { Cell: '/components/MediaThumbnailCell#MediaThumbnailCell', Field: false } } },
     { name: 'path', label: 'Đường dẫn tệp', type: 'text', required: true, unique: true, index: true, admin: { readOnly: true } },
-    { name: 'storageKey', label: 'Mã lưu trữ', type: 'text', required: true, unique: true, index: true, admin: { readOnly: true } },
+    { name: 'storageKey', label: 'Mã lưu trữ', type: 'text', required: true, unique: true, index: true, admin: { readOnly: true, components: { Cell: '/components/MediaThumbnailCell#TitleLinkCell' } } },
     { name: 'alt', label: 'Mô tả ảnh', type: 'text', required: true, admin: { description: 'Mô tả ngắn nội dung ảnh để hỗ trợ người dùng trình đọc màn hình.' } },
     { name: 'metadata', label: 'Thông tin tệp', type: 'json', required: true, admin: { readOnly: true } },
     { name: 'width', label: 'Chiều rộng', type: 'number', required: true, admin: { readOnly: true } },

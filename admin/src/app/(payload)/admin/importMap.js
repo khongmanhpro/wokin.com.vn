@@ -1,4 +1,5 @@
 import { MediaThumbnailCell as MediaThumbnailCell_05593d724b773c6c399e207481be194d } from '../../../components/MediaThumbnailCell'
+import { TitleLinkCell as TitleLinkCell_05593d724b773c6c399e207481be194d } from '../../../components/MediaThumbnailCell'
 import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { ProductThumbnailCell as ProductThumbnailCell_05593d724b773c6c399e207481be194d } from '../../../components/MediaThumbnailCell'
@@ -46,6 +47,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 /** @type import('payload').ImportMap */
 export const importMap = {
   "/components/MediaThumbnailCell#MediaThumbnailCell": MediaThumbnailCell_05593d724b773c6c399e207481be194d,
+  "/components/MediaThumbnailCell#TitleLinkCell": TitleLinkCell_05593d724b773c6c399e207481be194d,
   "@payloadcms/next/rsc#FolderTableCell": FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@payloadcms/next/rsc#FolderField": FolderField_f9c02e79a4aed9a3924487c0cd4cafb1,
   "/components/MediaThumbnailCell#ProductThumbnailCell": ProductThumbnailCell_05593d724b773c6c399e207481be194d,

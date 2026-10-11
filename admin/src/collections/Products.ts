@@ -72,7 +72,7 @@ export const Products: CollectionConfig = {
         {
           label: 'Nội dung tiếng Việt',
           fields: [
-            { name: 'nameVi', type: 'text', required: true, label: 'Tên sản phẩm', access: { create: canChangeProductContent, update: canChangeProductContent } },
+            { name: 'nameVi', type: 'text', required: true, label: 'Tên sản phẩm', access: { create: canChangeProductContent, update: canChangeProductContent }, admin: { components: { Cell: '/components/MediaThumbnailCell#TitleLinkCell' } } },
             { name: 'slugVi', type: 'text', required: true, unique: true, index: true, label: 'Đường dẫn tiếng Việt', access: { create: canChangeProductContent, update: canChangeProductContent } },
             { name: 'descriptionVi', type: 'textarea', required: false, label: 'Mô tả tiếng Việt', access: { create: canChangeProductContent, update: canChangeProductContent } },
           ],

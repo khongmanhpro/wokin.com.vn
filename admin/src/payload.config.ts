@@ -18,14 +18,12 @@ import { Releases } from './collections/Releases'
 import { ReviewRequests } from './collections/ReviewRequests'
 import { Navigation } from './globals/Navigation'
 import { SiteSettings } from './globals/SiteSettings'
+import { contactAllowedOrigins } from './lib/contactOrigins'
 import { MAX_IMAGE_BYTES } from './lib/mediaUpload'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const publicServerURL = process.env.PAYLOAD_PUBLIC_SERVER_URL
-const contactOrigins = (process.env.CONTACT_ALLOWED_ORIGINS ?? '')
-  .split(',')
-  .map((origin) => origin.trim().replace(/\/$/u, ''))
-  .filter(Boolean)
+const contactOrigins = contactAllowedOrigins()
 const corsOrigins = [...new Set([publicServerURL, ...contactOrigins].filter((origin): origin is string => Boolean(origin)))]
 
 export const adminComponents = {
