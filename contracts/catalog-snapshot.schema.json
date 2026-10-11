@@ -35,8 +35,12 @@
         "snapshotId": { "type": "string", "pattern": "^release-[a-f0-9]{16}$" },
         "checksum": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
         "catalog": { "$ref": "#/$defs/publicCatalog" },
-        "glossary": { "type": "object", "additionalProperties": false, "required": ["ui"], "properties": { "ui": { "type": "object", "additionalProperties": { "type": "string" } } } }
+        "glossary": { "type": "object", "additionalProperties": false, "required": ["categories", "marketing", "spec_labels", "terms", "ui"], "properties": { "categories": { "$ref": "#/$defs/stringMap" }, "marketing": { "$ref": "#/$defs/stringMap" }, "spec_labels": { "$ref": "#/$defs/stringMap" }, "terms": { "type": "array", "items": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } } }, "ui": { "$ref": "#/$defs/stringMap" } } }
       }
+    },
+    "stringMap": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
     },
     "publicCatalog": {
       "type": "object",

@@ -123,7 +123,13 @@ export function validateCatalogSnapshot(snapshot) {
     if (!sha256Pattern.test(snapshot.checksum ?? '')) errors.push('checksum must be a SHA-256 hex digest')
     else if (snapshotChecksum(snapshot) !== snapshot.checksum) errors.push('checksum does not match canonical snapshot content')
     errors.push(...validateEmbeddedPublicCatalog(snapshot.catalog).map((error) => `catalog.${error}`))
-    if (!isRecord(snapshot.glossary) || !isRecord(snapshot.glossary.ui)) errors.push('glossary.ui must be an object')
+    if (!isRecord(snapshot.glossary)) errors.push('glossary must be an object')
+    else {
+      for (const section of ['categories', 'marketing', 'spec_labels', 'ui']) {
+        if (!isRecord(snapshot.glossary[section]) || !Object.values(snapshot.glossary[section]).every((value) => typeof value === 'string')) errors.push(`glossary.${section} must be a string map`)
+      }
+      if (!Array.isArray(snapshot.glossary.terms) || !snapshot.glossary.terms.every((term) => Array.isArray(term) && term.length === 2 && term.every((value) => typeof value === 'string'))) errors.push('glossary.terms must be string pairs')
+    }
     if (forbiddenPublicText.test(JSON.stringify(snapshot))) errors.push('snapshot must not contain source-domain references or email addresses')
     return errors
   }
