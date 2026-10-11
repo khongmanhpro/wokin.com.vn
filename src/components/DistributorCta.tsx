@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { ResponsiveBackground } from "@/components/ResponsiveBackground";
-import { getProductsByCategory, glossary } from "@/lib/catalog";
+import { glossary } from "@/lib/catalog";
 
-export function DistributorCta() {
-  const image = getProductsByCategory("tool-sets")[0]?.images[0]?.src ?? "/images/logo.png";
-  return <section className="banner banner-distributors">
-    <ResponsiveBackground src={image} />
-    <div className="container-wokin banner-content">
+const defaultText = glossary.marketing["Partner with WOKIN to represent our powerful range of 3500+ products worldwide. Join our global network today and unlock unlimited market potential."];
+
+// Compact white strip as on wokintools.com: big orange title, copy, call to action.
+export function DistributorCta({ text = defaultText }: { text?: string }) {
+  return <section className="distributor-strip">
+    <div className="container-wokin distributor-strip-inner">
       <h2>{glossary.marketing["GLOBAL DISTRIBUTORS WANTED!"]}</h2>
-      <p>{glossary.marketing["Partner with WOKIN to represent our powerful range of 3500+ products worldwide. Join our global network today and unlock unlimited market potential."]}</p>
+      <p>{text}</p>
       <Link className="button-primary" href="/lien-he/">{glossary.ui["CONTACT US"]}</Link>
     </div>
   </section>;

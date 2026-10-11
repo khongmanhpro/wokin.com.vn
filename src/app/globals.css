@@ -1198,3 +1198,47 @@ button.page-link.active { background: var(--primary); }
   .hero-copy { padding: 18px 20px; }
   .hero-title { margin: 8px 0 14px; font-size: 26px; }
 }
+
+/* ---------------------------------------------------------------------------
+ * Round 2: dimensions and colours measured on wokintools.com at 1440px.
+ * Top bar/footer #2c333b, header ~104px, hero 531px, compact sections.
+ * ------------------------------------------------------------------------- */
+.topbar { background: #2c333b; }
+.main-nav { gap: 34px; font-size: 19px; font-weight: 700; }
+@media (min-width: 1025px) {
+  .header-main { min-height: 104px; }
+  .logo img { height: 52px; }
+}
+.hero, .hero-content { min-height: clamp(420px, 37vw, 531px); }
+.home-categories { padding-block: 44px 36px; }
+.home-categories .section-head { margin-bottom: 22px; }
+.home-categories .section-title { font-size: clamp(26px, 3vw, 33px); }
+.category-carousel .category-media { padding: 14px 22px; }
+.split-banner { padding-block: clamp(36px, 4vw, 56px); }
+.split-banner-media { aspect-ratio: 16 / 9; }
+.split-banner-light { background: #ebf2f7; color: var(--title); }
+.split-banner-light .split-banner-media { aspect-ratio: 4 / 3; }
+/* Brand orange fails contrast on #ebf2f7, so the large GP20V title uses the darker brand tone. */
+.split-banner-light .split-banner-copy h2 { color: #c25b00; font-size: clamp(34px, 4.4vw, 58px); }
+.split-banner-light .split-banner-copy p { color: var(--title); }
+.split-banner-light .split-banner-copy .eyebrow { color: #c25b00; }
+.distributor-strip { background: #fff; padding-block: clamp(32px, 4vw, 48px); }
+.distributor-strip-inner { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto; gap: clamp(20px, 4vw, 56px); align-items: center; }
+.distributor-strip h2 { margin: 0; color: #c25b00; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.05; text-transform: uppercase; }
+.distributor-strip p { margin: 0; color: var(--title); font-weight: 600; }
+.footer { background: #2c333b; }
+.footer-grid { padding-block: 28px; }
+.footer-grid img { width: 130px; }
+@media (max-width: 767px) {
+  .distributor-strip-inner { grid-template-columns: 1fr; }
+}
+.page-band { background: #c8ced2; }
+.page-band-inner { display: flex; align-items: center; gap: 14px; min-height: 93px; }
+.page-band h1 { margin: 0; color: #242424; font-size: clamp(28px, 3.2vw, 44px); font-weight: 700; line-height: 1.1; text-transform: uppercase; }
+.page-band-back { color: #242424; font-size: 32px; line-height: 1; }
+.page-band-back:hover { color: var(--primary); }
+.archive-intro-after { margin: 40px 0 0; }
+@media (max-width: 600px) {
+  .toolbar { flex-wrap: wrap; gap: 12px; }
+  .catalog-controls { width: 100%; justify-content: space-between; }
+}

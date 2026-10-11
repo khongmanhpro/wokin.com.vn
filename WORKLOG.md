@@ -133,6 +133,25 @@ _Cập nhật: 2026-10-11 bởi Claude (gộp admin vào dòng main, vá bảo m
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-11 — Claude — Review lại giao diện theo số đo site gốc (vòng 2)
+**Yêu cầu:** giao diện vẫn chưa giống trang gốc, review lại.
+**Đã làm:**
+- Đo site gốc ở 1440px: thanh trên 42px #2c333b, header 105px, banner 531px, danh mục 432px, Racing 452px #2c333b, GP20V 538px nền #ebf2f7, dải nhà phân phối 237px nền trắng 3 cột, chân trang 120px #2c333b, tổng 2.560px. Trang danh mục có dải tiêu đề #c8ced2 cao 93px kèm "←".
+- Sửa:
+  - Thanh trên và chân trang sang #2c333b; header 104px (chỉ ở desktop), menu 19px đậm; banner 531px; thu gọn khối danh mục.
+  - Racing dùng ảnh 16:9; GP20V nền #ebf2f7 với tiêu đề cam đậm cỡ lớn.
+  - `DistributorCta` thành dải trắng 3 cột (dùng ở trang chủ, Giới thiệu, Tuyển đại lý).
+  - Thêm `PageBand` cho trang danh mục, Sản phẩm, Sản phẩm mới; đoạn giới thiệu danh mục chuyển xuống dưới lưới.
+  - Điện thoại: toolbar danh mục xuống hàng gọn.
+- Kết quả đo lại: các khối khớp gốc (104/531/436/440/549/146px); tổng 2.701px so với 2.560px, chênh do chân trang giữ thông tin công ty.
+**Còn khác có lý do:**
+- Font Tomorrow của gốc không có subset tiếng Việt (vỡ dấu) nên giữ Saira Semi Condensed.
+- Thứ tự SP trong danh mục khác vì dữ liệu nguồn không có `menu_order`.
+- Ảnh lifestyle/video Racing và ảnh GP20V marketing cần WOKIN cấp (D1).
+- Chữ trắng/cam được thay bằng màu tương phản đủ (D3).
+**Kiểm chứng:** gate PASS (97 test, build 1454 trang, validate:export, smoke); browser 1440px và 375px không tràn ngang, header điện thoại 74px.
+**Commit:** xem nhánh `feat/ui-parity` (PR #7)
+
 ### 2026-10-11 — Claude — Favicon chữ W cho website và admin
 **Yêu cầu:** tab trình duyệt của site gốc có icon chữ W, bản mới chỉ có chữ.
 **Đã làm:**

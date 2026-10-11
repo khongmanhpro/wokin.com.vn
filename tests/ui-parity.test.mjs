@@ -50,3 +50,13 @@ test("favicons are self-contained raster W marks for the site and the admin", ()
   assert.match(read("admin/src/payload.config.ts"), /rel: 'icon', url: '\/favicon\.ico'/);
   assert.match(read("admin/Dockerfile"), /COPY --from=builder --chown=nextjs:nodejs \/app\/public \.\/public/);
 });
+
+test("round 2 matches the original's section styles and archive title band", () => {
+  assert.match(css, /\.topbar \{ background: #2c333b; \}/);
+  assert.match(css, /\.footer \{ background: #2c333b; \}/);
+  assert.match(css, /\.split-banner-light \{ background: #ebf2f7;/);
+  assert.match(read("src/app/page.tsx"), /reverse light \/>/);
+  assert.match(read("src/components/DistributorCta.tsx"), /className="distributor-strip"/);
+  assert.match(read("src/components/CategoryArchive.tsx"), /<PageBand title=\{category\.nameVi\} backHref="\/san-pham"/);
+  assert.match(css, /\.page-band \{ background: #c8ced2; \}/);
+});
