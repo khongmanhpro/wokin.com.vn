@@ -287,9 +287,9 @@ export interface FolderInterface {
 export interface Product {
   id: string;
   /**
-   * Khóa định danh nguồn, bất biến sau khi tạo. Sản phẩm tạo mới được cấp tự động từ 900000.
+   * Khóa định danh nguồn, bất biến sau khi tạo. Sản phẩm tạo mới để trống, hệ thống tự cấp từ 900000 khi lưu.
    */
-  legacySourceId?: number | null;
+  legacySourceId: number;
   /**
    * Có thể trống hoặc trùng; tuyệt đối không dùng làm định danh.
    */
@@ -335,9 +335,9 @@ export interface Product {
   status: 'draft' | 'in_review' | 'changes_requested' | 'approved' | 'published' | 'archived';
   publishedAt?: string | null;
   /**
-   * Dữ liệu nhập nguồn được bảo toàn để đối chiếu.
+   * Dữ liệu nhập nguồn được bảo toàn để đối chiếu. Sản phẩm tạo tay được hệ thống tự điền khi lưu.
    */
-  sourceMetadata?: {
+  sourceMetadata: {
     sourceType: string;
     legacySlug: string;
     sourceName: string;
