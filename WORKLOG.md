@@ -124,6 +124,17 @@ _Cập nhật: 2026-09-20 bởi Codex (nối form liên hệ vào Payload Admin;
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-11 — Claude — Đọc hiểu mã nguồn website public
+**Yêu cầu:** đọc code trang website wokin.com.vn.
+**Đã làm:**
+- Đọc toàn bộ `src/app/*`, `src/components/*`, `src/lib/*`, `next.config.ts`, CI. Không sửa code.
+- Ghi nhận (chưa kiểm bằng build/test): WORKLOG chưa có entry cho 3 commit `ee23839` (domain wokin.vn), `7463a09` (favicon W), `c8a63ff` (SEO homepage); kết quả tìm kiếm ở Header hiển thị logo thay vì ảnh sản phẩm; số sản phẩm marketing không thống nhất (3000+ ở trang chủ/giới thiệu, 3500+ ở `DistributorCta`); canonical trộn có/không dấu `/` cuối (`/san-pham` vs `/gioi-thieu/`); `ProductCard` in "Mã SP:" cả khi SKU rỗng; năm ở footer/nhà phân phối chốt lúc build.
+- Khi chạy gate để mở PR, `npm audit --audit-level=high` FAIL với 3 advisory high mới (next ≤15.5.26 cache poisoning SSG/ISR, sharp <0.35.5 librsvg, source-map-js ≤1.2.1). Theo lựa chọn của người dùng: nâng `next` 15.5.24 → 15.5.27, override `sharp` 0.35.4 → 0.35.5, `npm audit fix` đưa source-map-js lên 1.2.2. Nhánh `chore/deps-audit-fix-2026-10-11`.
+**Kiểm chứng:** gate đầy đủ sau khi vá → audit 0 vulnerabilities, typecheck PASS, 86/86 tests PASS, validate:data/check:data PASS (checksum không đổi), build 1452 trang, validate:export 1447 route + 1357 Product JSON-LD, smoke 11 route 200 + 3 legacy 404.
+**Commit:** cùng commit với bản vá dependency trên nhánh `chore/deps-audit-fix-2026-10-11` (PR vào `main`)
+**Còn dở / rủi ro:** các điểm quan sát từ đọc code chưa được sửa; chưa deploy.
+**Việc tiếp theo:** review và merge PR; chọn điểm quan sát nào cần sửa.
+
 ### 2026-09-20 — Codex — Nối form Liên hệ vào backend Admin, giữ nguyên C1
 **Yêu cầu:** Giữ nguyên C1; form Liên hệ phải gửi được dữ liệu và quản trị viên nhận/xem được trong Admin.
 **Đã làm:**
