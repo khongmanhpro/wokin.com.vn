@@ -57,9 +57,48 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-10-11 bởi Claude (gộp admin vào dòng main, vá bảo mật admin, sửa nhanh website; chờ merge PR #3, #2, #5, #4, #6)_
+_Cập nhật: 2026-10-11 cuối ngày bởi Claude. Phiên mới: đọc mục này và mục 3 trước, rồi `git fetch && gh pr list`._
 
-- **Admin (2026-10-11):** worktree `.hermes/worktrees/admin-ui`, nhánh `feat/admin-wordpress-parity` (PR #2 vào `payload-r1`). Admin Payload làm nền, bật tính năng kiểu WordPress; thử nghiệm shadcn `/dashboard` đã gỡ. Website đọc Cài đặt/Menu từ `src/data/site-settings.json` (nhánh `feat/site-settings-json`). Chạy thử với Postgres Docker (`docker compose -p wokin-admin-dev`) và catalog thật. Chi tiết trong `docs/admin-shadcn-ui.md` của nhánh. Đã phát hiện và vá lỗi migration contact-submissions thiếu cột `payload_locked_documents_rels.contact_submissions_id`.
+### Tóm tắt một dòng
+Website (Next.js static) và admin (Payload CMS) đã làm xong, chạy được local, **chờ người dùng merge PR**; chưa deploy.
+
+### PR đang mở (github.com/khongmanhpro/wokin.com.vn) và thứ tự merge
+PR #1 (vá dependency website) **đã merge** vào `main`. Lệnh merge của agent bị chế độ tự động chặn ("merge chưa review"), nên **người dùng phải tự bấm merge**.
+
+| Thứ tự | PR | Nhánh → base | Nội dung |
+|---|---|---|---|
+| 1 | #6 | `feat/integrate-admin` → `main` | Gộp tất cả: website đọc `site-settings.json` (#3), sửa nhanh website (#4), admin kiểu WordPress (#2), vá bảo mật admin (#5), hướng dẫn deploy admin |
+| 2 | #7 | `feat/ui-parity` → `main` | Giao diện giống wokintools.com (header cam, băng chuyền, banner chia đôi, dải xám danh mục, GP20V nền nhạt, dải nhà phân phối), favicon W, đổ bóng thẻ `/san-pham/` |
+| — | #2, #3, #4, #5 | | Đã nằm trong #6; đóng sau khi #6 merge |
+
+Merge #6 rồi #7 là đủ. CI của các PR đều xanh tại thời điểm ghi.
+
+### Checkout và nhánh đang dùng
+- Checkout chính `/Volumes/data AI/wokin.com.vn`: nhánh `feat/ui-parity` (mới nhất, chứa mọi thứ). Thư mục `out/` là bản build mới nhất.
+- Worktree `.hermes/worktrees/integrate` → `feat/integrate-admin`.
+- Worktree `.hermes/worktrees/admin-ui` → `chore/admin-security-upgrade`. Có `admin/.env` (DB local) và `admin/.env.dev-accounts` (mật khẩu 5 tài khoản test, gitignore).
+- Worktree `.hermes/worktrees/payload-r1`: của Codex/Hermes, có thay đổi chưa commit. **Không đụng.**
+
+### Môi trường local
+- Postgres: `cd .hermes/worktrees/admin-ui/admin && docker compose -p wokin-admin-dev up -d` (127.0.0.1:54329, DB `wokin_payload` đã có catalog thật + tài khoản test `owner|editor|publisher|seo_reviewer|readonly@wokin.test`).
+- Website: `python3 -m http.server 4173 --directory out` (cấu hình `.claude/launch.json` tên `wokin-static`).
+- Admin: `npm --prefix .hermes/worktrees/admin-ui/admin run dev -- -p 3020` (tên `wokin-admin-ui`), vào `/admin`.
+
+### Kiến trúc đã chốt
+- Admin = **Payload tự sinh** (giống WordPress: phiên bản, nháp/tự lưu, thùng rác, thư mục ảnh, Lexical, Cài đặt/Menu, tạo SP tay từ mã 900000). Bản thử giao diện shadcn `/dashboard` đã gỡ.
+- Website static đọc `src/data/site-settings.json`; admin ghi file này bằng `npm run site-settings:export`.
+
+### Việc tiếp theo (theo ưu tiên)
+1. Người dùng merge #6 → #7.
+2. Chọn hosting cho admin (VPS Node/Docker + PostgreSQL + HTTPS). Xem `DEPLOYMENT.md` mục Admin và A6.
+3. Deploy website tĩnh lên Hostinger staging, kiểm tra `.htaccess` và Lighthouse (R1).
+4. Chờ WOKIN cấp ảnh lifestyle, video Racing, ảnh GP20V (D1); bộ phận pháp lý duyệt trang chính sách.
+5. Tuỳ chọn: đổ bóng đồng bộ cho thẻ sản phẩm và băng chuyền; lấy thứ tự SP gốc (cần quyết định vì quy tắc không crawl).
+
+### Ghi chú người dùng
+Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơn giản, ít thuật ngữ, nói rõ "đã làm gì, còn gì, bạn cần làm gì".
+
+<details><summary>Trạng thái cũ trước 2026-10-11 (tham khảo)</summary>
 
 - **Nhánh `main`:** Phase 0–11 và checkpoint C1.3 trước đó đã commit/push tại `12baf0f`; phiên này có thay đổi chưa commit ở từ điển spec, gate token, font heading và snapshot sinh tự động. Untracked `.claude/`, `.hermes/`, `reports/` giữ nguyên ngoài commit.
 - **Gate sau phiên tiếp tục C1.3 (2026-09-15):** typecheck PASS, **83/83 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS, `git diff --check` PASS; npm audit 0 vulnerabilities. Font heading đã chuyển từ Tomorrow sang Saira Semi Condensed với subset `vietnamese`.
@@ -71,6 +110,8 @@ _Cập nhật: 2026-10-11 bởi Claude (gộp admin vào dòng main, vá bảo m
 - **Trang Liên hệ (2026-09-20):** đã bỏ mạng lưới phân phối khỏi trang và thay bằng form tư vấn responsive 5 trường; form hiện gửi tới Payload endpoint `/api/contact-submissions/submit` khi build có `NEXT_PUBLIC_CONTACT_API_URL`.
 - **Contact backend (2026-09-20):** Payload Admin đã thêm collection `contact-submissions`, endpoint POST có validation server-side, consent, honeypot, rate limit 5/IP/giờ, CORS theo `CONTACT_ALLOWED_ORIGINS`, và quyền xem/sửa chỉ dành cho `settings.manage`. Migration đã đăng ký nhưng **chưa chạy trên database production**. Admin root route đã được đưa vào route group Payload để Next build production hợp lệ.
 - **Audit deploy 2026-09-20:** trên working tree hiện tại (HEAD `8c88b6d`), `npm audit --audit-level=high`, typecheck, 83/83 tests, validate/check data, build 1452 trang và validate export (1447 route, 1357 Product JSON-LD, 11 smoke route HTTP 200 + 3 legacy HTTP 404) đều PASS. `npm run package:release` tạo 10.274 file; checksum 10.274/10.274 và static smoke trên package PASS. Chưa chạy `npm ci` clean-install trong lượt này; chưa có staging hostname để kiểm tra header/redirect; working tree vẫn dirty và chưa có approval `GO`, nên chưa được phép upload production.
+
+</details>
 
 ---
 
