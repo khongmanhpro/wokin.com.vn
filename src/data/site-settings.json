@@ -20,23 +20,68 @@
   },
   "navigation": {
     "header": [
-      { "label": "Sản phẩm", "url": "/san-pham", "newTab": false, "children": [] },
-      { "label": "GP20V", "url": "/gp20v", "newTab": false, "children": [] },
-      { "label": "Sản phẩm mới", "url": "/san-pham-moi", "newTab": false, "children": [] },
       {
-        "label": "Hỗ trợ", "url": "/gioi-thieu/", "newTab": false,
+        "label": "Sản phẩm",
+        "url": "/san-pham",
+        "newTab": false,
+        "children": []
+      },
+      {
+        "label": "GP20V",
+        "url": "/gp20v",
+        "newTab": false,
+        "children": []
+      },
+      {
+        "label": "Sản phẩm mới",
+        "url": "/san-pham-moi",
+        "newTab": false,
+        "children": []
+      },
+      {
+        "label": "Hỗ trợ",
+        "url": "/gioi-thieu/",
+        "newTab": false,
         "children": [
-          { "label": "Giới thiệu", "url": "/gioi-thieu/", "newTab": false },
-          { "label": "Liên hệ", "url": "/lien-he/", "newTab": false },
-          { "label": "Tuyển đại lý", "url": "/nha-phan-phoi/", "newTab": false }
+          {
+            "label": "Giới thiệu",
+            "url": "/gioi-thieu/",
+            "newTab": false
+          },
+          {
+            "label": "Liên hệ",
+            "url": "/lien-he/",
+            "newTab": false
+          },
+          {
+            "label": "Tuyển đại lý",
+            "url": "/nha-phan-phoi/",
+            "newTab": false
+          }
         ]
       }
     ],
     "footer": [
-      { "label": "Sản phẩm", "url": "/san-pham", "newTab": false },
-      { "label": "Giới thiệu", "url": "/gioi-thieu/", "newTab": false },
-      { "label": "Liên hệ", "url": "/lien-he/", "newTab": false },
-      { "label": "Tuyển đại lý", "url": "/nha-phan-phoi/", "newTab": false }
+      {
+        "label": "Sản phẩm",
+        "url": "/san-pham",
+        "newTab": false
+      },
+      {
+        "label": "Giới thiệu",
+        "url": "/gioi-thieu/",
+        "newTab": false
+      },
+      {
+        "label": "Liên hệ",
+        "url": "/lien-he/",
+        "newTab": false
+      },
+      {
+        "label": "Tuyển đại lý",
+        "url": "/nha-phan-phoi/",
+        "newTab": false
+      }
     ]
   }
 }
