@@ -30,7 +30,7 @@ test('UX-4 presents only policy-permitted workflow actions for the current state
 })
 
 test('UX-4 configures native triage cells without changing immutable source fields or server policies', () => {
-  assert.deepEqual(Products.admin?.defaultColumns, ['nameVi', 'sku', 'status', 'categories', 'legacySourceId', 'slugVi'])
+  assert.deepEqual(Products.admin?.defaultColumns, ['thumbnail', 'nameVi', 'sku', 'status', 'categories', 'legacySourceId', 'slugVi'])
 
   const tabs = Products.fields.find((field) => field.type === 'tabs')
   assert.ok(tabs && 'tabs' in tabs)

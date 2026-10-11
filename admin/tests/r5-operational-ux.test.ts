@@ -20,8 +20,8 @@ const collections: Array<{
 }> = [
   { collection: Categories, group: 'Danh mục', labels: { singular: 'Danh mục', plural: 'Danh mục' }, defaultColumns: ['nameVi', 'slug', 'status', 'sortOrder'], listSearchableFields: ['slug'] },
   { collection: ContactSubmissions, group: 'Liên hệ', labels: { singular: 'Yêu cầu liên hệ', plural: 'Yêu cầu liên hệ' }, defaultColumns: ['fullName', 'phone', 'subject', 'status', 'submittedAt'], listSearchableFields: ['fullName', 'phone', 'email'] },
-  { collection: Media, group: 'Nội dung', labels: { singular: 'Tệp đa phương tiện', plural: 'Tệp đa phương tiện' }, defaultColumns: ['storageKey', 'path', 'width', 'height', 'rightsStatus'], listSearchableFields: ['path', 'storageKey', 'contentSha256'] },
-  { collection: Pages, group: 'Nội dung', labels: { singular: 'Trang', plural: 'Trang' }, defaultColumns: ['titleVi', 'slug', 'status'], listSearchableFields: ['slug'] },
+  { collection: Media, group: 'Nội dung', labels: { singular: 'Tệp đa phương tiện', plural: 'Tệp đa phương tiện' }, defaultColumns: ['thumbnail', 'storageKey', 'path', 'width', 'height', 'rightsStatus'], listSearchableFields: ['path', 'storageKey', 'contentSha256'] },
+  { collection: Pages, group: 'Nội dung', labels: { singular: 'Trang', plural: 'Trang' }, defaultColumns: ['titleVi', 'slug', '_status', 'updatedAt'], listSearchableFields: ['titleVi', 'slug'] },
   { collection: Redirects, group: 'Nội dung', labels: { singular: 'Chuyển hướng', plural: 'Chuyển hướng' }, defaultColumns: ['fromPath', 'toPath', 'statusCode', 'active'], listSearchableFields: ['fromPath', 'toPath'] },
   { collection: ReviewRequests, group: 'Danh mục', labels: { singular: 'Yêu cầu rà soát', plural: 'Yêu cầu rà soát' }, defaultColumns: ['product', 'requester', 'reviewer', 'state', 'resolvedAt'], listSearchableFields: ['product', 'requester', 'reviewer', 'state'] },
   { collection: Admins, group: 'Quản trị', labels: { singular: 'Quản trị viên', plural: 'Quản trị viên' }, defaultColumns: ['email', 'role', 'active'], listSearchableFields: ['email'] },

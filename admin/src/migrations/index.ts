@@ -7,9 +7,10 @@ import * as migration_20260827_230437_r5_review_workflow from './20260827_230437
 import * as migration_20260828_000001_r5_review_fk_integrity from './20260828_000001_r5_review_fk_integrity';
 import * as migration_20260916_000001_media_local_upload from './20260916_000001_media_local_upload';
 import * as migration_20260920_000001_contact_submissions from './20260920_000001_contact_submissions';
+import * as migration_20261011_000001_contact_submissions_locked_documents from './20261011_000001_contact_submissions_locked_documents';
+import * as migration_20261011_081958_wordpress_parity from './20261011_081958_wordpress_parity';
 
 export const migrations = [
-  // Append new migrations at the end; existing migration order remains unchanged.
   {
     up: migration_20260827_094616_initial_poc.up,
     down: migration_20260827_094616_initial_poc.down,
@@ -38,7 +39,7 @@ export const migrations = [
   {
     up: migration_20260827_230437_r5_review_workflow.up,
     down: migration_20260827_230437_r5_review_workflow.down,
-    name: '20260827_230437_r5_review_workflow'
+    name: '20260827_230437_r5_review_workflow',
   },
   {
     up: migration_20260828_000001_r5_review_fk_integrity.up,
@@ -54,5 +55,15 @@ export const migrations = [
     up: migration_20260920_000001_contact_submissions.up,
     down: migration_20260920_000001_contact_submissions.down,
     name: '20260920_000001_contact_submissions',
+  },
+  {
+    up: migration_20261011_000001_contact_submissions_locked_documents.up,
+    down: migration_20261011_000001_contact_submissions_locked_documents.down,
+    name: '20261011_000001_contact_submissions_locked_documents',
+  },
+  {
+    up: migration_20261011_081958_wordpress_parity.up,
+    down: migration_20261011_081958_wordpress_parity.down,
+    name: '20261011_081958_wordpress_parity'
   },
 ];

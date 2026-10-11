@@ -14,7 +14,7 @@ function field(collection: CollectionConfig, name: string) {
 test('R5.1 configures the native Products list for catalog triage', () => {
   assert.deepEqual(Products.admin?.pagination, { defaultLimit: 25, limits: [25, 50, 100] })
   assert.deepEqual(Products.admin?.listSearchableFields, ['nameVi', 'sku', 'legacySourceId'])
-  assert.deepEqual(Products.admin?.defaultColumns, ['nameVi', 'sku', 'status', 'categories', 'legacySourceId', 'slugVi'])
+  assert.deepEqual(Products.admin?.defaultColumns, ['thumbnail', 'nameVi', 'sku', 'status', 'categories', 'legacySourceId', 'slugVi'])
 
   const sku = field(Products, 'sku')
   assert.equal(sku && 'admin' in sku ? sku.admin?.components?.Cell : undefined, '/components/ProductSkuCell#ProductSkuCell')

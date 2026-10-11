@@ -687,13 +687,7 @@ function releaseSnapshotOutputPayload(snapshot) {
       sku: product.productCode ?? "",
       slug: product.translation.canonicalSlug,
     }))),
-    "vi-glossary.json": stableJson({
-      categories: Object.fromEntries(catalog.categories.map((category) => [category.slug, category.translation.name])),
-      marketing: {},
-      spec_labels: {},
-      terms: {},
-      ui: snapshot.glossary.ui,
-    }),
+    "vi-glossary.json": stableJson(snapshot.glossary),
   };
   const outputChecksum = sha256(Object.keys(files).sort().map((name) => `${name}\0${sha256(files[name])}\n`).join(""));
   files["README.md"] = [

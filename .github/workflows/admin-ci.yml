@@ -54,6 +54,8 @@ jobs:
       DATABASE_URL: postgresql://wokin_payload:ci-local-only-password@127.0.0.1:5432/wokin_ci
       PAYLOAD_SECRET: ci-build-only-secret-000000000000000000000000
       PAYLOAD_PUBLIC_SERVER_URL: https://admin-ci.invalid
+      # Required by production env validation (import scripts run with NODE_ENV=production).
+      CONTACT_ALLOWED_ORIGINS: https://wokin-ci.invalid
       STORAGE_ADAPTER: local
     steps:
       - uses: actions/checkout@v4
@@ -72,10 +74,14 @@ jobs:
         run: npm run db:migrate
       - name: Verify migration status
         run: npm run db:status
-      - name: Import POC catalog
-        run: npm run import:poc
-      - name: Re-import POC catalog idempotently
-        run: npm run import:poc
+      # The R1 POC importer predates the R3 required fields (category legacySourceId/sourceName,
+      # product packaging/sourceMetadata), so CI imports the full catalog instead.
+      - name: Import full catalog
+        run: npm run import:catalog -- --report "$RUNNER_TEMP/import-1.json"
+      - name: Re-import full catalog idempotently
+        run: |
+          npm run import:catalog -- --report "$RUNNER_TEMP/import-2.json"
+          node -e "const r = require(process.argv[1]).records; const changed = Object.entries(r).filter(([, v]) => v.created || v.updated); if (changed.length) { console.error('Re-import changed records:', JSON.stringify(r)); process.exit(1) }" "$RUNNER_TEMP/import-2.json"
       - name: Validate complete catalog without mutation
         run: npm run import:catalog -- --dry-run
       - name: Build
