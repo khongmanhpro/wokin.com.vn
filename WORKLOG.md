@@ -90,7 +90,7 @@ _Cập nhật: 2026-10-11 bởi Claude (admin UI mới bằng shadcn trên nhán
 | A1 | Admin Payload làm nền + tính năng kiểu WordPress (versions, nháp/tự lưu, thùng rác, thư mục, Lexical, Cài đặt/Menu, tạo SP tay); `/dashboard` shadcn còn song song | **PR #2 chờ review** | Người dùng | Nhánh `feat/admin-wordpress-parity` vào `payload-r1`; giao diện shadcn `/dashboard` đã gỡ |
 | A5 | Nối global Thông tin website / Menu vào build website public | **PR chờ review** | Người dùng | Website đọc `src/data/site-settings.json`; admin ghi file bằng `npm run site-settings:export` |
 | A2 | Migration `20261011_000001_contact_submissions_locked_documents` | Có trên nhánh admin-ui | Vận hành | Bắt buộc chạy ở mọi DB đã chạy migration 20260920, nếu không mọi thao tác update đều lỗi SQL |
-| A3 | Test `p0-5-pilot-subset` import file untracked `admin/.hermes/evidence/p0-5/pilot-subset.ts` | Lỗi có sẵn | Codex/Hermes | Checkout sạch nhánh payload-r1 sẽ fail typecheck/build; cần commit file hoặc sửa test |
+| A3 | CI admin đỏ từ 92c6f93 (file evidence chưa commit, glossary builder chưa commit, `import:poc` lỗi thời) | **Đã sửa trong PR #2** (`38d7852`) | CI | Commit `pilot-subset.ts`, port phần glossary, CI dùng import catalog đầy đủ 2 lần + kiểm tra lặp lại |
 | A4 | Nâng Payload 3.90.2 / Next 16.4 / sharp 0.35.5 cho admin | Chưa làm | — | `npm audit` admin còn 2 critical / 7 high (có sẵn từ 92c6f93) |
 
 ---
@@ -130,6 +130,33 @@ _Cập nhật: 2026-10-11 bởi Claude (admin UI mới bằng shadcn trên nhán
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-10-11 — Claude — Sửa nhanh cho website giống bản gốc (nhóm 1)
+**Yêu cầu:** "làm từ đầu tới hết rồi báo cáo" sau khi so sánh với wokintools.com.
+**Đã làm (nhánh `feat/site-parity-quick`, tách từ nhánh PR #3):**
+- Thêm trang `/chinh-sach-bao-mat/` và `/chinh-sach-cookie/`, nội dung chỉ mô tả đúng những gì website đang làm; chữ Cookie/Bảo mật ở footer đã thành link. Hai trang được đưa vào sitemap, `validate-static-export` và smoke test.
+- Nút nổi Zalo và gọi hotline, nút về đầu trang (tôn trọng cài đặt giảm chuyển động).
+- Footer có link Facebook/YouTube/TikTok, lấy từ `site-settings.json`.
+- Chỉ mục tìm kiếm có thêm `image`; kết quả tìm kiếm hiện ảnh sản phẩm. Dữ liệu sinh lại, checksum mới `6d7aae5d…`.
+**Kiểm chứng:**
+- Gate PASS: audit 0, typecheck, 92/92 test, validate/check data, build 1454 trang, validate:export 1449 route, smoke 13 route.
+- Browser trên bản static: nút nổi trỏ đúng Zalo/tel, link footer đúng, kết quả tìm kiếm "máy thổi" hiện ảnh thật.
+**Commit:** xem nhánh `feat/site-parity-quick`
+**Còn dở / rủi ro:** nội dung chính sách cần bộ phận pháp lý duyệt trước khi chạy thật; nhóm 2 (header cam, băng chuyền danh mục, trang chi tiết 2 cột, sắp xếp danh mục) và nhóm 3 (ảnh/video từ WOKIN) chưa làm.
+**Việc tiếp theo:** merge PR #3 rồi đến PR này.
+
+### 2026-10-11 — Claude — So sánh website mới với wokintools.com (bản gốc WordPress)
+**Yêu cầu:** kiểm tra website mới khác gì site gốc.
+**Đã làm:** mở song song https://www.wokintools.com và bản static local (khổ ~800px), so trang chủ, chi tiết sản phẩm (blower 621821), danh mục tool-sets, liên hệ.
+**Phát hiện chính (đã kiểm trên trình duyệt):**
+- Trang chủ: gốc có header cam, hero ảnh lifestyle, danh mục dạng băng chuyền icon nhỏ, banner Racing có video. Bản mới có topbar đen + header trắng, hero ảnh sản phẩm, lưới 30 thẻ lớn, banner ảnh tĩnh (D1).
+- Chi tiết SP: gốc có video YouTube nhúng, nhiều ảnh/badge, phóng to, nút chia sẻ, SP trước/sau, 2 cột ở 800px. Bản mới 1 ảnh (1.286/1.357 SP chỉ có 1 ảnh trong dữ liệu crawl), không video/chia sẻ, 1 cột ở 800px.
+- Danh mục: gốc có sắp xếp, chọn 20/25/30 SP mỗi trang, đổi kiểu lưới, thứ tự SP khác (269PCS đứng đầu). Bản mới không có các điều khiển này.
+- Toàn site: gốc có nút liên hệ nổi (bit-assist), nút về đầu trang, link mạng xã hội, trang Cookie/Privacy. Bản mới: chữ "Chính sách cookie · Chính sách bảo mật" ở footer không phải link.
+- Danh mục: gốc có thêm "Pneumatic tools (NPT connector)" và "Merchandising and promotional" trong menu; bản mới có 30 danh mục.
+**Kiểm chứng:** so trực quan bằng ảnh chụp + truy vấn DOM; không sửa code.
+**Commit:** chưa commit
+**Việc tiếp theo:** người dùng chọn hạng mục cần làm cho giống bản gốc.
 
 ### 2026-10-11 — Claude — Bỏ giao diện shadcn, nối Cài đặt/Menu vào website, mở PR
 **Yêu cầu:** "làm như bạn đề xuất": bỏ `/dashboard` shadcn, nối "Thông tin website" và "Menu" vào website public, commit/push/PR.

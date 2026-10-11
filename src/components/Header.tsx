@@ -9,7 +9,7 @@ import glossaryJson from "@/data/vi-glossary.json";
 import { siteSettings, type NavLink } from "@/lib/site-settings";
 
 const categories = categoriesJson as { id: number; slug: string }[];
-type SearchProduct = { id: number; sku: string; name: string; slug: string; categories: string[] };
+type SearchProduct = { id: number; sku: string; name: string; slug: string; categories: string[]; image: string | null };
 const glossary = glossaryJson as unknown as { categories: Record<string, string>; ui: Record<string, string>; marketing: Record<string, string> };
 const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -209,7 +209,7 @@ export function Header() {
           {query && searchProducts === null && <p className="empty-search">Đang tải chỉ mục tìm kiếm...</p>}
           {query && searchProducts !== null && <div className="search-results">
             {results.length ? results.map((product) => <Link className="search-result" href={`/san-pham/${product.slug}`} key={product.id} onClick={closeSearch}>
-              <Image className="result-image" src="/images/logo.png" alt="" width={58} height={58} />
+              <img className="result-image" src={product.image ?? "/images/logo.png"} alt="" width={58} height={58} loading="lazy" decoding="async" />
               <span><strong>{product.name}</strong><br /><small>{glossary.ui.SKU}: {product.sku}</small></span>
             </Link>) : <p className="empty-search">Không tìm thấy sản phẩm phù hợp.</p>}
           </div>}

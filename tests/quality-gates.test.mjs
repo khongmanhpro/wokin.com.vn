@@ -182,7 +182,7 @@ function makeExportFixture() {
   ]);
   const outDir = path.join(catalog.root, "out");
   const routes = [
-    "", "san-pham", "san-pham-moi", "gp20v", "gioi-thieu", "lien-he", "nha-phan-phoi",
+    "", "san-pham", "san-pham-moi", "gp20v", "gioi-thieu", "lien-he", "nha-phan-phoi", "chinh-sach-bao-mat", "chinh-sach-cookie",
     "danh-muc/hand-tools", "san-pham/san-pham-1", "san-pham/san-pham-2",
   ];
   const links = routes.map((route) => `<a href="/${route}${route ? "/" : ""}">${route || "home"}</a>`).join("");

@@ -624,6 +624,8 @@ function outputPayload(normalized, sourceDir) {
     "search-index.json": stableJson(normalized.snapshot.products.map((product) => ({
       categories: product.categoryRelations.map((category) => category.slug),
       id: product.legacySourceId,
+      // First product photo for search result thumbnails; null when a product has no image.
+      image: product.media[0] ? `/${product.media[0].path.replace(/^\//, "")}` : null,
       name: product.translation.name,
       sku: product.productCode ?? "",
       slug: product.translation.canonicalSlug,

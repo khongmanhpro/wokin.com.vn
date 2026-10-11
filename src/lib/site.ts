@@ -13,6 +13,8 @@ export const staticPages = [
   "/gioi-thieu",
   "/lien-he",
   "/nha-phan-phoi",
+  "/chinh-sach-bao-mat",
+  "/chinh-sach-cookie",
 ] as const;
 
 export function absoluteUrl(path = ""): string {
