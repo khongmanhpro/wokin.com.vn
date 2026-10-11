@@ -1,4 +1,5 @@
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { CategoryBrowser } from "@/components/CategoryBrowser";
 import { Pagination } from "@/components/Pagination";
 import { ProductGrid } from "@/components/CatalogCards";
 import { getCategoryBySlug, getNewProducts, getProductsByCategory, glossary } from "@/lib/catalog";
@@ -18,9 +19,10 @@ export function CategoryArchive({ slug, page = 1 }: { slug: string; page?: numbe
     <div className="container-wokin">
       <h1 className="page-title">{category.nameVi}</h1>
       <p className="archive-intro">Khám phá {category.nameVi.toLocaleLowerCase("vi")} WOKIN dành cho công việc chuyên nghiệp. Danh mục cung cấp thông số rõ ràng, hình ảnh thực tế và nhiều lựa chọn phù hợp cho xưởng, công trường và đội ngũ kỹ thuật.</p>
-      <div className="toolbar"><span className="count-label">{allProducts.length} sản phẩm</span><span className="count-label">{glossary.ui.Show}: {PRODUCTS_PER_PAGE} · Trang {currentPage}/{totalPages || 1}</span></div>
-      <ProductGrid products={visible} newIds={newIds} />
-      <Pagination current={currentPage} total={totalPages} hrefFor={(number) => number === 1 ? `/danh-muc/${slug}` : `/danh-muc/${slug}/trang/${number}`} />
+      <CategoryBrowser slug={slug} total={allProducts.length} skuLabel={glossary.ui.SKU}>
+        <ProductGrid products={visible} newIds={newIds} />
+        <Pagination current={currentPage} total={totalPages} hrefFor={(number) => number === 1 ? `/danh-muc/${slug}` : `/danh-muc/${slug}/trang/${number}`} />
+      </CategoryBrowser>
     </div>
   </main>;
 }

@@ -133,6 +133,22 @@ _Cập nhật: 2026-10-11 bởi Claude (gộp admin vào dòng main, vá bảo m
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-11 — Claude — Chỉnh giao diện giống wokintools.com (nhóm 2)
+**Yêu cầu:** "giờ chỉnh sửa giao diện đi".
+**Đã làm (nhánh `feat/ui-parity`, tách từ PR #6):**
+- Header cam, menu chữ trắng, nút tìm kiếm tròn trắng. Logo gốc vốn là chữ trắng trên nền cam nên dùng nguyên file. Thanh trên có icon Facebook/YouTube/TikTok và được ẩn trên điện thoại.
+- Banner đầu trang: ảnh sản phẩm hiện trọn ở bên phải, chữ nằm trong khung cam; tiêu đề dùng chữ tối vì chữ trắng trên #FE7700 không đạt tương phản (D3). Dải "trusted by" chuyển sang màu cam.
+- Danh mục trang chủ thành băng chuyền (`CategoryCarousel`): 6/3/2 mục theo khổ màn hình, có mũi tên và chấm chuyển trang; thẻ vẫn render ở server.
+- Racing và GP20V thành banner chia đôi trên nền #2c333b. Tiêu đề khối dùng cam đậm #c25b00 để đủ tương phản.
+- Trang chi tiết chia 2 cột từ 768px; thêm nút chia sẻ Facebook và sao chép liên kết.
+- Trang danh mục có sắp xếp (mặc định, tên A→Z, Z→A, mã SP) và chọn 20/25/30 sản phẩm mỗi trang; mặc định vẫn là lưới tĩnh, chỉ tải chỉ mục khi khách đổi lựa chọn; giữ trạng thái trên URL (`?sap-xep=`, `?so-luong=`).
+**Kiểm chứng:**
+- Gate PASS: audit 0, typecheck, 96/96 test, build 1454 trang, validate:export 1449 route, smoke 13 route.
+- Browser 1440/900/375px: header, băng chuyền, banner chia đôi, trang chi tiết 2 cột ở 900px, sắp xếp A→Z với 30 SP/trang hiện đủ 22 SP; không tràn ngang và không có lỗi console ở 375px.
+**Commit:** xem nhánh `feat/ui-parity`
+**Còn dở / rủi ro:** banner ảnh lifestyle và video Racing vẫn cần tư liệu từ WOKIN (D1); khung cam trên điện thoại che một phần ảnh (giống bản gốc).
+**Việc tiếp theo:** người dùng xem và duyệt; merge PR #6 rồi đến PR này.
+
 ### 2026-10-11 — Claude — Làm trọn chuỗi: merge, vá bảo mật admin, sửa nhanh website, gộp admin vào main
 **Yêu cầu:** "làm từ đầu tới hết rồi báo cáo".
 **Đã làm:**

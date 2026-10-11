@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CategoryCard } from "@/components/CatalogCards";
+import { CategoryCarousel } from "@/components/CategoryCarousel";
 import { HeroSlider } from "@/components/HeroSlider";
 import { ResponsiveBackground } from "@/components/ResponsiveBackground";
-import { categories, getProductsByCategory, glossary } from "@/lib/catalog";
+import { ResponsiveProductImage } from "@/components/ResponsiveProductImage";
+import { categories, getProductsByCategory, glossary, type ProductImage } from "@/lib/catalog";
 import { HOME_DESCRIPTION, HOME_TITLE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -36,24 +38,42 @@ function Banner({ image, eyebrow, title, text, href, label, className = "" }: { 
   </section>;
 }
 
+// Image beside copy on a dark band, like the Racing and GP20V sections of wokintools.com.
+function SplitBanner({ image, eyebrow, title, text, href, label, reverse = false }: { image: ProductImage; eyebrow?: string; title: string; text: string; href: string; label: string; reverse?: boolean }) {
+  return <section className={`split-banner${reverse ? " split-banner-reverse" : ""}`}>
+    <div className="container-wokin split-banner-inner">
+      <div className="split-banner-media">
+        <ResponsiveProductImage image={image} alt="" fallbackWidth={800} fallbackHeight={800} sizes="(max-width: 767px) 100vw, 560px" />
+      </div>
+      <div className="split-banner-copy">
+        {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+        <h2>{title}</h2>
+        <p>{text}</p>
+        <Link className="button-primary" href={href}>{label}</Link>
+      </div>
+    </div>
+  </section>;
+}
+
 export default function HomePage() {
   const featured = getProductsByCategory("20v-lithium-ion-platform").slice(0, 2);
   const racing = getProductsByCategory("automotive-tools")[0] ?? featured[0];
   const gp20v = featured[0];
   const distributor = getProductsByCategory("tool-sets")[0] ?? featured[1];
+  const fallbackImage: ProductImage = { src: "/images/logo.png", alt: "" };
 
   return <main>
     <HeroSlider products={featured.map(({ id, slugVi, images }) => ({ id, slugVi, images }))} />
     <div className="trust-banner">{glossary.marketing["TRUSTED BY OVER 100 COUNTRIES WORLDWIDE"]}</div>
-    <section className="section container-wokin">
+    <section className="section container-wokin home-categories">
       <div className="section-head">
         <h2 className="section-title">{glossary.marketing["ENHANCE YOUR TOOLBOX"]}</h2>
         <p className="subtitle">{glossary.marketing["by professional categories"]}</p>
       </div>
-      <div className="card-grid home-category-grid">{categories.map((category) => <CategoryCard category={category} key={category.id} />)}</div>
+      <CategoryCarousel label="Danh mục sản phẩm">{categories.map((category) => <CategoryCard category={category} key={category.id} />)}</CategoryCarousel>
     </section>
-    <Banner image={racing.images[0]?.src ?? "/images/logo.png"} eyebrow="WOKIN RACING" title={glossary.marketing["EMBRACE THE SPIRIT OF RACING GREATNESS!"]} text={glossary.marketing["Choose WOKIN for their consistent performance, allowing you to focus on your racing goals with peace of mind. Let’s explore reliable automotive repair tools."]} href="/danh-muc/automotive-tools" label={glossary.ui.EXPLORE} />
-    <Banner image={gp20v.images[0]?.src ?? "/images/logo.png"} eyebrow="GP20V" title={glossary.marketing["ONE BATTERY, ENDLESS\nPOSSIBILITY."]} text={glossary.marketing["Experience the freedom of choice as our Lithium Battery Tool Series, offering an ever-growing range of high-performance tools to meet your evolving needs. From drills to saws, and from trimmers to blowers, our collection is designed to empower you with the right tool for every task."]} href="/gp20v" label={glossary.ui["EXPLORE GP20V"]} className="banner-gp20v" />
+    <SplitBanner image={racing.images[0] ?? fallbackImage} eyebrow="WOKIN RACING" title={glossary.marketing["EMBRACE THE SPIRIT OF RACING GREATNESS!"]} text={glossary.marketing["Choose WOKIN for their consistent performance, allowing you to focus on your racing goals with peace of mind. Let’s explore reliable automotive repair tools."]} href="/danh-muc/automotive-tools" label={glossary.ui.EXPLORE} />
+    <SplitBanner image={gp20v.images[0] ?? fallbackImage} eyebrow="GP20V" title={glossary.marketing["ONE BATTERY, ENDLESS\nPOSSIBILITY."]} text={glossary.marketing["Experience the freedom of choice as our Lithium Battery Tool Series, offering an ever-growing range of high-performance tools to meet your evolving needs. From drills to saws, and from trimmers to blowers, our collection is designed to empower you with the right tool for every task."]} href="/gp20v" label={glossary.ui["EXPLORE GP20V"]} reverse />
     <Banner image={distributor.images[0]?.src ?? "/images/logo.png"} title={glossary.marketing["GLOBAL DISTRIBUTORS WANTED!"]} text={glossary.marketing["Join our brand as a valued agent, representing our exceptional range of 3000+ products worldwide, and unlock your true potential."]} href="/lien-he/" label={glossary.ui["CONTACT US"]} className="banner-distributors" />
   </main>;
 }
