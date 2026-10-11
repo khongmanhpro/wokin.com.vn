@@ -75,17 +75,17 @@ h4 {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: #fff;
-  box-shadow: 0 1px 8px rgb(0 0 0 / 10%);
+  background: var(--primary);
+  box-shadow: 0 1px 8px rgb(0 0 0 / 18%);
 }
 
 .header-main {
-  min-height: 88px;
+  min-height: 76px;
 }
 
 .logo img {
   width: auto;
-  height: 44px;
+  height: 40px;
   object-fit: contain;
 }
 
@@ -113,7 +113,7 @@ h4 {
   align-items: center;
   gap: 6px;
   min-height: 40px;
-  color: var(--title);
+  color: #fff;
   background: none;
   border: 0;
   cursor: pointer;
@@ -124,7 +124,7 @@ h4 {
 
 .nav-link:hover,
 .action-button:hover {
-  color: var(--primary);
+  color: var(--darker);
 }
 
 .dropdown {
@@ -163,13 +163,23 @@ h4 {
   height: 44px;
   border: 0;
   background: none;
-  color: var(--title);
+  color: #fff;
   cursor: pointer;
 }
 
 .icon-button:hover {
-  color: var(--primary);
+  color: var(--darker);
 }
+
+.desktop-search {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--darker);
+}
+
+.desktop-search:hover { background: var(--darker); color: #fff; }
 
 .mobile-only {
   display: none;
@@ -311,7 +321,9 @@ h4 {
 
 .overlay-close { color: #fff; }
 .empty-search { margin: 0; padding: 20px; }
-.topbar-note { color: #fff; }
+.topbar-social { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.topbar-social a { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; color: rgb(255 255 255 / 80%); }
+.topbar-social a:hover { color: var(--primary); }
 
 .sr-only {
   position: absolute;
@@ -329,7 +341,7 @@ h4 {
   position: relative;
   min-height: clamp(420px, 52vw, 600px);
   overflow: hidden;
-  background: var(--darker);
+  background: linear-gradient(90deg, #eceff1 0%, #f7f7f7 55%, #fff 100%);
 }
 
 .hero-slide {
@@ -348,8 +360,9 @@ h4 {
 .hero-slide img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  opacity: 0.62;
+  /* Product photos are cut-outs on white; show the whole tool on the right instead of a dimmed crop. */
+  object-fit: contain;
+  object-position: 85% center;
 }
 
 .hero-content {
@@ -361,9 +374,16 @@ h4 {
 }
 
 .hero-copy {
-  max-width: 720px;
-  color: #fff;
+  max-width: 520px;
+  padding: clamp(24px, 4vw, 44px);
+  background: var(--primary);
+  color: var(--darker);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 18%);
 }
+
+.hero-copy .eyebrow { color: var(--darker); }
+.hero-copy .button-primary { background: var(--darker); color: #fff; }
+.hero-copy .button-primary:hover { background: #000; }
 
 .eyebrow {
   color: var(--primary);
@@ -377,8 +397,9 @@ h4 {
   margin: 12px 0 24px;
   font-family: var(--font-heading);
   line-height: 1.12;
-  color: #fff;
-  font-size: clamp(34px, 6vw, 54px);
+  /* Dark on brand orange: white fails WCAG contrast on #FE7700 (WORKLOG D3). */
+  color: var(--darker);
+  font-size: clamp(30px, 4.6vw, 50px);
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -544,8 +565,8 @@ h4 {
 }
 
 .trust-banner {
-  background: var(--darker);
-  color: #fff;
+  background: var(--primary);
+  color: var(--darker);
   padding-block: 32px;
   text-align: center;
   font-family: var(--font-heading);
@@ -970,13 +991,13 @@ h4 {
   left: 50%;
   width: 9px;
   height: 9px;
-  border: 1px solid #fff;
+  border: 1px solid var(--darker);
   border-radius: 50%;
   content: "";
   transform: translate(-50%, -50%);
 }
 
-.slider-dots button.active::before { background: #fff; }
+.slider-dots button.active::before { background: var(--darker); }
 .banner p { max-width: 640px; margin: 0 0 26px; color: rgb(255 255 255 / 78%); }
 .banner-gp20v { background: linear-gradient(90deg, rgb(17 17 17 / 96%), rgb(254 119 0 / 45%)); }
 .banner-distributors { min-height: 390px; }
@@ -989,10 +1010,10 @@ h4 {
 .slider-arrow {
   width: 44px;
   height: 44px;
-  border: 1px solid #fff;
+  border: 1px solid var(--darker);
   border-radius: 50%;
-  background: transparent;
-  color: #fff;
+  background: rgb(255 255 255 / 85%);
+  color: var(--darker);
   cursor: pointer;
 }
 
@@ -1052,7 +1073,6 @@ h4 {
   .grid-products { grid-template-columns: repeat(2, 1fr); }
   .category-archive-grid { grid-template-columns: repeat(2, 1fr); }
 
-  .product-layout,
   .contact-layout {
     grid-template-columns: 1fr;
   }
@@ -1088,3 +1108,147 @@ h4 {
 .footer-bottom a { color: inherit; }
 .footer-bottom a:hover { color: var(--primary); }
 @media print { .floating-actions { display: none; } }
+
+/* Home category carousel (mirrors the original icon strip). */
+.category-carousel { position: relative; padding-inline: 48px; }
+.category-carousel-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 5 * 20px) / 6);
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.category-carousel-track::-webkit-scrollbar { display: none; }
+.category-carousel-track > * { scroll-snap-align: start; }
+.category-carousel .category-card { border: 0; background: transparent; }
+.category-carousel .category-card:hover { box-shadow: none; transform: none; }
+.category-carousel .category-media { background: transparent; }
+.category-carousel .category-name { padding: 10px 4px 0; font-size: 13px; }
+.carousel-arrow {
+  position: absolute;
+  top: 40%;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--title);
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+.carousel-arrow:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+.carousel-arrow:disabled { cursor: default; opacity: 0.35; }
+.carousel-prev { left: 0; }
+.carousel-next { right: 0; }
+.carousel-dots { display: flex; justify-content: center; margin-top: 18px; }
+.carousel-dots button { position: relative; width: 28px; height: 28px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.carousel-dots button::before { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; border-radius: 50%; background: #c7c7c7; content: ""; transform: translate(-50%, -50%); }
+.carousel-dots button.active::before { background: var(--title); }
+@media (max-width: 1024px) {
+  .category-carousel-track { grid-auto-columns: calc((100% - 2 * 16px) / 3); gap: 16px; }
+}
+@media (max-width: 600px) {
+  .category-carousel { padding-inline: 0; }
+  .category-carousel-track { grid-auto-columns: calc((100% - 16px) / 2); }
+  .carousel-arrow { display: none; }
+}
+
+/* Brand headings and split banners (wokintools.com style). #c25b00 keeps brand orange readable on white. */
+.home-categories .section-title { color: #c25b00; }
+.home-categories .subtitle { color: var(--title); font-family: var(--font-heading); font-size: 18px; font-weight: 700; }
+.split-banner { background: #2c333b; color: #fff; padding-block: clamp(40px, 6vw, 72px); }
+.split-banner-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: center; }
+.split-banner-reverse .split-banner-media { order: 2; }
+.split-banner-media { aspect-ratio: 4 / 3; overflow: hidden; background: #fff; }
+.split-banner-media img { width: 100%; height: 100%; object-fit: contain; }
+.split-banner-copy .eyebrow { color: var(--primary); }
+.split-banner-copy h2 { margin: 8px 0 16px; color: var(--primary); font-size: clamp(26px, 3.6vw, 40px); line-height: 1.1; text-transform: uppercase; white-space: pre-line; }
+.split-banner-copy p { margin: 0 0 24px; color: rgb(255 255 255 / 82%); }
+@media (max-width: 767px) {
+  .split-banner-inner { grid-template-columns: 1fr; }
+  .split-banner-reverse .split-banner-media { order: 0; }
+}
+
+/* Product detail: two columns from tablet width like the original; share row. */
+@media (max-width: 767px) {
+  .product-layout { grid-template-columns: 1fr; }
+}
+.share-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--text); font-size: 14px; }
+.share-buttons a, .share-buttons button { padding: 6px 12px; border: 1px solid var(--line); background: #fff; color: var(--title); cursor: pointer; font: inherit; }
+.share-buttons a:hover, .share-buttons button:hover { border-color: var(--primary); color: var(--primary); }
+
+/* Category sort / page-size controls. */
+.catalog-controls { display: flex; flex-wrap: wrap; gap: 12px 18px; }
+.catalog-controls label { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-size: 14px; }
+.catalog-controls select { min-height: 38px; padding: 6px 10px; border: 1px solid var(--line); background: #fff; color: var(--title); font: inherit; }
+button.page-link { background: #fff; cursor: pointer; font: inherit; }
+button.page-link.active { background: var(--primary); }
+
+/* Phones: no top bar (as on the original) and the hero copy sits below the product photo. */
+@media (max-width: 600px) {
+  .topbar { display: none; }
+  .hero-slide img { object-position: center 18%; }
+  .hero-content { align-items: flex-end; padding-bottom: 88px; }
+  .hero-copy { padding: 18px 20px; }
+  .hero-title { margin: 8px 0 14px; font-size: 26px; }
+}
+
+/* ---------------------------------------------------------------------------
+ * Round 2: dimensions and colours measured on wokintools.com at 1440px.
+ * Top bar/footer #2c333b, header ~104px, hero 531px, compact sections.
+ * ------------------------------------------------------------------------- */
+.topbar { background: #2c333b; }
+.main-nav { gap: 34px; font-size: 19px; font-weight: 700; }
+@media (min-width: 1025px) {
+  .header-main { min-height: 104px; }
+  .logo img { height: 52px; }
+}
+.hero, .hero-content { min-height: clamp(420px, 37vw, 531px); }
+.home-categories { padding-block: 44px 36px; }
+.home-categories .section-head { margin-bottom: 22px; }
+.home-categories .section-title { font-size: clamp(26px, 3vw, 33px); }
+.category-carousel .category-media { padding: 14px 22px; }
+.split-banner { padding-block: clamp(36px, 4vw, 56px); }
+.split-banner-media { aspect-ratio: 16 / 9; }
+.split-banner-light { background: #ebf2f7; color: var(--title); }
+.split-banner-light .split-banner-media { aspect-ratio: 4 / 3; }
+/* Brand orange fails contrast on #ebf2f7, so the large GP20V title uses the darker brand tone. */
+.split-banner-light .split-banner-copy h2 { color: #c25b00; font-size: clamp(34px, 4.4vw, 58px); }
+.split-banner-light .split-banner-copy p { color: var(--title); }
+.split-banner-light .split-banner-copy .eyebrow { color: #c25b00; }
+.distributor-strip { background: #fff; padding-block: clamp(32px, 4vw, 48px); }
+.distributor-strip-inner { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto; gap: clamp(20px, 4vw, 56px); align-items: center; }
+.distributor-strip h2 { margin: 0; color: #c25b00; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.05; text-transform: uppercase; }
+.distributor-strip p { margin: 0; color: var(--title); font-weight: 600; }
+.footer { background: #2c333b; }
+.footer-grid { padding-block: 28px; }
+.footer-grid img { width: 130px; }
+@media (max-width: 767px) {
+  .distributor-strip-inner { grid-template-columns: 1fr; }
+}
+.page-band { background: #c8ced2; }
+.page-band-inner { display: flex; align-items: center; gap: 14px; min-height: 93px; }
+.page-band h1 { margin: 0; color: #242424; font-size: clamp(28px, 3.2vw, 44px); font-weight: 700; line-height: 1.1; text-transform: uppercase; }
+.page-band-back { color: #242424; font-size: 32px; line-height: 1; }
+.page-band-back:hover { color: var(--primary); }
+.archive-intro-after { margin: 40px 0 0; }
+@media (max-width: 600px) {
+  .toolbar { flex-wrap: wrap; gap: 12px; }
+  .catalog-controls { width: 100%; justify-content: space-between; }
+}
+
+/* Category cards on /san-pham: soft drop shadow, lifted on hover. */
+.category-archive-grid .category-card {
+  border-color: transparent;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 8%), 0 1px 3px rgb(0 0 0 / 6%);
+}
+.category-archive-grid .category-card:hover {
+  box-shadow: 0 10px 26px rgb(0 0 0 / 14%), 0 3px 8px rgb(0 0 0 / 8%);
+  transform: translateY(-3px);
+}

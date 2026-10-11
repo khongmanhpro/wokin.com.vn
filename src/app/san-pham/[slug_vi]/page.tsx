@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProductGrid } from "@/components/CatalogCards";
 import { ProductGallery } from "@/components/ProductGallery";
+import { ShareButtons } from "@/components/ShareButtons";
 import { JsonLd } from "@/components/JsonLd";
 import { getAllProducts, getProductBySlug, getRelated, glossary, parseProductSpec, productDescription, productSeoName } from "@/lib/catalog";
 import { absolutePageUrl, absoluteUrl } from "@/lib/site";
@@ -55,6 +56,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug_v
           {spec.lines.length > 0 && <p>{spec.lines.map((line, index) => <span key={`${index}-${line}`}>{line}{index < spec.lines.length - 1 && <br />}</span>)}</p>}
           {spec.table.length > 0 && <SpecTable rows={spec.table} />}
         </div>
+        <ShareButtons url={canonical} title={name} />
       </div>
     </section>
     <section className="section container-wokin"><h2 className="related-title">{glossary.ui["Related products"]}</h2><ProductGrid products={getRelated(product)} /></section>

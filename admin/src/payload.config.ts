@@ -54,6 +54,11 @@ export default buildConfig({
     importMap: { baseDir: path.resolve(dirname) },
     meta: {
       titleSuffix: '— WOKIN Admin',
+      // Same W mark as the public site instead of Payload's default favicon.
+      icons: [
+        { rel: 'icon', url: '/favicon.ico', sizes: '32x32 48x48' },
+        { rel: 'apple-touch-icon', url: '/apple-touch-icon.png', sizes: '180x180' },
+      ],
     },
   },
   collections: [Admins, Categories, Media, Products, ReviewRequests, Pages, Redirects, CatalogSnapshots, Releases, AuditEvents, ContactSubmissions],

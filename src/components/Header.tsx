@@ -64,6 +64,16 @@ function makeBackgroundInert(dialog: HTMLElement) {
 }
 
 const headerNav = siteSettings.navigation.header;
+const socialIconPaths = {
+  Facebook: "M14 8V6.5c0-.8.2-1.3 1.4-1.3H17V2.2C16.7 2.1 15.7 2 14.6 2 12.2 2 10.6 3.4 10.6 6.1V8H8v3.3h2.6V22H14V11.3h2.7L17 8h-3z",
+  YouTube: "M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12 31 31 0 0 0 1 16.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8zM9.7 15.1V8.9l5.8 3.1-5.8 3.1z",
+  TikTok: "M16.6 2h-3.3v13.5a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6 0 .9.1V9.3a6.3 6.3 0 1 0 5.3 6.2V8.7a7.8 7.8 0 0 0 4.4 1.4V6.8a4.5 4.5 0 0 1-4.4-4.8z",
+} as const;
+const topbarSocial = ([
+  ["Facebook", siteSettings.company.social.facebook],
+  ["YouTube", siteSettings.company.social.youtube],
+  ["TikTok", siteSettings.company.social.tiktok],
+] as const).filter(([, href]) => href).map(([label, href]) => ({ label, href, path: socialIconPaths[label] }));
 
 function NavAnchor({ item, className, onClick }: { item: NavLink; className?: string; onClick?: () => void }) {
   if (item.newTab || !item.url.startsWith("/")) {
@@ -173,7 +183,11 @@ export function Header() {
       <div className="topbar">
         <div className="container-wokin topbar-inner">
           <span>{glossary.marketing["QUALITY TOOLS, QUALITY WORK"]}</span>
-          <span className="topbar-note">DỤNG CỤ CHUYÊN NGHIỆP TỪ 1995</span>
+          {topbarSocial.length > 0 && <ul className="topbar-social" aria-label="Mạng xã hội">
+            {topbarSocial.map(({ label, href, path }) => <li key={label}><a href={href} target="_blank" rel="noreferrer" aria-label={label}>
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d={path} /></svg>
+            </a></li>)}
+          </ul>}
         </div>
       </div>
       <header className="site-header">

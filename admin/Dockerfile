@@ -25,6 +25,8 @@ RUN addgroup --system --gid 1001 nodejs \
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Standalone output does not include public/ (favicons); copy it explicitly.
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs
 EXPOSE 3000

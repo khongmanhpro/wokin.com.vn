@@ -57,9 +57,48 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-10-11 bởi Claude (gộp admin vào dòng main, vá bảo mật admin, sửa nhanh website; chờ merge PR #3, #2, #5, #4, #6)_
+_Cập nhật: 2026-10-11 (phiên tối) bởi Claude. Phiên mới: đọc mục này và mục 3 trước, rồi `git fetch && gh pr list`._
 
-- **Admin (2026-10-11):** worktree `.hermes/worktrees/admin-ui`, nhánh `feat/admin-wordpress-parity` (PR #2 vào `payload-r1`). Admin Payload làm nền, bật tính năng kiểu WordPress; thử nghiệm shadcn `/dashboard` đã gỡ. Website đọc Cài đặt/Menu từ `src/data/site-settings.json` (nhánh `feat/site-settings-json`). Chạy thử với Postgres Docker (`docker compose -p wokin-admin-dev`) và catalog thật. Chi tiết trong `docs/admin-shadcn-ui.md` của nhánh. Đã phát hiện và vá lỗi migration contact-submissions thiếu cột `payload_locked_documents_rels.contact_submissions_id`.
+### Tóm tắt một dòng
+Website (Next.js static) và admin (Payload CMS) đã làm xong, chạy được local. **PR #6 đã merge vào `main`; còn PR #7 chờ người dùng merge**; chưa deploy.
+
+### PR đang mở (github.com/khongmanhpro/wokin.com.vn) và thứ tự merge
+PR #1 (vá dependency website) **đã merge** vào `main`. Lệnh merge của agent bị chế độ tự động chặn ("merge chưa review"), nên **người dùng phải tự bấm merge**.
+
+| Thứ tự | PR | Nhánh → base | Nội dung |
+|---|---|---|---|
+| ✅ | #6 | `feat/integrate-admin` → `main` | **Đã merge 2026-10-11** (`06e3ae2`), CI main xanh. Gộp tất cả: website đọc `site-settings.json` (#3), sửa nhanh website (#4), admin kiểu WordPress (#2), vá bảo mật admin (#5), hướng dẫn deploy admin |
+| 1 | #7 | `feat/ui-parity` → `main` | **Còn mở, CI xanh, MERGEABLE.** Giao diện giống wokintools.com (header cam, băng chuyền, banner chia đôi, dải xám danh mục, GP20V nền nhạt, dải nhà phân phối), favicon W, đổ bóng thẻ `/san-pham/` |
+| — | #2, #5 | | Đã nằm trong `main` (kiểm bằng `git merge-base --is-ancestor`); **người dùng tự đóng** (agent bị chặn đóng PR). #3, #4 đã merge |
+
+Chỉ còn merge #7 rồi đóng #2, #5.
+
+### Checkout và nhánh đang dùng
+- Checkout chính `/Volumes/data AI/wokin.com.vn`: nhánh `feat/ui-parity` (mới nhất, chứa mọi thứ). Thư mục `out/` là bản build mới nhất.
+- Worktree `.hermes/worktrees/integrate` → `feat/integrate-admin`.
+- Worktree `.hermes/worktrees/admin-ui` → `chore/admin-security-upgrade`. Có `admin/.env` (DB local) và `admin/.env.dev-accounts` (mật khẩu 5 tài khoản test, gitignore).
+- Worktree `.hermes/worktrees/payload-r1`: của Codex/Hermes, có thay đổi chưa commit. **Không đụng.**
+
+### Môi trường local
+- Postgres: `cd .hermes/worktrees/admin-ui/admin && docker compose -p wokin-admin-dev up -d` (127.0.0.1:54329, DB `wokin_payload` đã có catalog thật + tài khoản test `owner|editor|publisher|seo_reviewer|readonly@wokin.test`).
+- Website: `python3 -m http.server 4173 --directory out` (cấu hình `.claude/launch.json` tên `wokin-static`).
+- Admin: `npm --prefix .hermes/worktrees/admin-ui/admin run dev -- -p 3020` (tên `wokin-admin-ui`), vào `/admin`.
+
+### Kiến trúc đã chốt
+- Admin = **Payload tự sinh** (giống WordPress: phiên bản, nháp/tự lưu, thùng rác, thư mục ảnh, Lexical, Cài đặt/Menu, tạo SP tay từ mã 900000). Bản thử giao diện shadcn `/dashboard` đã gỡ.
+- Website static đọc `src/data/site-settings.json`; admin ghi file này bằng `npm run site-settings:export`.
+
+### Việc tiếp theo (theo ưu tiên)
+1. Người dùng merge #7, đóng #2 và #5.
+2. Chọn hosting cho admin (VPS Node/Docker + PostgreSQL + HTTPS). Xem `DEPLOYMENT.md` mục Admin và A6.
+3. Deploy website tĩnh lên Hostinger staging, kiểm tra `.htaccess` và Lighthouse (R1).
+4. Chờ WOKIN cấp ảnh lifestyle, video Racing, ảnh GP20V (D1); bộ phận pháp lý duyệt trang chính sách.
+5. Tuỳ chọn: đổ bóng đồng bộ cho thẻ sản phẩm và băng chuyền; lấy thứ tự SP gốc (cần quyết định vì quy tắc không crawl).
+
+### Ghi chú người dùng
+Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơn giản, ít thuật ngữ, nói rõ "đã làm gì, còn gì, bạn cần làm gì".
+
+<details><summary>Trạng thái cũ trước 2026-10-11 (tham khảo)</summary>
 
 - **Nhánh `main`:** Phase 0–11 và checkpoint C1.3 trước đó đã commit/push tại `12baf0f`; phiên này có thay đổi chưa commit ở từ điển spec, gate token, font heading và snapshot sinh tự động. Untracked `.claude/`, `.hermes/`, `reports/` giữ nguyên ngoài commit.
 - **Gate sau phiên tiếp tục C1.3 (2026-09-15):** typecheck PASS, **83/83 tests PASS**, validate:data/check:data PASS, build 1452 trang, validate:export + smoke PASS, `git diff --check` PASS; npm audit 0 vulnerabilities. Font heading đã chuyển từ Tomorrow sang Saira Semi Condensed với subset `vietnamese`.
@@ -71,6 +110,8 @@ _Cập nhật: 2026-10-11 bởi Claude (gộp admin vào dòng main, vá bảo m
 - **Trang Liên hệ (2026-09-20):** đã bỏ mạng lưới phân phối khỏi trang và thay bằng form tư vấn responsive 5 trường; form hiện gửi tới Payload endpoint `/api/contact-submissions/submit` khi build có `NEXT_PUBLIC_CONTACT_API_URL`.
 - **Contact backend (2026-09-20):** Payload Admin đã thêm collection `contact-submissions`, endpoint POST có validation server-side, consent, honeypot, rate limit 5/IP/giờ, CORS theo `CONTACT_ALLOWED_ORIGINS`, và quyền xem/sửa chỉ dành cho `settings.manage`. Migration đã đăng ký nhưng **chưa chạy trên database production**. Admin root route đã được đưa vào route group Payload để Next build production hợp lệ.
 - **Audit deploy 2026-09-20:** trên working tree hiện tại (HEAD `8c88b6d`), `npm audit --audit-level=high`, typecheck, 83/83 tests, validate/check data, build 1452 trang và validate export (1447 route, 1357 Product JSON-LD, 11 smoke route HTTP 200 + 3 legacy HTTP 404) đều PASS. `npm run package:release` tạo 10.274 file; checksum 10.274/10.274 và static smoke trên package PASS. Chưa chạy `npm ci` clean-install trong lượt này; chưa có staging hostname để kiểm tra header/redirect; working tree vẫn dirty và chưa có approval `GO`, nên chưa được phép upload production.
+
+</details>
 
 ---
 
@@ -86,14 +127,14 @@ _Cập nhật: 2026-10-11 bởi Claude (gộp admin vào dòng main, vá bảo m
 | R2 | Push lên GitHub để CI chạy thật | Đã push 2026-09-15; chờ CI | GitHub Actions | Checkpoint `12baf0f`, run `34912149736` |
 | L1 | Đồng bộ lại bundle tạm `.next` của local dev `:3001` | Xong 2026-09-15 | — | Đã dừng đúng server `:3001`, xoá `.next`, chạy lại; trang chủ 200, hết lỗi chunk `124`. Server cổng 3000 không bị đụng. |
 | P1 | Payload admin UX roadmap (UX-0 → UX-9) | **Chưa đủ vận hành chính thức** | Codex / chủ sản phẩm | Đã thêm upload local, pagination query, preview và Việt hóa; Next Critical đã xử lý. Còn 5 Moderate dependency findings, S3/backup, xuất ảnh CMS vào public, đường tạo SP mới, pagination queue tải lớn, responsive/a11y/staging. Xem báo cáo 2026-09-16. |
-| P2 | Gộp nhánh Payload với `main` | **PR #6 (`feat/integrate-admin`), chờ merge** | Người dùng | Merge không xung đột; gate website + admin + chạy lại CI DB trên bản gộp đều PASS. Gồm PR #3, #4, #2, #5 |
+| P2 | Gộp nhánh Payload với `main` | **Xong 2026-10-11** (PR #6 merge `06e3ae2`) | — | Merge không xung đột; gate website + admin + chạy lại CI DB trên bản gộp đều PASS. Gồm PR #3, #4, #2, #5 |
 | A6 | Docker image admin không có ảnh catalog cho `/api/media/preview`; `STORAGE_ADAPTER=s3` chưa gắn plugin; chưa có email adapter | Chưa làm | Cần chọn hosting | Ghi trong `DEPLOYMENT.md` mục Admin |
-| A7 | Merge PR | **Bị chặn tự động** | Người dùng | Lệnh merge PR #3/#2 bị chế độ tự động chặn ("merge chưa review"); PR #1 đã merge |
-| A1 | Admin Payload + tính năng kiểu WordPress | **PR #2 (→payload-r1), CI xanh, chờ merge** | Người dùng | Đã được gộp vào nhánh tích hợp `feat/integrate-admin` |
-| A5 | Website đọc Cài đặt/Menu từ `src/data/site-settings.json` | **PR #3, chờ merge** | Người dùng | Admin ghi file bằng `npm run site-settings:export` |
+| A7 | Merge/đóng PR | **Bị chặn tự động** | Người dùng | Agent bị chặn merge và cả đóng PR ("External System Writes"). Người dùng đã merge #1, #3, #4, #6; còn merge #7, đóng #2/#5 |
+| A1 | Admin Payload + tính năng kiểu WordPress | **Đã vào `main` qua PR #6**; PR #2 chờ người dùng đóng | Người dùng | Đã được gộp vào nhánh tích hợp `feat/integrate-admin` |
+| A5 | Website đọc Cài đặt/Menu từ `src/data/site-settings.json` | **Xong** (PR #3 merge, vào `main` qua #6) | — | Admin ghi file bằng `npm run site-settings:export` |
 | A2 | Migration `20261011_000001_contact_submissions_locked_documents` | Có trên nhánh admin-ui | Vận hành | Bắt buộc chạy ở mọi DB đã chạy migration 20260920, nếu không mọi thao tác update đều lỗi SQL |
 | A3 | CI admin đỏ từ 92c6f93 | **Đã sửa** (PR #2: `38d7852`, `2b531a8`) | — | Commit file evidence, port glossary builder, CI import catalog đầy đủ 2 lần + kiểm tra lặp lại, thêm `CONTACT_ALLOWED_ORIGINS` |
-| A4 | Vá bảo mật admin | **PR #5, CI xanh, chờ merge** | Người dùng | Payload 3.90.2, Next 16.3.8, sharp 0.35.5, override undici/chokidar; audit high/critical 0 (còn 5 moderate esbuild trong drizzle-kit, chưa có bản vá upstream); migration `20261011_085955_payload_3_90_auth_reset_throttle` |
+| A4 | Vá bảo mật admin | **Đã vào `main` qua PR #6**; PR #5 chờ người dùng đóng | Người dùng | Payload 3.90.2, Next 16.3.8, sharp 0.35.5, override undici/chokidar; audit high/critical 0 (còn 5 moderate esbuild trong drizzle-kit, chưa có bản vá upstream); migration `20261011_085955_payload_3_90_auth_reset_throttle` |
 
 ---
 
@@ -132,6 +173,62 @@ _Cập nhật: 2026-10-11 bởi Claude (gộp admin vào dòng main, vá bảo m
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-10-11 — Claude — Kiểm tra sau khi PR #6 được merge
+**Yêu cầu:** đọc WORKLOG và tiếp tục.
+**Đã làm:**
+- `gh pr list`: #6 đã MERGED (`06e3ae2`), CI trên `main` (CI + Admin CI) xanh.
+- Xác nhận `feat/admin-wordpress-parity` (#2) và `chore/admin-security-upgrade` (#5) đã nằm trong `origin/main`. Thử đóng #2, #5 nhưng bị chế độ tự động chặn → người dùng tự đóng.
+- Chờ CI PR #7 chạy lại trên base mới: admin, verify-static-export ×2 đều pass; PR MERGEABLE.
+- Cập nhật mục 2, 3.
+**Kiểm chứng:** gate đầy đủ PASS (audit 0, typecheck, test, validate/check data, build, validate:export 1449 route + smoke); `gh pr checks 7` → toàn bộ pass; `git merge-base --is-ancestor origin/<nhánh> origin/main` → #2, #5 đều đã trong main.
+**Commit:** commit docs này trên `feat/ui-parity` (PR #7)
+**Còn dở / rủi ro:** không đổi code. Các việc còn lại (hosting admin, staging Hostinger, ảnh WOKIN) cần người dùng quyết định/cung cấp.
+**Việc tiếp theo:** người dùng merge #7, đóng #2 và #5; sau đó chọn hosting admin và cấp quyền staging Hostinger.
+
+### 2026-10-11 — Claude — Review lại giao diện theo số đo site gốc (vòng 2)
+**Yêu cầu:** giao diện vẫn chưa giống trang gốc, review lại.
+**Đã làm:**
+- Đo site gốc ở 1440px: thanh trên 42px #2c333b, header 105px, banner 531px, danh mục 432px, Racing 452px #2c333b, GP20V 538px nền #ebf2f7, dải nhà phân phối 237px nền trắng 3 cột, chân trang 120px #2c333b, tổng 2.560px. Trang danh mục có dải tiêu đề #c8ced2 cao 93px kèm "←".
+- Sửa:
+  - Thanh trên và chân trang sang #2c333b; header 104px (chỉ ở desktop), menu 19px đậm; banner 531px; thu gọn khối danh mục.
+  - Racing dùng ảnh 16:9; GP20V nền #ebf2f7 với tiêu đề cam đậm cỡ lớn.
+  - `DistributorCta` thành dải trắng 3 cột (dùng ở trang chủ, Giới thiệu, Tuyển đại lý).
+  - Thêm `PageBand` cho trang danh mục, Sản phẩm, Sản phẩm mới; đoạn giới thiệu danh mục chuyển xuống dưới lưới.
+  - Điện thoại: toolbar danh mục xuống hàng gọn.
+- Kết quả đo lại: các khối khớp gốc (104/531/436/440/549/146px); tổng 2.701px so với 2.560px, chênh do chân trang giữ thông tin công ty.
+**Còn khác có lý do:**
+- Font Tomorrow của gốc không có subset tiếng Việt (vỡ dấu) nên giữ Saira Semi Condensed.
+- Thứ tự SP trong danh mục khác vì dữ liệu nguồn không có `menu_order`.
+- Ảnh lifestyle/video Racing và ảnh GP20V marketing cần WOKIN cấp (D1).
+- Chữ trắng/cam được thay bằng màu tương phản đủ (D3).
+**Kiểm chứng:** gate PASS (97 test, build 1454 trang, validate:export, smoke); browser 1440px và 375px không tràn ngang, header điện thoại 74px.
+**Commit:** xem nhánh `feat/ui-parity` (PR #7)
+
+### 2026-10-11 — Claude — Favicon chữ W cho website và admin
+**Yêu cầu:** tab trình duyệt của site gốc có icon chữ W, bản mới chỉ có chữ.
+**Đã làm:**
+- Tìm ra nguyên nhân: `favicon-w.svg` chỉ nhúng `logo.png` từ bên ngoài, mà trình duyệt chặn tải ảnh ngoài trong favicon SVG nên tab hiện trống; `/favicon.ico` cũng trả 404.
+- Cắt chữ W từ `logo.png` thành `public/favicon.ico` (32/48), `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`; xoá file SVG.
+- Admin: `admin/public/favicon.ico` + `apple-touch-icon.png`, khai báo `admin.meta.icons`. Dockerfile chép thêm `public/`, vì bản build standalone không tự kèm thư mục này.
+**Kiểm chứng:** website `/favicon.ico` 200 `image/x-icon` và các thẻ link icon đúng; admin `next start` trả favicon 200 và trang login khai báo đúng icon; gate website PASS (97 test), admin 135/135.
+**Commit:** xem nhánh `feat/ui-parity` (PR #7)
+
+### 2026-10-11 — Claude — Chỉnh giao diện giống wokintools.com (nhóm 2)
+**Yêu cầu:** "giờ chỉnh sửa giao diện đi".
+**Đã làm (nhánh `feat/ui-parity`, tách từ PR #6):**
+- Header cam, menu chữ trắng, nút tìm kiếm tròn trắng. Logo gốc vốn là chữ trắng trên nền cam nên dùng nguyên file. Thanh trên có icon Facebook/YouTube/TikTok và được ẩn trên điện thoại.
+- Banner đầu trang: ảnh sản phẩm hiện trọn ở bên phải, chữ nằm trong khung cam; tiêu đề dùng chữ tối vì chữ trắng trên #FE7700 không đạt tương phản (D3). Dải "trusted by" chuyển sang màu cam.
+- Danh mục trang chủ thành băng chuyền (`CategoryCarousel`): 6/3/2 mục theo khổ màn hình, có mũi tên và chấm chuyển trang; thẻ vẫn render ở server.
+- Racing và GP20V thành banner chia đôi trên nền #2c333b. Tiêu đề khối dùng cam đậm #c25b00 để đủ tương phản.
+- Trang chi tiết chia 2 cột từ 768px; thêm nút chia sẻ Facebook và sao chép liên kết.
+- Trang danh mục có sắp xếp (mặc định, tên A→Z, Z→A, mã SP) và chọn 20/25/30 sản phẩm mỗi trang; mặc định vẫn là lưới tĩnh, chỉ tải chỉ mục khi khách đổi lựa chọn; giữ trạng thái trên URL (`?sap-xep=`, `?so-luong=`).
+**Kiểm chứng:**
+- Gate PASS: audit 0, typecheck, 96/96 test, build 1454 trang, validate:export 1449 route, smoke 13 route.
+- Browser 1440/900/375px: header, băng chuyền, banner chia đôi, trang chi tiết 2 cột ở 900px, sắp xếp A→Z với 30 SP/trang hiện đủ 22 SP; không tràn ngang và không có lỗi console ở 375px.
+**Commit:** xem nhánh `feat/ui-parity`
+**Còn dở / rủi ro:** banner ảnh lifestyle và video Racing vẫn cần tư liệu từ WOKIN (D1); khung cam trên điện thoại che một phần ảnh (giống bản gốc).
+**Việc tiếp theo:** người dùng xem và duyệt; merge PR #6 rồi đến PR này.
 
 ### 2026-10-11 — Claude — Làm trọn chuỗi: merge, vá bảo mật admin, sửa nhanh website, gộp admin vào main
 **Yêu cầu:** "làm từ đầu tới hết rồi báo cáo".
