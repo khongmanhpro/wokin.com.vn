@@ -57,47 +57,31 @@ Gate đầy đủ trước khi commit một phase: `npm audit --audit-level=high
 
 ## 2. Trạng thái hiện tại
 
-_Cập nhật: 2026-10-11 (đêm) bởi Claude. Phiên mới: đọc mục này và mục 3 trước, rồi `git fetch && gh pr list`._
+_Cập nhật: 2026-10-14 bởi Claude. Phiên mới: đọc mục này + mục 3, rồi `git fetch && gh pr list`. Báo cáo cho người dùng bằng tiếng Việt đơn giản._
 
 ### Tóm tắt một dòng
-Website (Next.js static) và admin (Payload CMS) đã làm xong, chạy được local. **PR #6, #7, #8 (SEO đợt 1) đã merge vào `main` (`cde9ad3`)**; chưa deploy.
+Code website + admin đã xong và **đã vào `main` (PR #1–#10 đều merge, `58b4c33`)**. Việc chính còn lại: **đưa bản `main` lên VPS** (VPS đang chạy bản cũ).
 
-### PR đang mở (github.com/khongmanhpro/wokin.com.vn) và thứ tự merge
-PR #1 (vá dependency website) **đã merge** vào `main`. Lệnh merge của agent bị chế độ tự động chặn ("merge chưa review"), nên **người dùng phải tự bấm merge**.
-
-| Thứ tự | PR | Nhánh → base | Nội dung |
-|---|---|---|---|
-| ✅ | #6 | `feat/integrate-admin` → `main` | **Đã merge 2026-10-11** (`06e3ae2`), CI main xanh. Gộp tất cả: website đọc `site-settings.json` (#3), sửa nhanh website (#4), admin kiểu WordPress (#2), vá bảo mật admin (#5), hướng dẫn deploy admin |
-| 1 | #7 | `feat/ui-parity` → `main` | **Còn mở, CI xanh, MERGEABLE.** Giao diện giống wokintools.com (header cam, băng chuyền, banner chia đôi, dải xám danh mục, GP20V nền nhạt, dải nhà phân phối), favicon W, đổ bóng thẻ `/san-pham/` |
-| — | #2, #5 | | Đã nằm trong `main` (kiểm bằng `git merge-base --is-ancestor`); **người dùng tự đóng** (agent bị chặn đóng PR). #3, #4 đã merge |
-
-Chỉ còn merge #7 rồi đóng #2, #5.
-
-### Checkout và nhánh đang dùng
-- Checkout chính `/Volumes/data AI/wokin.com.vn`: nhánh `feat/ui-parity` (mới nhất, chứa mọi thứ). Thư mục `out/` là bản build mới nhất.
-- Worktree `.hermes/worktrees/integrate` → `feat/integrate-admin`.
-- Worktree `.hermes/worktrees/admin-ui` → `chore/admin-security-upgrade`. Có `admin/.env` (DB local) và `admin/.env.dev-accounts` (mật khẩu 5 tài khoản test, gitignore).
-- Worktree `.hermes/worktrees/payload-r1`: của Codex/Hermes, có thay đổi chưa commit. **Không đụng.**
-
-### Môi trường local
-- Postgres: `cd .hermes/worktrees/admin-ui/admin && docker compose -p wokin-admin-dev up -d` (127.0.0.1:54329, DB `wokin_payload` đã có catalog thật + tài khoản test `owner|editor|publisher|seo_reviewer|readonly@wokin.test`).
-- Website: `python3 -m http.server 4173 --directory out` (cấu hình `.claude/launch.json` tên `wokin-static`).
-- Admin: `npm --prefix .hermes/worktrees/admin-ui/admin run dev -- -p 3020` (tên `wokin-admin-ui`), vào `/admin`.
-
-### Kiến trúc đã chốt
-- Admin = **Payload tự sinh** (giống WordPress: phiên bản, nháp/tự lưu, thùng rác, thư mục ảnh, Lexical, Cài đặt/Menu, tạo SP tay từ mã 900000). Bản thử giao diện shadcn `/dashboard` đã gỡ.
-- Website static đọc `src/data/site-settings.json`; admin ghi file này bằng `npm run site-settings:export`.
+### Đã có trong `main`
+- **Website** (Next.js static): tiếng Việt; giao diện giống wokintools.com (#7); SEO đợt 1: URL danh mục tiếng Việt, metadata, schema, `.htaccess`, `llms.txt` (#8); trang chính sách, nút Zalo/hotline (#4); đọc thông tin công ty và menu từ `src/data/site-settings.json` (#3).
+- **Admin** (Payload 3.90.2 / Next 16.3.8): kiểu WordPress (phiên bản, nháp, thùng rác, thư mục ảnh, Lexical, Cài đặt/Menu, tạo SP tay từ mã 900000); sửa lỗi tạo SP và tải ảnh; tắt "sửa hàng loạt"; nút **"Xuất bản website"**; nút Đăng xuất (#6, #9, #10).
+- **Docker cho VPS** (#9, #10): `Dockerfile` gốc repo, `docker-compose.yml` (db/admin/web), cổng `127.0.0.1:47310` (admin) và `127.0.0.1:47311` (web), hướng dẫn `DEPLOY-DOCKER.md`, prompt cài đặt cho Claude trên VPS `docs/prompts/VPS-DOCKER-INSTALL.md`.
 
 ### Việc tiếp theo (theo ưu tiên)
-1. Tất cả PR đã xử lý. #2 và #5 được merge vào nhánh cũ `payload-r1` (không phải `main`, 2026-10-11): vô hại, nội dung đã có trong `main` qua #6; worktree Codex dùng `checkpoint/payload-r1-r4-1` nên không bị ảnh hưởng.
-2. Chọn hosting cho admin (VPS Node/Docker + PostgreSQL + HTTPS). Xem `DEPLOYMENT.md` mục Admin và A6.
-3. Deploy website tĩnh lên Hostinger staging, kiểm tra `.htaccess` và Lighthouse (R1).
-4. Cung cấp dữ liệu SEO đợt 2 (S1): tên SP trùng, "(Công nghiệp)", dữ kiện Giới thiệu, email, danh sách SP chủ lực.
-5. Chờ WOKIN cấp ảnh lifestyle, video Racing, ảnh GP20V (D1); bộ phận pháp lý duyệt trang chính sách.
-6. Tuỳ chọn: đổ bóng đồng bộ cho thẻ sản phẩm và băng chuyền; lấy thứ tự SP gốc (cần quyết định vì quy tắc không crawl).
+1. **Cài bản `main` lên VPS** (`wokin.vn`, `admin.wokin.vn` qua Cloudflare). Máy Mac này **không SSH được** vào VPS, nên người dùng tự chạy (hoặc dùng Claude trên VPS với `docs/prompts/VPS-DOCKER-INSTALL.md`). Nếu lỗi: xin `docker compose logs --tail=200 admin` (đã bỏ mật khẩu).
+2. **Trang nhập sản phẩm kiểu WooCommerce** (một trang, kéo thả ảnh, tích danh mục, dán thông số): người dùng muốn nhưng tạm hoãn ("trước mắt để vậy").
+3. **SEO đợt 2** (S1): cần người dùng cung cấp dữ liệu (tên SP trùng, "(Công nghiệp)", dữ kiện Giới thiệu, email, SP chủ lực). Khi site đã lên mạng có thể dùng plugin `claude-seo` (dưới) để audit.
+4. Chờ WOKIN: ảnh lifestyle, video Racing, ảnh GP20V (D1); pháp lý duyệt trang chính sách; SMTP cho quên mật khẩu (Q3).
+5. Dọn dẹp: người dùng tự đóng PR #2 và #5 nếu còn hiện mở (agent bị chặn đóng/merge PR, A7).
 
-### Ghi chú người dùng
-Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơn giản, ít thuật ngữ, nói rõ "đã làm gì, còn gì, bạn cần làm gì".
+### Công cụ Claude đã cài cho người dùng
+- Plugin **claude-seo 2.4.2** (`claude-seo@agricidaniel-claude-seo`, phạm vi user, commit `4b99de2`, đã đọc mã trước khi cài). Lệnh `/seo …` (26 kỹ năng, 19 agent). Lần đầu chạy `/seo setup` (venv riêng + Chromium), kiểm bằng `/seo doctor`. Lõi miễn phí, không cần API; Google Search Console/GA4 là tuỳ chọn (miễn phí, tài khoản Google); DataForSEO/Moz là trả phí. Tốn khoảng 4,5k token cố định mỗi phiên; tắt bằng `claude plugin disable claude-seo@agricidaniel-claude-seo`.
+
+### Môi trường local (máy Mac)
+- Checkout chính `/Volumes/data AI/wokin.com.vn` (nên đứng ở `main`).
+- Worktree cũ (đã merge, có thể dọn): `.hermes/worktrees/admin-ui`, `.hermes/worktrees/integrate`. Trong `admin-ui/admin/` có `.env` (DB local) và `.env.dev-accounts` (mật khẩu tài khoản test, gitignore). Worktree `.hermes/worktrees/payload-r1` của Codex/Hermes: **không đụng**.
+- DB thử: `cd .hermes/worktrees/admin-ui/admin && docker compose -p wokin-admin-dev up -d` (hiện đang tắt).
+- Xem website tĩnh: `npm run build` rồi `python3 -m http.server 4173 --directory out`.
 
 <details><summary>Trạng thái cũ trước 2026-10-11 (tham khảo)</summary>
 
@@ -179,6 +163,16 @@ Người dùng không chuyên kỹ thuật: báo cáo bằng tiếng Việt đơ
 ---
 
 ## 6. Nhật ký (mới nhất trên cùng)
+
+### 2026-10-14 — Claude — Cài plugin claude-seo; cập nhật trạng thái bàn giao
+**Yêu cầu:** cài https://github.com/AgricIDaniel/claude-seo vào Claude; mở phiên mới không mất ngữ cảnh.
+**Đã làm:**
+- Clone repo vào thư mục nháp và đọc trước khi cài. Hook `validate-schema.py` chỉ dùng json/os/re/sys, không gọi mạng; không thấy telemetry. Script API trả phí chỉ chạy khi người dùng có khoá.
+- Cài: `claude plugin marketplace add AgriciDaniel/claude-seo` và `claude plugin install claude-seo@agricidaniel-claude-seo` (scope user). Bản cài khớp commit đã đọc `4b99de2`.
+- Viết lại mục 2 cho khớp thực tế (PR #1–#10 đã merge; việc còn lại là VPS).
+**Kiểm chứng:** `claude plugin details` → 26 skills, 19 agents, 1 hook, 0 MCP, khoảng 4,5k token cố định.
+**Commit:** nhánh `docs/handoff-2026-10-14`
+**Còn dở:** người dùng chạy `/seo setup` trong phiên mới.
 
 ### 2026-10-11 — Claude — Đổi cổng Docker mặc định; prompt cài đặt cho Claude trên VPS
 **Yêu cầu:** viết prompt để Claude trên VPS tự clone và cài; đổi cổng vì VPS có thể đang dùng 3000.
