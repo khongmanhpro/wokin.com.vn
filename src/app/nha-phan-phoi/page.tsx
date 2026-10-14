@@ -29,6 +29,6 @@ export default function DistributorsPage() {
         <div><span className="feature-number">0{index + 1}</span><h3>{blockTitle}</h3><p>{body}</p></div>
       </article>)}</div>
     </section>
-    <DistributorCta />
+    <DistributorCta href="/lien-he/" />
   </main>;
 }

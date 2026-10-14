@@ -26,6 +26,7 @@ export const metadata: Metadata = {
     description: HOME_DESCRIPTION,
     images: [{ url: "/images/logo.png", alt: "WOKIN TOOLS" }],
   },
+  twitter: { card: "summary_large_image", title: HOME_TITLE, description: HOME_DESCRIPTION, images: ["/images/logo.png"] },
   // Raster W mark cut from the logo: SVG favicons cannot load an external <image>, so the old one rendered blank.
   icons: {
     icon: [{ url: "/favicon.ico", sizes: "32x32 48x48" }, { url: "/images/icon-192.png", type: "image/png", sizes: "192x192" }],
