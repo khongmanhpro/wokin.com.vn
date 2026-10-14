@@ -164,6 +164,11 @@ Code website + admin đã xong và **đã vào `main` (PR #1–#10 đều merge,
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-14 — Claude — Nén ảnh sản phẩm quá nặng
+**Đã làm:** nén lại bằng `sips` (JPEG chất lượng 80) các ảnh `public/images/products/**.jpg` >80 KB, chỉ giữ bản nén nếu nhẹ hơn ≥15%. 59 file được nén; tổng 75,6 MB → 67,1 MB. Ảnh LCP `621821/0.jpg`: 200 KB → 55 KB (đã xem bằng mắt, không vỡ).
+**Kiểm chứng:** validate:data, check:data (checksum không đổi), build, validate:export đều qua. Hoàn lại bằng `git revert` commit này.
+**Còn dở:** WebP/AVIF + srcset chưa làm (cần đổi pipeline ảnh).
+
 ### 2026-10-14 — Claude — Giữ nhãn 110–120V; sửa `manufacturer`
 **Quyết định của người dùng:** giữ nguyên nhãn "(dùng cho điện 110–120V)".
 **Đã làm:** Product schema `manufacturer` đổi từ Organization Workman sang `Organization "WOKIN TOOLS"` (không URL, tuân thủ quy tắc không tham chiếu wokintools.com). Gate qua (typecheck, test, build, validate:export).
