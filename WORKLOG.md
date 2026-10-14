@@ -164,6 +164,11 @@ Code website + admin đã xong và **đã vào `main` (PR #1–#10 đều merge,
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-14 — Claude — Giữ nhãn 110–120V; sửa `manufacturer`
+**Quyết định của người dùng:** giữ nguyên nhãn "(dùng cho điện 110–120V)".
+**Đã làm:** Product schema `manufacturer` đổi từ Organization Workman sang `Organization "WOKIN TOOLS"` (không URL, tuân thủ quy tắc không tham chiếu wokintools.com). Gate qua (typecheck, test, build, validate:export).
+**Còn mở:** có nới quy tắc để liên kết wokintools.com trong `sameAs` không (chưa trả lời).
+
 ### 2026-10-14 — Claude — Đối chiếu audit với web gốc wokintools.com
 **Kết quả đọc web gốc:** (1) Nhãn "(SPECIALLY FOR 110-120V MARKET)" có sẵn trong tên 105 sản phẩm ở nguồn, nên bản dịch trung thành — không phải lỗi ánh xạ như báo cáo audit nghi ngờ; vấn đề chỉ là nhãn này gây khó hiểu cho khách Việt (lưới 220V). (2) "Hơn 100 quốc gia", "3000+/3500+ sản phẩm" là câu của web gốc (kho gần Thượng Hải 20.000 m²), nên không có nguồn riêng cho bản VN. (3) WOKIN là thương hiệu toàn cầu; Workman là nhà phân phối VN → `manufacturer` trỏ Organization Workman là không chính xác.
 **Thử và hoàn lại:** thêm `sameAs`/`manufacturer.url` trỏ wokintools.com → `validate:export` báo 2.900 lỗi "Source-domain leak" (AGENTS.md cấm tham chiếu wokintools.com ở runtime). Đã hoàn lại; không commit.

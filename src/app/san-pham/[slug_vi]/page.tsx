@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ORGANIZATION_ID, pageMetadata, specProperties } from "@/lib/seo";
+import { pageMetadata, specProperties } from "@/lib/seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -44,7 +44,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug_v
   const canonical = absolutePageUrl(`/san-pham/${product.slugVi}`);
   const properties = specProperties(spec.lines);
   return <main className="detail-section">
-    <JsonLd data={{ "@context": "https://schema.org", "@type": "Product", name, description, ...(product.sku.trim() ? { sku: product.sku.trim(), mpn: product.sku.trim() } : {}), image: product.images.map((image) => absoluteUrl(image.src)), url: canonical, brand: { "@type": "Brand", name: "WOKIN" }, manufacturer: { "@id": ORGANIZATION_ID }, category: category ? (glossary.categories[category.slug] ?? category.name) : undefined, ...(properties.length ? { additionalProperty: properties } : {}) }} />
+    <JsonLd data={{ "@context": "https://schema.org", "@type": "Product", name, description, ...(product.sku.trim() ? { sku: product.sku.trim(), mpn: product.sku.trim() } : {}), image: product.images.map((image) => absoluteUrl(image.src)), url: canonical, brand: { "@type": "Brand", name: "WOKIN" }, manufacturer: { "@type": "Organization", name: "WOKIN TOOLS" }, category: category ? (glossary.categories[category.slug] ?? category.name) : undefined, ...(properties.length ? { additionalProperty: properties } : {}) }} />
     <Breadcrumb items={[{ label: glossary.ui.Products, href: "/san-pham" }, ...(category ? [{ label: glossary.categories[category.slug] ?? category.name, href: categoryHref(category.slug) }] : []), { label: name }]} />
     <section className="container-wokin product-layout">
       <ProductGallery images={product.images} name={product.name} />
