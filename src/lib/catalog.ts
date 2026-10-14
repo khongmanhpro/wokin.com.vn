@@ -219,12 +219,33 @@ export function productSeoName(product: Product): string {
     : `${product.name} – ID ${product.id}`;
 }
 
+const DESCRIPTION_MAX = 155;
+
+// Spec lines worth quoting in a snippet: measurable (contain a digit), short, not packaging or section labels.
+function specHighlights(product: Product): string[] {
+  const lines = parseProductSpec(product.short_description).lines
+    .map((line) => line.replace(/^>\s*/, "").replace(/\s+/g, " ").trim().replace(/[.;:]+$/, ""))
+    .filter((line) => line && !/^(Đóng gói|Tính năng|Chia sẻ|Lưu ý)/i.test(line) && line.length <= 46);
+  return [...lines.filter((line) => /\d/.test(line)), ...lines.filter((line) => !/\d/.test(line))];
+}
+
 export function productDescription(product: Product): string {
   const category = product.categories[0] ? categoryName(product.categories[0].slug) : "dụng cụ";
   const seoName = productSeoName(product);
   const sku = product.sku.trim();
   const identifier = seoName === product.name && sku ? `, mã ${sku}` : "";
-  return `${seoName}${identifier}, thuộc danh mục ${category}. Thông số kỹ thuật và hình ảnh sản phẩm WOKIN dành cho thợ chuyên nghiệp.`;
+  const base = `${seoName}${identifier}`;
+  const facts: string[] = [];
+  for (const fact of specHighlights(product)) {
+    if (facts.length === 3) break;
+    const next = `${base}: ${[...facts, fact].join("; ")}.`;
+    if (next.length > DESCRIPTION_MAX) continue;
+    facts.push(fact);
+  }
+  const text = facts.length ? `${base}: ${facts.join("; ")}.` : `${base}, thuộc danh mục ${category}.`;
+  const tail = ` WOKIN – ${category}.`;
+  // Without spec facts the text already names the category; the tail would repeat it.
+  return facts.length && text.length + tail.length <= DESCRIPTION_MAX ? text + tail : text;
 }
 
 const sortedTermPairs = [...glossary.terms].sort((a, b) => b[0].length - a[0].length);
