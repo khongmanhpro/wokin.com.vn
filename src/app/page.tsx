@@ -4,6 +4,7 @@ import { pageMetadata } from "@/lib/seo";
 import { CategoryCard } from "@/components/CatalogCards";
 import { CategoryCarousel } from "@/components/CategoryCarousel";
 import { HeroSlider } from "@/components/HeroSlider";
+import { HomeQuickStart } from "@/components/HomeQuickStart";
 import { DistributorCta } from "@/components/DistributorCta";
 import { ResponsiveProductImage } from "@/components/ResponsiveProductImage";
 import { categories, categoryHref, getProductsByCategory, glossary, type ProductImage } from "@/lib/catalog";
@@ -36,6 +37,7 @@ export default function HomePage() {
 
   return <main>
     <HeroSlider products={featured.map(({ id, slugVi, images }) => ({ id, slugVi, images }))} />
+    <HomeQuickStart />
     <div className="trust-banner">{glossary.marketing["TRUSTED BY OVER 100 COUNTRIES WORLDWIDE"]}</div>
     <section className="section container-wokin home-categories">
       <div className="section-head">

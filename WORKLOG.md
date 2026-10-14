@@ -164,6 +164,13 @@ Code website + admin đã xong và **đã vào `main` (PR #1–#10 đều merge,
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-14 — Claude — Trang chủ tìm nhanh + giới thiệu 30 danh mục + trang GP20V (nhánh `feat/seo-home-categories`)
+**Yêu cầu:** làm việc 4 và 5 trong đề xuất sau audit SEO.
+**Đã làm:** (4) `HomeQuickStart` dưới hero: ô tìm kiếm (mở hộp tìm kiếm của Header qua sự kiện `wokin:open-search`) + 4 lối tắt (GP20V, Tất cả sản phẩm, Báo giá, Đại lý); hero điện thoại: ảnh nằm trên, thẻ cam dưới, không che sản phẩm. (5) `src/data/category-intros.json`: đoạn giới thiệu + H2 riêng cho cả 30 danh mục, hiển thị trên lưới ở trang 1 (trang 2+ giữ câu cũ); danh mục 110–120V có cảnh báo lưới điện VN là 220V (nhãn tên sản phẩm giữ nguyên). `/gp20v/` thành trang tổng hợp: H2 + đoạn chọn pin, tách 3 nhóm (máy và phụ kiện, pin, sạc) + liên kết nội bộ.
+**Bẫy:** `next/image fill` gắn `height:100%` inline nên CSS ảnh hero mobile phải dùng `!important`. Nội dung giới thiệu danh mục nằm ngoài catalog của admin: admin "Xuất bản" không ghi đè, nhưng admin cũng chưa sửa được file này.
+**Kiểm chứng:** typecheck, 104 test, validate:data, check:data, build, validate:export, npm audit đều qua; xem thử trên trình duyệt (mobile): ô tìm kiếm mở được hộp tìm kiếm, GP20V và danh mục 110–120V hiển thị đúng.
+**Lưu ý:** nội dung viết từ tên sản phẩm trong catalog, không thêm cam kết bảo hành/giá; chủ sản phẩm nên đọc lại trước khi xuất bản.
+
 ### 2026-10-14 — Claude — Nén ảnh sản phẩm quá nặng
 **Đã làm:** nén lại bằng `sips` (JPEG chất lượng 80) các ảnh `public/images/products/**.jpg` >80 KB, chỉ giữ bản nén nếu nhẹ hơn ≥15%. 59 file được nén; tổng 75,6 MB → 67,1 MB. Ảnh LCP `621821/0.jpg`: 200 KB → 55 KB (đã xem bằng mắt, không vỡ).
 **Kiểm chứng:** validate:data, check:data (checksum không đổi), build, validate:export đều qua. Hoàn lại bằng `git revert` commit này.

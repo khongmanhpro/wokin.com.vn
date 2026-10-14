@@ -1260,3 +1260,26 @@ button.page-link.active { background: var(--primary); }
 .static-hero h1 .eyebrow { display: block; margin-bottom: 10px; }
 .static-hero h1 .static-hero-title { display: block; }
 .archive-intro a { color: #c25b00; text-decoration: underline; }
+
+/* Category intro above the product grid: real copy for search engines and buyers. */
+.category-intro { max-width: 850px; margin: 0 0 28px; color: var(--text); }
+.category-intro h2 { margin: 0 0 12px; font-size: clamp(20px, 2.4vw, 26px); line-height: 1.25; }
+.category-intro p { margin: 0 0 10px; }
+.category-intro a { color: #c25b00; text-decoration: underline; }
+
+/* Home quick-start bar under the hero: search box plus the most common intents. */
+.quick-start { background: #fff; border-bottom: 1px solid var(--line); }
+.quick-start-inner { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 24px; align-items: center; padding-block: 16px; }
+.quick-start-search { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 16px; border: 2px solid var(--line); background: #fff; color: var(--text); cursor: pointer; font: inherit; text-align: left; }
+.quick-start-search:hover, .quick-start-search:focus-visible { border-color: var(--primary); }
+.quick-start-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.quick-start-links a { padding: 10px 14px; background: #f2f4f5; color: var(--title); font-family: var(--font-heading); font-size: 14px; font-weight: 700; }
+.quick-start-links a:hover { background: var(--primary); color: var(--darker); }
+@media (max-width: 767px) { .quick-start-inner { grid-template-columns: 1fr; } }
+/* Phones: product photo on top, copy card below it, so the card no longer covers the tool. */
+@media (max-width: 600px) {
+  .hero, .hero-content { min-height: 640px; }
+  .hero-slide img { height: 46% !important; object-position: center top; } /* next/image fill sets inline height:100% */
+  .hero-content { padding-bottom: 76px; }
+}
+.gp-section-title { margin: 36px 0 18px; font-size: clamp(22px, 2.6vw, 30px); line-height: 1.2; }
