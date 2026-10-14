@@ -140,6 +140,17 @@ export function Header() {
     if (drawerDialogRef.current) trapFocus(event, drawerDialogRef.current, closeDrawer);
   };
 
+  // Lets other components (e.g. the home quick-start bar) open the search dialog.
+  useEffect(() => {
+    const open = (event: Event) => {
+      searchTriggerRef.current = (event as CustomEvent<{ trigger?: HTMLButtonElement }>).detail?.trigger ?? null;
+      setDrawerOpen(false);
+      setSearchOpen(true);
+    };
+    window.addEventListener("wokin:open-search", open);
+    return () => window.removeEventListener("wokin:open-search", open);
+  }, []);
+
   useEffect(() => {
     const dialog = searchOpen ? searchDialogRef.current : drawerOpen ? drawerDialogRef.current : null;
     if (!dialog) return;
