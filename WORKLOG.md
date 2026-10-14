@@ -164,6 +164,13 @@ Code website + admin đã xong và **đã vào `main` (PR #1–#10 đều merge,
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-14 — Claude — Viết lại meta description sản phẩm và danh mục (nhánh `feat/seo-meta-descriptions`)
+**Yêu cầu:** việc 6 trong đề xuất sau audit SEO.
+**Đã làm:** `productDescription` (src/lib/catalog.ts) giờ ghép tên + mã + tối đa 3 thông số đo được (ưu tiên dòng có số, bỏ "Đóng gói/Tính năng") + đuôi "WOKIN – {danh mục}", luôn ≤155 ký tự; sản phẩm không có thông số dùng câu "thuộc danh mục". `categoryMetadata` (src/lib/seo.ts): tên + số sản phẩm + 4 loại sản phẩm ví dụ + hotline, ≤155 ký tự, bỏ cụm "chính hãng tại Việt Nam…" lặp.
+**Kết quả:** 1.357 mô tả sản phẩm và 30 mô tả danh mục: 0 mô tả >155 ký tự (trước đây 280 mô tả >160), đều duy nhất; trung bình 125 ký tự.
+**Kiểm chứng:** typecheck, 104 test (gồm test mô tả duy nhất), validate:data, check:data, build, validate:export, npm audit đều qua.
+**Còn dở:** mô tả của trang tĩnh (84 trang lặp tên thương hiệu) chưa sửa; title vẫn có chữ "chính hãng" ở danh mục — chưa xác nhận cam kết "chính hãng", nên xem lại.
+
 ### 2026-10-14 — Claude — Trang chủ tìm nhanh + giới thiệu 30 danh mục + trang GP20V (nhánh `feat/seo-home-categories`)
 **Yêu cầu:** làm việc 4 và 5 trong đề xuất sau audit SEO.
 **Đã làm:** (4) `HomeQuickStart` dưới hero: ô tìm kiếm (mở hộp tìm kiếm của Header qua sự kiện `wokin:open-search`) + 4 lối tắt (GP20V, Tất cả sản phẩm, Báo giá, Đại lý); hero điện thoại: ảnh nằm trên, thẻ cam dưới, không che sản phẩm. (5) `src/data/category-intros.json`: đoạn giới thiệu + H2 riêng cho cả 30 danh mục, hiển thị trên lưới ở trang 1 (trang 2+ giữ câu cũ); danh mục 110–120V có cảnh báo lưới điện VN là 220V (nhãn tên sản phẩm giữ nguyên). `/gp20v/` thành trang tổng hợp: H2 + đoạn chọn pin, tách 3 nhóm (máy và phụ kiện, pin, sạc) + liên kết nội bộ.

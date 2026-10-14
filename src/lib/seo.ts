@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { categoryHref, type Category } from "@/lib/catalog";
+import { categoryHref, getProductsByCategory, type Category } from "@/lib/catalog";
 import { siteSettings } from "@/lib/site-settings";
 import { absolutePageUrl, absoluteUrl, SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -34,12 +34,32 @@ export function pageMetadata({ title, description, path, image = DEFAULT_IMAGE, 
   };
 }
 
+// Example product types for a category snippet: base names without sizes, variants or trade-line tags.
+function categoryExamples(category: Category, limit: number): string[] {
+  const examples: string[] = [];
+  for (const product of getProductsByCategory(category.slug)) {
+    const words: string[] = [];
+    for (const word of product.name.replace(/\s*\([^)]*\)/g, "").split(/\s+/)) {
+      if (/\d/.test(word)) break;
+      words.push(word);
+    }
+    const name = words.join(" ").trim();
+    if (name.length >= 6 && name.length <= 34 && !examples.includes(name)) examples.push(name);
+    if (examples.length === limit) break;
+  }
+  return examples;
+}
+
 export function categoryMetadata(category: Category, page = 1): Metadata {
   const hotline = siteSettings.company.hotline;
   const pageSuffix = page > 1 ? ` – Trang ${page}` : "";
+  const head = `${category.nameVi} WOKIN (${category.count} sản phẩm)`;
+  const tail = `${hotline ? ` Báo giá: ${hotline}.` : ""}${page > 1 ? ` Trang ${page}.` : ""}`;
+  let examples = categoryExamples(category, 4);
+  while (examples.length > 1 && `${head}: ${examples.join(", ")}.${tail}`.length > 155) examples = examples.slice(0, -1);
   return pageMetadata({
     title: `${category.nameVi} chính hãng${pageSuffix}`,
-    description: `${category.nameVi} WOKIN chính hãng tại Việt Nam: ${category.count} sản phẩm có thông số kỹ thuật và hình ảnh chi tiết.${hotline ? ` Tư vấn, báo giá: ${hotline}.` : ""}${pageSuffix ? ` Trang ${page}.` : ""}`,
+    description: examples.length ? `${head}: ${examples.join(", ")}.${tail}` : `${head}.${tail}`,
     path: categoryHref(category.slug, page),
     image: category.image,
     imageAlt: category.nameVi,
