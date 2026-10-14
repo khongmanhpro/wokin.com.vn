@@ -164,6 +164,11 @@ Code website + admin đã xong và **đã vào `main` (PR #1–#10 đều merge,
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-14 — Claude — Đối chiếu audit với web gốc wokintools.com
+**Kết quả đọc web gốc:** (1) Nhãn "(SPECIALLY FOR 110-120V MARKET)" có sẵn trong tên 105 sản phẩm ở nguồn, nên bản dịch trung thành — không phải lỗi ánh xạ như báo cáo audit nghi ngờ; vấn đề chỉ là nhãn này gây khó hiểu cho khách Việt (lưới 220V). (2) "Hơn 100 quốc gia", "3000+/3500+ sản phẩm" là câu của web gốc (kho gần Thượng Hải 20.000 m²), nên không có nguồn riêng cho bản VN. (3) WOKIN là thương hiệu toàn cầu; Workman là nhà phân phối VN → `manufacturer` trỏ Organization Workman là không chính xác.
+**Thử và hoàn lại:** thêm `sameAs`/`manufacturer.url` trỏ wokintools.com → `validate:export` báo 2.900 lỗi "Source-domain leak" (AGENTS.md cấm tham chiếu wokintools.com ở runtime). Đã hoàn lại; không commit.
+**Chờ quyết định:** (a) giữ hay bỏ/giải thích nhãn 110–120V cho khách VN; (b) có nới quy tắc "không tham chiếu wokintools.com" để liên kết thương hiệu không; (c) sửa `manufacturer` thành `Brand/Organization` "WOKIN TOOLS" không kèm URL.
+
 ### 2026-10-14 — Claude — Sửa nhanh theo báo cáo audit SEO (nhánh `fix/seo-audit-quick-wins`)
 **Đã làm:** nút CTA đại lý ở trang chủ và Giới thiệu trỏ `/nha-phan-phoi/` (trang đại lý vẫn trỏ `/lien-he/`); thêm `twitter:card`; thêm HSTS vào `deploy/docker/host-nginx.example.conf` (khối `wokin.vn`, max-age 1 năm, chưa includeSubDomains).
 **Cố ý chưa làm:** (1) nhãn "(dùng cho điện 110–120V)" — nguồn từ `tools/translate_v2.py` ("SPECIALLY FOR 110-120V MARKET") và danh mục "POWER TOOLS (110-120v market)"; cần chủ sản phẩm xác nhận. (2) `manufacturer` đang trỏ Organization (Workman) — cần xác nhận ai là nhà sản xuất. (3) Bỏ trang phân trang khỏi sitemap — `validate:export` bắt buộc mọi route có trong sitemap. (4) Nén ảnh, viết nội dung — việc lớn hơn.
