@@ -164,6 +164,25 @@ Code website + admin đã xong và **đã vào `main` (PR #1–#10 đều merge,
 
 ## 6. Nhật ký (mới nhất trên cùng)
 
+### 2026-10-14 — Claude — Sửa nhanh theo báo cáo audit SEO (nhánh `fix/seo-audit-quick-wins`)
+**Đã làm:** nút CTA đại lý ở trang chủ và Giới thiệu trỏ `/nha-phan-phoi/` (trang đại lý vẫn trỏ `/lien-he/`); thêm `twitter:card`; thêm HSTS vào `deploy/docker/host-nginx.example.conf` (khối `wokin.vn`, max-age 1 năm, chưa includeSubDomains).
+**Cố ý chưa làm:** (1) nhãn "(dùng cho điện 110–120V)" — nguồn từ `tools/translate_v2.py` ("SPECIALLY FOR 110-120V MARKET") và danh mục "POWER TOOLS (110-120v market)"; cần chủ sản phẩm xác nhận. (2) `manufacturer` đang trỏ Organization (Workman) — cần xác nhận ai là nhà sản xuất. (3) Bỏ trang phân trang khỏi sitemap — `validate:export` bắt buộc mọi route có trong sitemap. (4) Nén ảnh, viết nội dung — việc lớn hơn.
+**Kiểm chứng:** typecheck, 104 test, validate:data, check:data, build, validate:export đều qua. HSTS cần chép vào nginx thật trên VPS (người dùng làm).
+
+### 2026-10-14 — Claude — Audit SEO https://wokin.vn (chỉ đọc, không sửa code)
+**Yêu cầu:** `/seo-audit https://wokin.vn`.
+**Kết quả:** SEO Health Score 71/100 (Technical 84, Content 52, On-Page 74, Schema 78, Performance 94, AI 51, Images 62). Không có lỗi Critical. Báo cáo ở `reports/wokin.vn-audit/` (FULL-AUDIT-REPORT, ACTION-PLAN, audit-data.json, findings/, screenshots/). Thư mục `reports/` chưa được commit.
+**Phát hiện đáng chú ý:** nhãn "(dùng cho điện 110–120V)" sai ở 105 sản phẩm (có thể lỗi ánh xạ dữ liệu); trang sản phẩm mỏng; `manufacturer` ghi Workman; thiếu HSTS; ảnh LCP 200 KB; lastmod sitemap đều 2019.
+**Giới hạn:** không có Search Console/CrUX; kỹ thuật chỉ lấy mẫu.
+**Còn dở:** người dùng quyết định sửa mục nào; nhãn 110–120V cần chủ sản phẩm xác nhận.
+
+### 2026-10-14 — Claude — Chạy `/seo setup` cho claude-seo
+**Yêu cầu:** `/seo setup`.
+**Đã làm:** lần đầu lỗi vì máy mặc định Python 3.15, gói `google-ads` chưa hỗ trợ. Chạy lại với `CLAUDE_SEO_PYTHON=/opt/homebrew/bin/python3.11` thì thành công (môi trường riêng + Chromium).
+**Kiểm chứng:** `claude-seo doctor --json` → `ready: true`, `browser_ready: true`.
+**Bẫy:** mỗi lần chạy `setup`/`run` mà Python 3.15 lỗi thì đặt `CLAUDE_SEO_PYTHON` về 3.11.
+**Còn dở:** không.
+
 ### 2026-10-14 — Claude — Cài plugin claude-seo; cập nhật trạng thái bàn giao
 **Yêu cầu:** cài https://github.com/AgricIDaniel/claude-seo vào Claude; mở phiên mới không mất ngữ cảnh.
 **Đã làm:**
